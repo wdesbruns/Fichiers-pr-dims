@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Calculettes — Gérer les comptes</title>
+<script src="auth.js"></script>
+<script>calcProteger("../");</script>
+<link rel="stylesheet" href="style.css">
+<style>
+  main{max-width:640px;margin:0 auto;padding:16px}
+  ol{padding-left:20px} li{margin:6px 0}
+  pre{white-space:pre-wrap;word-break:break-all;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="topbar"><span class="logo">Σ</span><h1>Gérer les comptes</h1><a href="../accueil.html">← Accueil</a></div>
+<main>
+  <div class="carte">
+    <label for="u">Identifiant</label><input id="u" autocomplete="off">
+    <label for="p">Nouveau mot de passe</label><input id="p" type="password" autocomplete="new-password">
+    <label for="p2">Confirmer le mot de passe</label><input id="p2" type="password" autocomplete="new-password">
+    <p><button id="go">Générer la ligne</button></p>
+    <div id="r"></div>
+  </div>
+  <h2 style="font-size:16px">Marche à suivre</h2>
+  <ol class="note" style="font-size:14px">
+    <li>Générer la ligne ci-dessus, puis la copier.</li>
+    <li>Sur GitHub, ouvrir le fichier <b>commun/utilisateurs.js</b> et appuyer sur le crayon ✏️ (Edit).</li>
+    <li>Remplacer la ligne de l'identifiant concerné, ou en ajouter une nouvelle pour un collègue.</li>
+    <li>Supprimer la ligne <b>admin</b> provisoire une fois ton compte créé.</li>
+    <li>Appuyer sur <b>Commit changes</b>. Le site est à jour en 1 à 2 minutes.</li>
+  </ol>
+  <p class="note">Le mot de passe n'est jamais enregistré ni envoyé : l'empreinte est calculée dans ton navigateur. Utilise un mot de passe propre à ce site.</p>
+</main>
+<script>
+  document.getElementById('go').onclick=async()=>{
+    const u=document.getElementById('u').value.trim(), p=document.getElementById('p').value, p2=document.getElementById('p2').value, r=document.getElementById('r');
+    if(!/^[A-Za-z0-9._-]{2,40}$/.test(u)){r.innerHTML='<div class="msg err">Identifiant : 2 à 40 caractères (lettres, chiffres, point, tiret).</div>';return;}
+    if(p.length<8){r.innerHTML='<div class="msg err">Mot de passe : 8 caractères minimum.</div>';return;}
+    if(p!==p2){r.innerHTML='<div class="msg err">Les deux mots de passe sont différents.</div>';return;}
+    const ligne=`  { u: "${u.toLowerCase()}", h: "${await calcEmpreinte(u,p)}" },`;
+    r.innerHTML=`<pre id="l"></pre><button class="secondaire" id="cp">Copier la ligne</button>`;
+    document.getElementById('l').textContent=ligne;
+    document.getElementById('cp').onclick=async()=>{try{await navigator.clipboard.writeText(ligne);document.getElementById('cp').textContent='Copié ✓';}catch(e){document.getElementById('cp').textContent='Sélectionner le texte et copier';}};
+  };
+</script>
+</body>
+</html>

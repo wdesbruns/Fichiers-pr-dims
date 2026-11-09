@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<script src="../commun/auth.js"></script>
+<script>calcProteger("../");</script>
+<title>Portées de tuyauterie</title>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#ffffff; --ink:#1d2330; --muted:#5d6675; --line:#d6dae1;
+  --accent:#1f5fa8; --accent-soft:#e6eef8; --ok:#1d7a3a; --ok-soft:#e5f4ea;
+  --warn:#9a6200; --warn-soft:#fdf2dc; --bad:#b3261e; --bad-soft:#fbe7e5;
+  --gov:#fff3c4;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171c; --card:#1d2128; --ink:#e7eaf0; --muted:#9aa3b2; --line:#343a45;
+    --accent:#7fb0ee; --accent-soft:#1f2c3d; --ok:#6fcf8a; --ok-soft:#18301f;
+    --warn:#f0bf5a; --warn-soft:#352a12; --bad:#f08a80; --bad-soft:#3a1c1a; --gov:#3d3512;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:14px 16px;border-bottom:1px solid var(--line);background:var(--card);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+header h1{font-size:18px;margin:0;flex:1 1 auto}
+header .sub{color:var(--muted);font-size:12px}
+button{font:inherit;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:6px;padding:7px 14px;cursor:pointer}
+header a.back{color:var(--accent);text-decoration:none;font-weight:600;white-space:nowrap}
+button.secondary{background:transparent;color:var(--accent)}
+main{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:16px;padding:16px;max-width:1500px;margin:0 auto}
+@media (max-width:900px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:16px}
+.card h2{font-size:15px;margin:0 0 10px;color:var(--accent)}
+.card h3{font-size:13px;margin:14px 0 6px}
+label{display:block;font-size:12px;color:var(--muted);margin-top:8px}
+input,select{width:100%;font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.chk{display:flex;gap:6px;align-items:center;color:var(--ink);font-size:13px}
+.chk input{width:auto}
+.seg{display:flex;border:1px solid var(--accent);border-radius:6px;overflow:hidden;margin-top:4px}
+.seg label{flex:1;margin:0;text-align:center;padding:6px;cursor:pointer;color:var(--accent);font-size:13px}
+.seg input{display:none}
+.seg label:has(input:checked){background:var(--accent);color:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.gov td{background:var(--gov);font-weight:600}
+.badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600}
+.b-ok{background:var(--ok-soft);color:var(--ok)}
+.b-warn{background:var(--warn-soft);color:var(--warn)}
+.b-bad{background:var(--bad-soft);color:var(--bad)}
+.b-gov{background:var(--gov);color:var(--ink)}
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:6px}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg)}
+.kpi .v{font-size:22px;font-weight:700}
+.kpi .l{font-size:12px;color:var(--muted)}
+.kpi.main{border-color:var(--accent);background:var(--accent-soft)}
+.msg{padding:8px 10px;border-radius:6px;margin:6px 0;font-size:13px}
+.msg.warn{background:var(--warn-soft);color:var(--warn)}
+.msg.bad{background:var(--bad-soft);color:var(--bad)}
+.msg.ok{background:var(--ok-soft);color:var(--ok)}
+.msg.info{background:var(--accent-soft);color:var(--ink)}
+.note{font-size:12px;color:var(--muted)}
+svg text{fill:var(--ink);font-family:inherit}
+.small{font-size:12px}
+.printhead{display:none}
+@media print{
+  @page{size:A4;margin:12mm}
+  body{background:#fff;color:#000;font-size:11px}
+  header,#form,.noprint{display:none!important}
+  main{display:block;padding:0}
+  .card{border:1px solid #999;break-inside:avoid;margin-bottom:8px;padding:8px}
+  .printhead{display:block;border-bottom:2px solid #000;margin-bottom:8px;padding-bottom:4px}
+  .kpi{background:#fff}
+  svg text{fill:#000}
+}
+</style>
+</head>
+<body>
+<header>
+  <a href="../accueil.html" class="back" title="Retour à l'accueil">← Accueil</a>
+  <div style="flex:1 1 auto">
+    <h1>Portée maximale entre supports de tuyauterie</h1>
+    <div class="sub">CODETI Div.1 / EN 13480-3 — ASME B31.3 · Contrainte soutenue · Flèche · Fréquence · Descente de charges</div>
+  </div>
+  <button onclick="window.print()">🖨️ Imprimer / PDF</button>
+</header>
+
+<main>
+<!-- ======================= FORMULAIRE ======================= -->
+<section id="form">
+  <div class="card">
+    <h2>1. Projet</h2>
+    <div class="row">
+      <div><label>Affaire</label><input id="affaire" placeholder="ex. 24-001"></div>
+      <div><label>Repère ligne</label><input id="ligne" placeholder="ex. 100-EAU-001"></div>
+    </div>
+    <label>Rédacteur</label><input id="auteur">
+    <label>Mode de calcul</label>
+    <div class="seg">
+      <label><input type="radio" name="mode" value="design" checked>Portée maxi</label>
+      <label><input type="radio" name="mode" value="check">Vérifier une portée</label>
+    </div>
+    <div id="spanBox" style="display:none">
+      <label>Portée à vérifier L (m)</label><input id="Lcheck" type="number" step="0.1" value="6">
+    </div>
+    <label>Code de référence</label>
+    <select id="code">
+      <option value="CODETI">CODETI Div.1 (≈ EN 13480-3)</option>
+      <option value="B313">ASME B31.3</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <h2>2. Tube</h2>
+    <div class="row">
+      <div><label>DN / NPS</label><select id="dn"></select></div>
+      <div><label>Schedule</label><select id="sch"></select></div>
+    </div>
+    <div class="row">
+      <div><label>Ø extérieur D (mm)</label><input id="D" type="number" step="0.1"></div>
+      <div><label>Épaisseur nominale e<sub>n</sub> (mm)</label><input id="en" type="number" step="0.01"></div>
+    </div>
+    <div class="note">Les valeurs D et e<sub>n</sub> se remplissent depuis la base (ASME B36.10M / B36.19M). Elles restent modifiables à la main (tube EN 10220, par exemple).</div>
+    <label>Matériau</label><select id="mat"></select>
+    <div class="row">
+      <div><label>Température de calcul (°C)</label><input id="T" type="number" value="20"></div>
+      <div><label>Pression de calcul (bar rel.)</label><input id="P" type="number" step="0.1" value="10"></div>
+    </div>
+    <div class="row">
+      <div><label>Surépaisseur corrosion c (mm)</label><input id="c" type="number" step="0.1" value="0"></div>
+      <div><label>Tolérance de fabrication (%)</label><input id="tol" type="number" step="0.5" value="0"></div>
+    </div>
+    <label>Contrainte admissible imposée (MPa), à laisser vide pour la valeur calculée</label>
+    <input id="fover" type="number" step="1" placeholder="auto">
+  </div>
+
+  <div class="card">
+    <h2>3. Fluide, calorifuge et charges</h2>
+    <label>Fluide</label><select id="fluid"></select>
+    <label>Masse volumique fluide ρ<sub>f</sub> (kg/m³)</label><input id="rhof" type="number" step="1">
+    <label class="chk"><input type="checkbox" id="hydro" checked> Vérifier aussi le cas « rempli d'eau » (épreuve hydraulique)</label>
+    <div class="row">
+      <div><label>Épaisseur calorifuge (mm)</label><input id="ti" type="number" value="0"></div>
+      <div><label>ρ calorifuge (kg/m³)</label><input id="rhoi" type="number" value="120"></div>
+    </div>
+    <div class="row">
+      <div><label>Charge répartie suppl. (kg/m)</label><input id="qadd" type="number" step="0.1" value="0"></div>
+      <div><label>Charge ponctuelle à mi-travée (kg)</label><input id="Ppt" type="number" step="1" value="0"></div>
+    </div>
+    <div class="note">La charge répartie supplémentaire couvre par exemple la tôle d'habillage ou un traceur. La charge ponctuelle représente une vanne ou une bride.</div>
+  </div>
+
+  <div class="card">
+    <h2>4. Modèle et critères</h2>
+    <label>Conditions d'appui (modèle de poutre)</label>
+    <select id="model"></select>
+    <h3>Critères</h3>
+    <label class="chk"><input type="checkbox" id="cS" checked disabled> Contrainte longitudinale soutenue (toujours vérifiée)</label>
+    <label class="chk"><input type="checkbox" id="cD1" checked> Flèche absolue ≤ <input id="dlim" type="number" step="0.5" value="2.5" style="width:70px"> mm</label>
+    <label class="chk"><input type="checkbox" id="cD2"> Flèche relative ≤ L / <input id="dratio" type="number" step="50" value="500" style="width:70px"></label>
+    <label class="chk"><input type="checkbox" id="cF"> Fréquence propre ≥ <input id="fmin" type="number" step="0.5" value="4" style="width:70px"> Hz</label>
+  </div>
+</section>
+
+<!-- ======================= RÉSULTATS ======================= -->
+<section id="results">
+  <div class="printhead">
+    <strong>Note de calcul — portée entre supports de tuyauterie</strong><br>
+    <span id="phInfo"></span>
+  </div>
+  <div class="card" id="resMain"></div>
+  <div class="card"><h2>Schéma et notations</h2><div id="schema"></div></div>
+  <div class="card" id="resWeights"></div>
+  <div class="card" id="resCrit"></div>
+  <div class="card" id="resReact"></div>
+  <div class="card" id="resData"></div>
+  <div class="card" id="resNotes"></div>
+</section>
+</main>
+
+<script>
+/* =====================================================================
+   BASE DE DONNÉES TUBES : ASME B36.10M (acier) / B36.19M (inox, suffixe S)
+   OD en mm ; épaisseurs en mm
+   ===================================================================== */
+const PIPES = [
+ {dn:15, nps:'1/2"', od:21.3, s:{'5S':1.65,'10S':2.11,'40':2.77,'40S':2.77,'STD':2.77,'80':3.73,'80S':3.73,'XS':3.73,'160':4.78,'XXS':7.47}},
+ {dn:20, nps:'3/4"', od:26.7, s:{'5S':1.65,'10S':2.11,'40':2.87,'40S':2.87,'STD':2.87,'80':3.91,'80S':3.91,'XS':3.91,'160':5.56,'XXS':7.82}},
+ {dn:25, nps:'1"', od:33.4, s:{'5S':1.65,'10S':2.77,'40':3.38,'40S':3.38,'STD':3.38,'80':4.55,'80S':4.55,'XS':4.55,'160':6.35,'XXS':9.09}},
+ {dn:32, nps:'1-1/4"', od:42.2, s:{'5S':1.65,'10S':2.77,'40':3.56,'40S':3.56,'STD':3.56,'80':4.85,'80S':4.85,'XS':4.85,'160':6.35,'XXS':9.70}},
+ {dn:40, nps:'1-1/2"', od:48.3, s:{'5S':1.65,'10S':2.77,'40':3.68,'40S':3.68,'STD':3.68,'80':5.08,'80S':5.08,'XS':5.08,'160':7.14,'XXS':10.15}},
+ {dn:50, nps:'2"', od:60.3, s:{'5S':1.65,'10S':2.77,'40':3.91,'40S':3.91,'STD':3.91,'80':5.54,'80S':5.54,'XS':5.54,'160':8.74,'XXS':11.07}},
+ {dn:65, nps:'2-1/2"', od:73.0, s:{'5S':2.11,'10S':3.05,'40':5.16,'40S':5.16,'STD':5.16,'80':7.01,'80S':7.01,'XS':7.01,'160':9.53,'XXS':14.02}},
+ {dn:80, nps:'3"', od:88.9, s:{'5S':2.11,'10S':3.05,'40':5.49,'40S':5.49,'STD':5.49,'80':7.62,'80S':7.62,'XS':7.62,'160':11.13,'XXS':15.24}},
+ {dn:100, nps:'4"', od:114.3, s:{'5S':2.11,'10S':3.05,'40':6.02,'40S':6.02,'STD':6.02,'80':8.56,'80S':8.56,'XS':8.56,'120':11.13,'160':13.49,'XXS':17.12}},
+ {dn:125, nps:'5"', od:141.3, s:{'5S':2.77,'10S':3.40,'40':6.55,'40S':6.55,'STD':6.55,'80':9.53,'80S':9.53,'XS':9.53,'120':12.70,'160':15.88,'XXS':19.05}},
+ {dn:150, nps:'6"', od:168.3, s:{'5S':2.77,'10S':3.40,'40':7.11,'40S':7.11,'STD':7.11,'80':10.97,'80S':10.97,'XS':10.97,'120':14.27,'160':18.26,'XXS':21.95}},
+ {dn:200, nps:'8"', od:219.1, s:{'5S':2.77,'10S':3.76,'20':6.35,'30':7.04,'40':8.18,'40S':8.18,'STD':8.18,'60':10.31,'80':12.70,'80S':12.70,'XS':12.70,'100':15.09,'120':18.26,'140':20.62,'160':23.01,'XXS':22.23}},
+ {dn:250, nps:'10"', od:273.0, s:{'5S':3.40,'10S':4.19,'20':6.35,'30':7.80,'40':9.27,'40S':9.27,'STD':9.27,'60':12.70,'80S':12.70,'XS':12.70,'80':15.09,'100':18.26,'120':21.44,'140':25.40,'160':28.58}},
+ {dn:300, nps:'12"', od:323.8, s:{'5S':3.96,'10S':4.57,'20':6.35,'30':8.38,'40S':9.53,'STD':9.53,'40':10.31,'80S':12.70,'XS':12.70,'60':14.27,'80':17.48,'100':21.44,'120':25.40,'140':28.58,'160':33.32}},
+ {dn:350, nps:'14"', od:355.6, s:{'5S':3.96,'10S':4.78,'10':6.35,'20':7.92,'30':9.53,'STD':9.53,'40':11.13,'XS':12.70,'60':15.09,'80':19.05,'100':23.83,'120':27.79,'140':31.75,'160':35.71}},
+ {dn:400, nps:'16"', od:406.4, s:{'5S':4.19,'10S':4.78,'10':6.35,'20':7.92,'30':9.53,'STD':9.53,'40':12.70,'XS':12.70,'60':16.66,'80':21.44,'100':26.19,'120':30.96,'140':36.53,'160':40.49}},
+ {dn:450, nps:'18"', od:457.0, s:{'5S':4.19,'10S':4.78,'10':6.35,'20':7.92,'STD':9.53,'30':11.13,'XS':12.70,'40':14.27,'60':19.05,'80':23.83,'100':29.36,'120':34.93,'140':39.67,'160':45.24}},
+ {dn:500, nps:'20"', od:508.0, s:{'5S':4.78,'10S':5.54,'10':6.35,'20':9.53,'STD':9.53,'30':12.70,'XS':12.70,'40':15.09,'60':20.62,'80':26.19,'100':32.54,'120':38.10,'140':44.45,'160':50.01}},
+ {dn:600, nps:'24"', od:610.0, s:{'5S':5.54,'10S':6.35,'10':6.35,'20':9.53,'STD':9.53,'XS':12.70,'30':14.27,'40':17.48,'60':24.61,'80':30.96,'100':38.89,'120':46.02,'140':52.37,'160':59.54}},
+];
+const SCH_ORDER=['5S','10S','10','20','30','40S','STD','40','60','80S','XS','80','100','120','140','160','XXS'];
+
+/* =====================================================================
+   BASE MATÉRIAUX (valeurs indicatives, À VÉRIFIER sur la norme produit)
+   Températures : 20,100,150,200,250,300,350,400 °C
+   EN : Rp0.2 (ReH à 20 °C) selon EN 10216-2 / -3 / -5 (épaisseur ≤ 16 mm)
+   ASTM : Sy selon ASME BPVC II-D Tableau Y-1 (approx.)
+   ===================================================================== */
+const TT=[20,100,150,200,250,300,350,400];
+const MATS=[
+ {id:'P235GH',name:'P235GH — EN 10216-2 / 10217-2',fam:'F',rho:7850,Rm:360,rp:[235,198,187,170,150,132,120,112]},
+ {id:'P265GH',name:'P265GH — EN 10216-2 / 10217-2',fam:'F',rho:7850,Rm:410,rp:[265,226,213,192,171,154,141,134]},
+ {id:'16Mo3',name:'16Mo3 — EN 10216-2',fam:'F',rho:7850,Rm:450,rp:[280,243,237,224,205,173,159,156]},
+ {id:'P355NH',name:'P355NH — EN 10216-3',fam:'F',rho:7850,Rm:490,rp:[355,304,284,255,235,216,196,167]},
+ {id:'1.4301',name:'1.4301 (X5CrNi18-10, « 304 ») — EN 10216-5',fam:'A',rho:7900,Rm:500,rp:[195,157,142,127,118,110,104,98],rp1:[230,191,172,157,145,135,129,125]},
+ {id:'1.4307',name:'1.4307 (X2CrNi18-9, « 304L ») — EN 10216-5',fam:'A',rho:7900,Rm:470,rp:[180,147,132,118,108,100,94,89],rp1:[215,181,162,147,137,127,121,116]},
+ {id:'1.4404',name:'1.4404 (X2CrNiMo17-12-2, « 316L ») — EN 10216-5',fam:'A',rho:8000,Rm:490,rp:[190,166,152,137,127,118,113,108],rp1:[225,199,181,167,157,145,139,135]},
+ {id:'1.4571',name:'1.4571 (X6CrNiMoTi17-12-2, « 316Ti ») — EN 10216-5',fam:'A',rho:8000,Rm:500,rp:[210,185,177,167,157,145,140,135],rp1:[245,218,206,196,186,175,169,164]},
+ {id:'A106B',name:'ASTM A106 Gr. B',fam:'F',rho:7850,Rm:415,rp:[240,218,212,206,196,183,170,157]},
+ {id:'A53B',name:'ASTM A53 Gr. B',fam:'F',rho:7850,Rm:415,rp:[240,218,212,206,196,183,170,157]},
+ {id:'API5LB',name:'API 5L Gr. B',fam:'F',rho:7850,Rm:415,rp:[245,222,216,210,200,187,173,160]},
+ {id:'TP304',name:'ASTM A312 TP304',fam:'A',rho:7900,Rm:515,rp:[205,170,156,144,135,128,122,118]},
+ {id:'TP304L',name:'ASTM A312 TP304L',fam:'A',rho:7900,Rm:485,rp:[170,145,132,121,113,107,102,98]},
+ {id:'TP316',name:'ASTM A312 TP316',fam:'A',rho:8000,Rm:515,rp:[205,177,162,150,141,134,128,124]},
+ {id:'TP316L',name:'ASTM A312 TP316L',fam:'A',rho:8000,Rm:485,rp:[170,147,133,123,115,108,103,99]},
+];
+// Module d'Young (GPa) — EN 13480-3 / EN 13445-3 (valeurs moyennes)
+const E_F=[212,207,203,199,195,192,188,184];
+const E_A=[200,194,190,186,182,179,175,172];
+
+const FLUIDS=[
+ {n:'Eau (20 °C)',r:1000},{n:'Eau chaude (90 °C)',r:965},{n:'Eau de mer',r:1025},
+ {n:'Eau glycolée 30 %',r:1040},{n:'Gazole',r:840},{n:'Fioul lourd',r:980},
+ {n:'Acide sulfurique 98 %',r:1830},{n:'Acide nitrique 65 %',r:1390},{n:'Acide chlorhydrique 33 %',r:1160},
+ {n:'Soude caustique 50 %',r:1525},{n:'Gaz / air / vapeur (négligé)',r:0},{n:'Personnalisé',r:null},
+];
+
+/* =====================================================================
+   MODÈLES DE POUTRE
+   kM : M = kM·q·L²   kd : δ = kd·q·L⁴/(E·I)
+   kRi / kRe : réaction appui intermédiaire / d'extrémité = k·q·L
+   ===================================================================== */
+const MODELS={
+ cont:{n:'Poutre continue, enveloppe travée de rive (recommandé)',kM:0.107,kd:0.0069,kRi:1.143,kRe:0.40,
+   src:'Formulaires de poutres continues à travées égales : moment sur le 1er appui intermédiaire 0,107 qL² et réaction 1,143 qL (4 travées), flèche de travée de rive 0,0069 qL⁴/EI (3 travées).'},
+ prat:{n:'Pratique tuyauterie : M = qL²/10, δ = 5qL⁴/384EI',kM:0.100,kd:5/384,kRi:1.10,kRe:0.50,
+   src:'Approche usuelle en tuyauterie (ex. Kellogg, « Design of Piping Systems ») : moment de poutre partiellement encastrée et flèche de poutre sur appuis simples (conservative).'},
+ iso:{n:'Travées isostatiques (appuis simples)',kM:0.125,kd:5/384,kRi:1.00,kRe:0.50,
+   src:'Poutre sur 2 appuis simples : M = qL²/8, δ = 5qL⁴/384EI, réaction qL/2 par travée, soit qL sur un appui intermédiaire.'},
+ enc:{n:'Travée intermédiaire continue (≈ bi-encastrée)',kM:1/12,kd:1/384,kRi:1.00,kRe:0.50,
+   src:'Poutre bi-encastrée : M = qL²/12 sur appui, δ = qL⁴/384EI. Valable seulement loin des extrémités et des changements de direction (non conservatif ailleurs).'},
+};
+
+// Tableau 121.5 de l'ASME B31.1 : portées suggérées (m) en service eau / vapeur-gaz
+const B311={25:[2.1,2.7],50:[3.0,4.0],80:[3.7,4.6],100:[4.3,5.2],150:[5.2,6.4],200:[5.8,7.3],300:[7.0,9.1],400:[8.2,10.7],500:[9.1,11.9],600:[9.8,12.8]};
+
+/* ======================== UTILITAIRES ======================== */
+const $=id=>document.getElementById(id);
+const num=(id,d=0)=>{const v=parseFloat($(id).value);return isFinite(v)?v:d};
+function interp(T,arr){
+  if(T<=TT[0])return arr[0];
+  if(T>=TT[TT.length-1])return arr[arr.length-1];
+  for(let i=1;i<TT.length;i++)if(T<=TT[i]){const a=(T-TT[i-1])/(TT[i]-TT[i-1]);return arr[i-1]+a*(arr[i]-arr[i-1]);}
+}
+const fmt=(x,d=2)=>isFinite(x)?x.toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
+const g=9.81;
+
+/* ======================== INIT UI ======================== */
+function initUI(){
+  PIPES.forEach((p,i)=>$('dn').add(new Option(`DN${p.dn} (${p.nps}) — Ø${p.od}`,i)));
+  $('dn').add(new Option('Personnalisé (saisir D et e)','custom'));
+  $('dn').value=PIPES.findIndex(p=>p.dn===100);
+  MATS.forEach(m=>$('mat').add(new Option(m.name,m.id)));
+  $('mat').value='P265GH';
+  FLUIDS.forEach((f,i)=>$('fluid').add(new Option(f.n+(f.r!==null?` (${f.r} kg/m³)`:''),i)));
+  $('fluid').value=0; $('rhof').value=1000;
+  Object.entries(MODELS).forEach(([k,m])=>$('model').add(new Option(m.n,k)));
+  fillSch('40');
+  $('dn').onchange=()=>{fillSch($('sch').value);calc()};
+  $('sch').onchange=()=>{setPipe();calc()};
+  $('mat').onchange=()=>{ // propose 10S pour l'inox, 40 pour l'acier
+    const m=MATS.find(x=>x.id===$('mat').value);
+    if(m.fam==='A'&&!/S$/.test($('sch').value)) {fillSch('10S');}
+    if(m.fam==='F'&&/S$/.test($('sch').value)) {fillSch('40');}
+    calc();};
+  $('fluid').onchange=()=>{const f=FLUIDS[$('fluid').value];if(f.r!==null)$('rhof').value=f.r;calc()};
+  $('rhof').oninput=()=>{const f=FLUIDS[$('fluid').value];if(f.r!==null&&+$('rhof').value!==f.r)$('fluid').value=FLUIDS.length-1;calc()};
+  document.querySelectorAll('input,select').forEach(el=>{if(!el.onchange&&!el.oninput)el.addEventListener('input',calc)});
+  document.querySelectorAll('input[name=mode]').forEach(r=>r.addEventListener('change',()=>{$('spanBox').style.display=mode()==='check'?'block':'none';calc()}));
+  $('D').oninput=$('en').oninput=()=>{$('dn').value='custom';fillSch();calc()};
+}
+function fillSch(pref){
+  const s=$('sch'); s.innerHTML='';
+  if($('dn').value==='custom'){s.add(new Option('—','')); s.disabled=true; return;}
+  s.disabled=false;
+  const p=PIPES[$('dn').value];
+  SCH_ORDER.filter(k=>p.s[k]!==undefined).forEach(k=>s.add(new Option(`Sch ${k} — ${p.s[k]} mm`,k)));
+  if(pref&&p.s[pref]!==undefined)s.value=pref; else if(p.s['40']!==undefined)s.value='40'; else s.value='STD';
+  setPipe();
+}
+function setPipe(){
+  if($('dn').value==='custom')return;
+  const p=PIPES[$('dn').value];$('D').value=p.od;$('en').value=p.s[$('sch').value];
+}
+const mode=()=>document.querySelector('input[name=mode]:checked').value;
+
+/* ======================== CALCUL ======================== */
+function allowable(m,T,code){
+  const rp=interp(T,m.rp), rp20=m.rp[0];
+  if(code==='CODETI'){
+    if(m.fam==='A'&&m.rp1){const r1=interp(T,m.rp1);return{f:r1/1.5,txt:`f = R<sub>p1,0,t</sub>/1,5 = ${fmt(r1,0)}/1,5`,ref:'EN 13480-3 §5.2.2.2 (aciers austénitiques, A ≥ 30 %) ; CODETI Div.1 Partie C, contraintes nominales de calcul'};}
+    if(m.fam==='A'){return{f:rp/1.5,txt:`f = R<sub>p0,2,t</sub>/1,5 = ${fmt(rp,0)}/1,5 (R<sub>p1,0</sub> non disponible, conservatif)`,ref:'EN 13480-3 §5.2.2.2 (approche conservative)'};}
+    const f=Math.min(rp/1.5,m.Rm/2.4);
+    return{f,txt:`f = min(R<sub>eH,t</sub>/1,5 ; R<sub>m</sub>/2,4) = min(${fmt(rp,0)}/1,5 ; ${m.Rm}/2,4)`,ref:'EN 13480-3 §5.2.2.1 (aciers non austénitiques) ; CODETI Div.1 Partie C, contraintes nominales de calcul'};
+  }
+  if(m.fam==='A'){const f=Math.min(m.Rm/3,2/3*rp20,0.9*rp);
+    return{f,txt:`S<sub>h</sub> ≈ min(S<sub>T</sub>/3 ; 2/3·S<sub>Y</sub> ; 0,9·S<sub>Y,T</sub>) = min(${m.Rm}/3 ; 2/3·${rp20} ; 0,9·${fmt(rp,0)})`,ref:'ASME B31.3 §302.3.2(d)(e). Approximation : retenir de préférence la valeur du Tableau A-1'};}
+  const f=Math.min(m.Rm/3,2/3*rp20,2/3*rp);
+  return{f,txt:`S<sub>h</sub> ≈ min(S<sub>T</sub>/3 ; 2/3·S<sub>Y</sub> ; 2/3·S<sub>Y,T</sub>) = min(${m.Rm}/3 ; 2/3·${rp20} ; 2/3·${fmt(rp,0)})`,ref:'ASME B31.3 §302.3.2(d). Approximation : retenir de préférence la valeur du Tableau A-1'};
+}
+
+function bisect(fn,lim){ // plus grand L (m) tel que fn(L) <= lim, fn croissante
+  let a=0.001,b=60;
+  if(fn(a)>lim)return 0;
+  if(fn(b)<=lim)return b;
+  for(let i=0;i<80;i++){const c=(a+b)/2; if(fn(c)<=lim)a=c; else b=c;}
+  return a;
+}
+
+function computeCase(inp,cas){
+  const {D,en,ec,mod,Pmpa,Ppt}=inp;
+  const di=D-2*en, dic=D-2*ec;
+  const I=Math.PI*(D**4-di**4)/64;            // mm4, épaisseur nominale (raideur)
+  const Z=Math.PI*(D**4-dic**4)/(32*D);       // mm3, épaisseur corrodée
+  const q=cas.mtot*g/1000;                    // N/mm
+  const E=cas.E*1000;                         // MPa
+  const P=Ppt*g;                              // N
+  const sigP=Pmpa*D/(4*ec);
+  const sig=L=>{const Lm=L*1000;return sigP+(mod.kM*q*Lm*Lm+P*Lm/4)/Z};
+  const def=L=>{const Lm=L*1000;return mod.kd*q*Lm**4/(E*I)+P*Lm**3/(48*E*I)};
+  const freq=L=>Math.PI/(2*L*L)*Math.sqrt(cas.E*1e9*I*1e-12/(cas.mtot+1e-9));
+  const crit=[];
+  crit.push({k:'S',n:'Contrainte longitudinale soutenue',lim:cas.f,unit:'MPa',val:sig,L:bisect(sig,cas.f),
+    ref:inp.code==='CODETI'?'EN 13480-3 §12.3.2, éq. (12.3.2-1) ; CODETI Div.1 Partie C, charges permanentes':'ASME B31.3 §302.3.5(c) et §320'});
+  if(inp.cD1)crit.push({k:'D1',n:'Flèche absolue',lim:inp.dlim,unit:'mm',val:def,L:bisect(def,inp.dlim),ref:'Limite fixée par le projet (2,5 mm = base du Tableau 121.5 de l\'ASME B31.1)'});
+  if(inp.cD2){const r=L=>def(L)/(L*1000/inp.dratio);crit.push({k:'D2',n:`Flèche relative L/${inp.dratio}`,lim:1,unit:'',val:def,valLim:L=>L*1000/inp.dratio,L:bisect(r,1),ratioFn:r,ref:'Limite fixée par le projet'});}
+  if(inp.cF){const inv=L=>1/freq(L);crit.push({k:'F',n:'Fréquence propre f₁',lim:inp.fmin,unit:'Hz',val:freq,L:bisect(inv,1/inp.fmin),inverse:true,ref:'f₁ = (π/2L²)·√(EI/m), mode fondamental d\'une travée sur appuis simples (pratique : f₁ ≥ 3 à 5 Hz)'});}
+  return{I,Z,q,sigP,crit,sig,def,freq};
+}
+
+function calc(){
+  const code=$('code').value;
+  const m=MATS.find(x=>x.id===$('mat').value);
+  const mod=MODELS[$('model').value];
+  const D=num('D'),en=num('en'),c=num('c'),tol=num('tol'),T=num('T',20),Pbar=num('P');
+  const ec=en*(1-tol/100)-c;
+  const inp={code,D,en,ec,mod,Pmpa:Pbar/10,Ppt:num('Ppt'),cD1:$('cD1').checked,dlim:num('dlim',2.5),cD2:$('cD2').checked,dratio:num('dratio',500),cF:$('cF').checked,fmin:num('fmin',4)};
+  const rhof=num('rhof'),ti=num('ti'),rhoi=num('rhoi'),qadd=num('qadd');
+  const msgs=[];
+  if(!(D>0&&en>0&&ec>0&&2*en<D)){$('resMain').innerHTML='<div class="msg bad">Géométrie invalide : vérifier D, e<sub>n</sub>, c et la tolérance.</div>';return;}
+  if(T>400)msgs.push(['warn','Température > 400 °C : valeurs extrapolées et domaine du fluage possible. Calcul non valable sans vérification spécifique.']);
+  if(T<-10)msgs.push(['warn','Température < −10 °C : vérifier la résilience du matériau. Les admissibles ont été pris à 20 °C.']);
+
+  // ---- masses linéiques (kg/m)
+  const di=D-2*en;
+  const mPipe=Math.PI/4*(D*D-di*di)*1e-6*m.rho;
+  const mFluid=Math.PI/4*di*di*1e-6*rhof;
+  const mWater=Math.PI/4*di*di*1e-6*1000;
+  const mIns=Math.PI/4*((D+2*ti)**2-D*D)*1e-6*rhoi;
+  const mEmpty=mPipe+mIns+qadd;
+  const mServ=mEmpty+mFluid, mHydro=mEmpty+mWater;
+
+  const al=allowable(m,T,code), al20=allowable(m,20,code);
+  const fover=parseFloat($('fover').value);
+  const fT=isFinite(fover)?fover:al.f, f20=isFinite(fover)?fover:al20.f;
+  const ET=(m.fam==='A'?interp(T,E_A):interp(T,E_F)), E20=(m.fam==='A'?E_A[0]:E_F[0]);
+
+  const cases=[{id:'serv',n:`Service (${rhof} kg/m³)`,mtot:mServ,f:fT,E:ET,P:inp.Pmpa}];
+  const doHydro=$('hydro').checked&&rhof<1000;
+  if(doHydro)cases.push({id:'hyd',n:'Rempli d\'eau (épreuve)',mtot:mHydro,f:f20,E:E20,P:0});
+  const res=cases.map(cs=>{const r=computeCase({...inp,Pmpa:cs.P},cs);r.cas=cs;return r;});
+
+  // ---- critère dimensionnant
+  let gov=null;
+  res.forEach(r=>r.crit.forEach(cr=>{cr.cas=r.cas;if(!gov||cr.L<gov.L)gov=cr;}));
+  const Lmax=gov.L;
+  const Lret=mode()==='check'?num('Lcheck',1):Math.floor(Lmax*10)/10;
+
+  // ---- ratios à la portée retenue
+  res.forEach(r=>r.crit.forEach(cr=>{
+    let ratio,valAt=cr.val(Lret),limAt=cr.lim;
+    if(cr.k==='D2'){limAt=cr.valLim(Lret);ratio=valAt/limAt;}
+    else if(cr.inverse)ratio=cr.lim/valAt; else ratio=valAt/cr.lim;
+    cr.valAt=valAt;cr.limAt=limAt;cr.ratio=ratio;
+  }));
+  if(res[0].sigP>=fT)msgs.push(['bad','La contrainte de pression seule P·D/(4e) atteint ou dépasse l\'admissible : l\'épaisseur est insuffisante vis-à-vis de la pression.']);
+  if(Lmax>=59.9)msgs.push(['info','Portée > 60 m : aucun critère actif n\'est limitant dans la plage étudiée.']);
+
+  // ---- réactions (kN) à la portée retenue
+  const Ppt=inp.Ppt*g/1000;
+  const R=(mm,k)=>k*mm*g/1000*Lret;
+  const Rint={vide:R(mEmpty,mod.kRi),pipe:R(mPipe,mod.kRi),ins:R(mIns+qadd,mod.kRi),fl:R(mFluid,mod.kRi),wat:R(mWater,mod.kRi)};
+  const Rend={vide:R(mEmpty,mod.kRe),pipe:R(mPipe,mod.kRe),ins:R(mIns+qadd,mod.kRe),fl:R(mFluid,mod.kRe),wat:R(mWater,mod.kRe)};
+
+  render({code,m,mod,D,en,ec,c,tol,T,Pbar,rhof,ti,rhoi,qadd,inp,mPipe,mFluid,mWater,mIns,mEmpty,mServ,mHydro,al,fT,f20,ET,E20,res,gov,Lmax,Lret,Rint,Rend,Ppt,doHydro,msgs,fover});
+}
+
+/* ======================== AFFICHAGE ======================== */
+function badge(r){return r<=0.9?'<span class="badge b-ok">OK</span>':r<=1.0?'<span class="badge b-warn">OK (proche limite)</span>':'<span class="badge b-bad">NON CONFORME</span>';}
+
+function render(o){
+  const check=mode()==='check';
+  const dnTxt=$('dn').value==='custom'?`Ø${o.D}×${o.en}`:`DN${PIPES[$('dn').value].dn} (${PIPES[$('dn').value].nps}) Sch ${$('sch').value}`;
+  $('phInfo').innerHTML=`Affaire : ${$('affaire').value||'—'} · Ligne : ${$('ligne').value||'—'} · Rédacteur : ${$('auteur').value||'—'} · Date : ${new Date().toLocaleDateString('fr-FR')} · Code : ${o.code==='CODETI'?'CODETI Div.1 / EN 13480-3':'ASME B31.3'}`;
+
+  // ---------- Résultat principal
+  let worst=null;o.res.forEach(r=>r.crit.forEach(c=>{if(!worst||c.ratio>worst.ratio)worst=c;}));
+  let h=`<h2>${check?'Vérification de la portée':'Portée maximale admissible'}</h2>`;
+  h+=`<div class="hero">`;
+  if(check){
+    const ok=worst.ratio<=1;
+    h+=`<div class="kpi main"><div class="l">Portée vérifiée L</div><div class="v">${fmt(o.Lret,2)} m</div>${ok?'<span class="badge b-ok">CONFORME</span>':'<span class="badge b-bad">NON CONFORME</span>'}</div>`;
+    h+=`<div class="kpi"><div class="l">Taux de travail maxi (${worst.n})</div><div class="v">${fmt(worst.ratio*100,0)} %</div></div>`;
+    h+=`<div class="kpi"><div class="l">Portée maxi admissible</div><div class="v">${fmt(o.Lmax,2)} m</div></div>`;
+  }else{
+    h+=`<div class="kpi main"><div class="l">Portée maximale L<sub>max</sub></div><div class="v">${fmt(o.Lmax,2)} m</div><div class="l">retenue (arrondie) : <b>${fmt(o.Lret,1)} m</b></div></div>`;
+    h+=`<div class="kpi"><div class="l">Critère dimensionnant</div><div class="v" style="font-size:16px">${o.gov.n}</div><span class="badge b-gov">${o.gov.cas.n}</span></div>`;
+  }
+  h+=`<div class="kpi"><div class="l">Descente de charge maxi sur appui intermédiaire (L = ${fmt(o.Lret,2)} m)</div><div class="v">${fmt(o.Rint.vide+Math.max(o.Rint.fl,o.doHydro?o.Rint.wat:0)+o.Ppt,2)} kN</div></div>`;
+  h+=`</div>`;
+  if(check){
+    o.res.forEach(r=>r.crit.forEach(c=>{if(c.ratio>1)h+=`<div class="msg bad">⚠ ${c.n} (${c.cas.n}) : ${fmt(c.valAt,2)} ${c.unit} pour une limite de ${fmt(c.limAt,2)} ${c.unit}, soit un taux de ${fmt(c.ratio*100,0)} %. Réduire la portée à ${fmt(c.L,2)} m au plus.</div>`;
+      else if(c.ratio>0.9)h+=`<div class="msg warn">Attention : ${c.n} (${c.cas.n}) à ${fmt(c.ratio*100,0)} % de la limite, peu de marge.</div>`;}));
+  }
+  o.msgs.forEach(([t,s])=>h+=`<div class="msg ${t}">${s}</div>`);
+  const b=B311[$('dn').value!=='custom'?PIPES[$('dn').value].dn:0];
+  if(b)h+=`<div class="msg info">Pour comparaison, le Tableau 121.5 de l'ASME B31.1 suggère ${b[0]} m en service liquide et ${b[1]} m en service gaz ou vapeur (tube acier Sch STD, sans charges concentrées). Ces valeurs sont indicatives.</div>`;
+  $('resMain').innerHTML=h;
+
+  // ---------- Schéma
+  $('schema').innerHTML=schemaSVG(o);
+
+  // ---------- Masses
+  const kn=x=>x*g/1000;
+  let w=`<h2>Récapitulatif des charges linéiques</h2><table>
+  <tr><th>Composante</th><th class="n">kg/m</th><th class="n">daN/m</th><th class="n">kN/m</th></tr>
+  <tr><td>Tube acier (ρ = ${o.m.rho} kg/m³, e<sub>n</sub> = ${o.en} mm)</td><td class="n">${fmt(o.mPipe)}</td><td class="n">${fmt(o.mPipe*g/10)}</td><td class="n">${fmt(kn(o.mPipe),3)}</td></tr>
+  <tr><td>Calorifuge (${o.ti} mm, ${o.rhoi} kg/m³)</td><td class="n">${fmt(o.mIns)}</td><td class="n">${fmt(o.mIns*g/10)}</td><td class="n">${fmt(kn(o.mIns),3)}</td></tr>
+  <tr><td>Charges réparties supplémentaires</td><td class="n">${fmt(o.qadd)}</td><td class="n">${fmt(o.qadd*g/10)}</td><td class="n">${fmt(kn(o.qadd),3)}</td></tr>
+  <tr style="font-weight:600"><td>q<sub>vide</sub> : poids à vide</td><td class="n">${fmt(o.mEmpty)}</td><td class="n">${fmt(o.mEmpty*g/10)}</td><td class="n">${fmt(kn(o.mEmpty),3)}</td></tr>
+  <tr><td>q<sub>fluide</sub> : fluide (ρ<sub>f</sub> = ${o.rhof} kg/m³)</td><td class="n">${fmt(o.mFluid)}</td><td class="n">${fmt(o.mFluid*g/10)}</td><td class="n">${fmt(kn(o.mFluid),3)}</td></tr>
+  <tr><td>q<sub>eau</sub> : eau (pour comparaison)</td><td class="n">${fmt(o.mWater)}</td><td class="n">${fmt(o.mWater*g/10)}</td><td class="n">${fmt(kn(o.mWater),3)}</td></tr>
+  <tr style="font-weight:600"><td>q<sub>service</sub> : tube rempli de fluide</td><td class="n">${fmt(o.mServ)}</td><td class="n">${fmt(o.mServ*g/10)}</td><td class="n">${fmt(kn(o.mServ),3)}</td></tr>
+  <tr style="font-weight:600"><td>q<sub>épreuve</sub> : tube rempli d'eau</td><td class="n">${fmt(o.mHydro)}</td><td class="n">${fmt(o.mHydro*g/10)}</td><td class="n">${fmt(kn(o.mHydro),3)}</td></tr>
+  </table>`;
+  w+= o.rhof>1000?`<div class="msg warn">Fluide plus lourd que l'eau (${o.rhof} kg/m³) : c'est le cas de service qui gouverne les masses (+${fmt((o.rhof/1000-1)*100,0)} % sur le poids du contenu).</div>`
+     :o.rhof<1000?`<div class="msg info">Fluide plus léger que l'eau : le cas rempli d'eau ${o.doHydro?'est vérifié (épreuve hydraulique)':'n\'est PAS vérifié (option décochée)'}.</div>`:'';
+  if(o.inp.Ppt>0)w+=`<div class="note">Charge ponctuelle à mi-travée : ${fmt(o.inp.Ppt,0)} kg, soit ${fmt(o.Ppt,3)} kN.</div>`;
+  $('resWeights').innerHTML=w;
+
+  // ---------- Critères
+  let t=`<h2>Critères de portée</h2><table><tr><th>Cas</th><th>Critère</th><th class="n">Limite</th><th class="n">L<sub>max</sub> (m)</th><th class="n">Valeur à L = ${fmt(o.Lret,2)} m</th><th class="n">Taux</th><th></th></tr>`;
+  o.res.forEach(r=>r.crit.forEach(c=>{
+    const isGov=c===o.gov;
+    t+=`<tr class="${isGov?'gov':''}"><td>${c.cas.n}</td><td>${c.n}${isGov?' <span class="badge b-gov">DIMENSIONNANT</span>':''}<div class="note">${c.ref}</div></td>
+    <td class="n">${c.inverse?'≥ ':'≤ '}${fmt(c.limAt,2)} ${c.unit}</td><td class="n">${fmt(c.L,2)}</td><td class="n">${fmt(c.valAt,2)} ${c.unit}</td><td class="n">${fmt(c.ratio*100,0)} %</td><td>${badge(c.ratio)}</td></tr>`;}));
+  t+=`</table>`;
+  const r0=o.res[0];
+  t+=`<h3>Détail : contrainte longitudinale soutenue</h3>
+  <div class="small">${o.code==='CODETI'
+    ?`σ<sub>1</sub> = p<sub>c</sub>·d<sub>o</sub>/(4·e) + 0,75·i·M<sub>A</sub>/Z ≤ f<sub>h</sub>, avec 0,75·i ≥ 1, donc facteur 1 pour un tube droit (EN 13480-3 §12.3.2)`
+    :`S<sub>L</sub> = P·D/(4·t) + M/Z ≤ S<sub>h</sub>, avec t = T − c (ASME B31.3 §302.3.5(c))`}<br>
+  M = k<sub>M</sub>·q·L² + P·L/4 &nbsp;avec k<sub>M</sub> = ${fmt(o.mod.kM,4)} &nbsp;·&nbsp; σ<sub>pression</sub> = ${fmt(o.inp.Pmpa,2)}×${o.D}/(4×${fmt(o.ec,2)}) = <b>${fmt(r0.sigP,1)} MPa</b><br>
+  Z (épaisseur e = ${fmt(o.ec,2)} mm) = ${fmt(r0.Z/1000,2)} cm³ · I (e<sub>n</sub>) = ${fmt(r0.I/1e4,1)} cm⁴<br>
+  Admissible à ${o.T} °C : ${o.fover?`<b>${fmt(o.fT,1)} MPa (valeur imposée)</b>`:`${o.al.txt} = <b>${fmt(o.fT,1)} MPa</b>`}<span class="note"> · ${o.al.ref}</span>${o.doHydro?`<br>Cas épreuve : admissible à 20 °C = ${fmt(o.f20,1)} MPa, sans pression (voir notes)`:''}<br>
+  Flèche : δ = k<sub>δ</sub>·q·L⁴/(E·I) + P·L³/(48·E·I), avec k<sub>δ</sub> = ${fmt(o.mod.kd,5)} et E<sub>${o.T}°C</sub> = ${fmt(o.ET,0)} GPa</div>`;
+  $('resCrit').innerHTML=t;
+
+  // ---------- Réactions
+  const Ri=o.Rint,Re=o.Rend;
+  const hasFl=o.rhof>0;
+  let rr=`<h2>Descente de charges aux supports (L = ${fmt(o.Lret,2)} m)</h2>
+  <div class="note">Modèle « ${o.mod.n} » : R<sub>int</sub> = ${o.mod.kRi}·q·L (appui intermédiaire le plus chargé) et R<sub>ext</sub> = ${o.mod.kRe}·q·L (appui d'extrémité). La charge ponctuelle est reportée en totalité sur l'appui, ce qui est conservatif.</div>
+  <table><tr><th>Charge</th><th>Nature Eurocode proposée</th><th class="n">R<sub>int</sub> (kN)</th><th class="n">R<sub>ext</sub> (kN)</th></tr>
+  <tr><td>Tube nu</td><td>G (EN 1991-1-1 §5.1(3) : « tuyauteries sans leur contenu »)</td><td class="n">${fmt(Ri.pipe,3)}</td><td class="n">${fmt(Re.pipe,3)}</td></tr>
+  <tr><td>Calorifuge et charges réparties supplémentaires</td><td>G</td><td class="n">${fmt(Ri.ins,3)}</td><td class="n">${fmt(Re.ins,3)}</td></tr>
+  <tr><td>Charge ponctuelle (vanne…)</td><td>G</td><td class="n">${fmt(o.Ppt,3)}</td><td class="n">${fmt(o.Ppt,3)}</td></tr>
+  <tr style="font-weight:600"><td>R<sub>vide</sub></td><td>G</td><td class="n">${fmt(Ri.vide+o.Ppt,3)}</td><td class="n">${fmt(Re.vide+o.Ppt,3)}</td></tr>
+  ${hasFl?`<tr><td>Fluide de service (${o.rhof} kg/m³)</td><td>G si contenu permanent et niveau maîtrisé, sinon Q (voir note)</td><td class="n">${fmt(Ri.fl,3)}</td><td class="n">${fmt(Re.fl,3)}</td></tr>
+  <tr style="font-weight:600"><td>R<sub>service</sub> = R<sub>vide</sub> + fluide</td><td></td><td class="n">${fmt(Ri.vide+Ri.fl+o.Ppt,3)}</td><td class="n">${fmt(Re.vide+Re.fl+o.Ppt,3)}</td></tr>`:''}
+  ${o.doHydro?`<tr><td>Eau d'épreuve</td><td>Situation transitoire (Q ou charge d'épreuve)</td><td class="n">${fmt(Ri.wat,3)}</td><td class="n">${fmt(Re.wat,3)}</td></tr>
+  <tr style="font-weight:600"><td>R<sub>épreuve</sub> = R<sub>vide</sub> + eau</td><td></td><td class="n">${fmt(Ri.vide+Ri.wat+o.Ppt,3)}</td><td class="n">${fmt(Re.vide+Re.wat+o.Ppt,3)}</td></tr>`:''}
+  </table>
+  <div class="msg info small"><b>À propos du classement du fluide en G :</b> l'EN 1991-1-1 §5.1(3) range dans le poids propre les « tuyauteries <u>sans leur contenu</u> ». Le contenu n'est donc pas automatiquement une action permanente. L'EN 1990 §4.1.1 permet de le traiter en G lorsque sa variation est négligeable : circuit toujours plein, niveau ou densité maîtrisés. On présente alors la part tube et la part fluide séparément, pour pouvoir les combiner avec γ<sub>G</sub> = 1,35 (EN 1990 Annexe A1, Tableau A1.2(B), et AN française). Le CCTP ou le cahier des charges de l'exploitant peut imposer un autre classement.</div>`;
+  $('resReact').innerHTML=rr;
+
+  // ---------- Données
+  $('resData').innerHTML=`<h2>Données d'entrée</h2><table class="small">
+  <tr><td>Tube</td><td>${dnTxt} : D = ${o.D} mm, e<sub>n</sub> = ${o.en} mm, e de calcul = e<sub>n</sub>·(1 − ${o.tol} %) − ${o.c} = ${fmt(o.ec,2)} mm</td></tr>
+  <tr><td>Matériau</td><td>${o.m.name} : R<sub>m</sub> = ${o.m.Rm} MPa, R<sub>p0,2</sub>(${o.T} °C) = ${fmt(interp(o.T,o.m.rp),0)} MPa${o.m.rp1?`, R<sub>p1,0</sub>(${o.T} °C) = ${fmt(interp(o.T,o.m.rp1),0)} MPa`:''}, E = ${fmt(o.ET,0)} GPa</td></tr>
+  <tr><td>Conditions</td><td>T = ${o.T} °C, P = ${o.Pbar} bar</td></tr>
+  <tr><td>Fluide</td><td>${FLUIDS[$('fluid').value].n} : ρ = ${o.rhof} kg/m³</td></tr>
+  <tr><td>Modèle</td><td>${o.mod.n}. ${o.mod.src}</td></tr></table>`;
+
+  // ---------- Notes
+  $('resNotes').innerHTML=`<h2>Hypothèses et limites</h2><ul class="small">
+  <li>Tube droit horizontal, travées égales, sans coude ni té dans la travée. Pour un coude entre deux supports, la pratique est de réduire la portée d'environ 25 %.</li>
+  <li>Contrainte : seules les charges permanentes (poids et pression) sont prises en compte. La dilatation (EN 13480-3 §12.3.4, B31.3 §319), le séisme et le vent relèvent d'un calcul de flexibilité (CAESAR II, ROHR2…).</li>
+  <li>Z est calculé avec l'épaisseur e<sub>n</sub> − c (et la tolérance si elle est saisie) ; I et les masses avec l'épaisseur nominale.</li>
+  <li>Cas « rempli d'eau » : admissible à 20 °C, pression d'épreuve non cumulée (simplification). En toute rigueur, vérifier selon EN 13480-5 / B31.3 §345.</li>
+  <li>Fréquence : la masse de la charge ponctuelle n'est pas incluse.</li>
+  <li>Les caractéristiques matériaux et les dimensions de la base sont <b>indicatives</b>. Les contrôler sur les normes produit (EN 10216-2/-5, ASME BPVC II-D, B36.10M/B36.19M) et dans l'édition du CODETI applicable. En ASME, saisir de préférence la valeur S<sub>h</sub> du Tableau A-1 de la B31.3 dans le champ « contrainte admissible imposée ».</li>
+  <li>Dans le CODETI Div.1, les règles correspondantes se trouvent en Partie C (calcul), avec la même structure de formules que l'EN 13480-3. Les numéros de paragraphe varient selon l'édition et sont à vérifier.</li></ul>`;
+}
+
+/* ======================== SCHÉMA SVG ======================== */
+function schemaSVG(o){
+  const L=o.Lret;
+  const arrows=[];for(let x=60;x<=540;x+=24)arrows.push(`<line x1="${x}" y1="38" x2="${x}" y2="62" stroke="var(--accent)" stroke-width="1.3" marker-end="url(#ah)"/>`);
+  const sup=x=>`<polygon points="${x},92 ${x-11},112 ${x+11},112" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="${x-16}" y1="114" x2="${x+16}" y2="114" stroke="currentColor"/>`;
+  const Pb=o.inp.Ppt>0?`<line x1="300" y1="6" x2="300" y2="62" stroke="var(--bad)" stroke-width="2.5" marker-end="url(#ahr)"/><text x="308" y="16" font-size="12" fill="var(--bad)">P = ${fmt(o.inp.Ppt,0)} kg</text>`:'';
+  const Dsc=70,ins=Math.min(16,o.ti/6);
+  return `<svg viewBox="0 0 820 200" width="100%" style="max-width:820px;color:var(--ink)" role="img" aria-label="Schéma de la travée et de la section">
+  <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="4" refY="7" orient="auto"><path d="M0,0 L8,0 L4,8z" fill="var(--accent)"/></marker>
+  <marker id="ahr" markerWidth="8" markerHeight="8" refX="4" refY="7" orient="auto"><path d="M0,0 L8,0 L4,8z" fill="var(--bad)"/></marker>
+  <marker id="ak" markerWidth="8" markerHeight="8" refX="4" refY="7" orient="auto"><path d="M0,0 L8,0 L4,8z" fill="currentColor"/></marker></defs>
+  <text x="${arrows.length?14:0}" y="52" font-size="13" fill="var(--accent)" font-weight="600">q</text>
+  ${arrows.join('')}
+  <line x1="30" y1="64" x2="60" y2="64" stroke="currentColor" stroke-dasharray="4 3"/>
+  <line x1="540" y1="64" x2="570" y2="64" stroke="currentColor" stroke-dasharray="4 3"/>
+  <rect x="60" y="64" width="480" height="26" rx="3" fill="var(--accent-soft)" stroke="currentColor" stroke-width="1.5"/>
+  <path d="M60,90 Q300,122 540,90" fill="none" stroke="var(--bad)" stroke-dasharray="5 4" stroke-width="1.5"/>
+  <line x1="300" y1="91" x2="300" y2="105" stroke="var(--bad)" stroke-width="1" marker-end="url(#ahr)"/><text x="306" y="108" font-size="12" fill="var(--bad)">δ</text>
+  ${Pb}${sup(60)}${sup(540)}
+  <line x1="60" y1="140" x2="60" y2="124" stroke="var(--ok)" stroke-width="2.5"/>
+  <text x="66" y="138" font-size="12" fill="var(--ok)">R</text><text x="546" y="138" font-size="12" fill="var(--ok)">R</text>
+  <line x1="540" y1="140" x2="540" y2="124" stroke="var(--ok)" stroke-width="2.5"/>
+  <line x1="60" y1="160" x2="540" y2="160" stroke="currentColor" marker-end="url(#ak)" marker-start="url(#ak)"/>
+  <text x="300" y="178" text-anchor="middle" font-size="13" font-weight="600">L = ${fmt(L,2)} m (portée entre supports)</text>
+  <text x="20" y="194" font-size="11" fill="var(--muted)">q : charge linéique (kN/m) · P : charge ponctuelle · δ : flèche · R : réaction d'appui (descente de charge)</text>
+  <g transform="translate(700,82)">
+   ${ins>0?`<circle r="${Dsc/2+ins}" fill="none" stroke="var(--warn)" stroke-dasharray="3 2" stroke-width="1.5"/>`:''}
+   <circle r="${Dsc/2}" fill="var(--accent-soft)" stroke="currentColor" stroke-width="5"/>
+   <circle r="${Dsc/2-3}" fill="${o.rhof>0?'rgba(31,95,168,.25)':'none'}"/>
+   <line x1="${-Dsc/2}" y1="${Dsc/2+ins+12}" x2="${Dsc/2}" y2="${Dsc/2+ins+12}" stroke="currentColor" marker-end="url(#ak)" marker-start="url(#ak)"/>
+   <text y="${Dsc/2+ins+28}" text-anchor="middle" font-size="12">D = ${o.D} mm</text>
+   <text x="${Dsc/2+4}" y="-${Dsc/2-4}" font-size="12">e = ${o.en}</text>
+   ${ins>0?`<text x="0" y="-${Dsc/2+ins+6}" text-anchor="middle" font-size="11" fill="var(--warn)">calorifuge ${o.ti} mm</text>`:''}
+   <text text-anchor="middle" y="4" font-size="11">ρ<tspan font-size="8" dy="3">f</tspan></text>
+  </g></svg>`;
+}
+
+initUI();calc();
+</script>
+</body>
+</html>
