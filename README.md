@@ -22,6 +22,9 @@ commun/
   acier.js                 ← moteur commun P1/P2 : combinaisons, classes, χ, Mcr
   calc.css                 ← style commun des calculettes P1/P2
   data/profils.js          ← 141 profilés (IPE, HEA, HEB, HEM : eurocodepy LGPL ; IPN, UPN, UPE : classeur)
+  export.js                ← boutons Word (.docx) et Excel (.xlsx) de toutes les calculettes
+  lib/docx/                ← docx 9.5.1 (MIT), chargée au clic
+  lib/xlsx/                ← SheetJS 0.18.5 (Apache-2.0), chargée au clic
   lib/leaflet/             ← bibliothèque de carte Leaflet 1.9.4 (licence BSD-2)
   empreinte.html           ← outil pour générer la ligne d'un compte
 robots.txt                 ← demande aux moteurs de recherche de ne pas indexer
