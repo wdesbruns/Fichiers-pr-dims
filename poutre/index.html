@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=1.4"></script>
+<script src="../commun/auth.js?v=1.5"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — P1 Poutre sur deux appuis</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=1.4">
-<script src="../commun/data/profils.js?v=1.4"></script>
-<script src="../commun/acier.js?v=1.4"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=1.5">
+<script src="../commun/data/profils.js?v=1.5"></script>
+<script src="../commun/acier.js?v=1.5"></script>
 </head>
 <body>
 <header>
@@ -73,7 +73,9 @@
   <div class="card">
     <h2>Critères ELS</h2>
     <label>Utilisation (limites de flèche, NF EN 1993-1-1/NA §7.2.1)</label><select id="util"></select>
-    <label>Fréquence propre minimale (planchers)</label><select id="local"></select>
+    <label>Fréquence propre minimale (NF EN 1993-1-1/NA §7.2.3(1)B, Tableau 3)</label><select id="local"></select>
+    <label>Part de Q correspondant à des éléments non structuraux rigidement fixés (daN/m²)</label><input id="qfix" type="number" value="0">
+    <div class="note">Masse retenue (AN §7.2.3(1)B) : G + poids propre + 100 % de cette part + 20 % du reste des charges d'exploitation de la combinaison caractéristique.</div>
   </div>
 </section>
 
@@ -164,7 +166,7 @@ function verifier(p,D){
     let rMV=0;
     A.xs.forEach((x,i)=>{const Ve=Math.abs(A.V[i]);let Mr=R.McRd;
       if(Ve>0.5*R.VplRd){const rho=(2*Ve/R.VplRd-1)**2;
-        if(p.tw&&p.tf&&/^(IPE|HE)/.test(p.f)){const Aw=(p.h-2*p.tf)*p.tw;Mr=Math.min(R.McRd,(R.W*1e9-rho*Aw*Aw/(4*p.tw))*R.fy/1e6/ACIER.gM0);}
+        if(p.tw&&p.tf){const Aw=(p.h-2*p.tf)*p.tw;Mr=Math.min(R.McRd,(R.W*1e9-rho*Aw*Aw/(4*p.tw))*R.fy/1e6/ACIER.gM0);}
         else Mr=R.McRd*(1-rho);}
       rMV=Math.max(rMV,Math.abs(A.M[i])/Mr);});
     // déversement
@@ -183,8 +185,10 @@ function verifier(p,D){
   }
   // ---- ELS caractéristique : flèche totale et due aux variables (w3)
   for(const c of combos.CAR){ const A=analyse(D,c.f,p), Av=analyse(D,c.f,p,true); res.CAR.push({c,A,Av,wtot:A.wmax,wvar:Av.wmax}); }
-  // ---- fréquence (quasi-permanente, f = 17,75/√δ[mm])
-  const Aqp=analyse(D,combos.QP[0].f,p); res.QP={c:combos.QP[0],A:Aqp,f:Aqp.wmax>0?17.75/Math.sqrt(Aqp.wmax):Infinity};
+  // ---- fréquence (NF EN 1993-1-1/NA §7.2.3(1)B : G + 100 % Q fixe + 20 % du reste de Q ; f = 17,75/√δ[mm])
+  const qfix=Math.min(Math.max(num('qfix'),0)*D.bande/100,Math.max(D.q.Q,0));
+  const Afr=analyse(D,{G:1,Q:0.2},p), EIf=ACIER.E*1e6*p.Iy*1e-8, dfix=5*0.8*qfix*1e3*L**4/(384*EIf)*1000;
+  const dfr=Afr.wmax+dfix; res.QP={c:{nom:'1·G + 0,2·Q'+(qfix?' + 0,8·Q fixe':'')},A:Afr,f:dfr>0?17.75/Math.sqrt(dfr):Infinity,delta:dfr};
   // ---- synthèse des taux
   const mx=(arr,k)=>arr.reduce((a,b)=>b[k]>a[k]?b:a);
   const eM=mx(res.ELU,'rMV'), eV=mx(res.ELU,'rV'), eL=mx(res.ELU,'rLT'), eT=mx(res.CAR,'wtot'), eW=mx(res.CAR,'wvar');
@@ -196,7 +200,7 @@ function verifier(p,D){
   if(!maintien) lignes.push({k:'LT',n:'Déversement M<sub>y,Ed</sub> ≤ M<sub>b,Rd</sub> = χ<sub>LT</sub>·W·f<sub>y</sub>/γ<sub>M1</sub>',ref:'§6.3.2.1-6.3.2.2 (cas général)',val:f(eL.A.Mmax,2)+' kNm',lim:f(eL.MbRd,2)+' kNm',r:eL.rLT,comb:eL.c.nom,e:eL});
   lignes.push({k:'W',n:'Flèche totale w<sub>max</sub> ≤ L/'+D.util.wmax,ref:'NA §7.2.1 – ELS caractéristique',val:f(eT.wtot,1)+' mm',lim:f(wlim,1)+' mm',r:eT.wtot/wlim,comb:eT.c.nom,e:eT});
   if(w3lim) lignes.push({k:'W3',n:'Flèche due aux variables w<sub>3</sub> ≤ L/'+D.util.w3,ref:'NA §7.2.1 – ELS caractéristique sans G',val:f(eW.wvar,1)+' mm',lim:f(w3lim,1)+' mm',r:eW.wvar/w3lim,comb:eW.c.nom.replace(/^1·G \+ /,''),e:eW});
-  if(D.local.f) lignes.push({k:'F',n:'Fréquence propre f<sub>1</sub> ≥ '+D.local.f+' Hz',ref:'§7.2.3 – G + ψ₂Q, f = 17,75/√δ',val:f(res.QP.f,2)+' Hz',lim:'≥ '+f(D.local.f,1)+' Hz',r:D.local.f/res.QP.f,comb:res.QP.c.nom});
+  if(D.local.f) lignes.push({k:'F',n:'Fréquence propre f<sub>1</sub> ≥ '+D.local.f+' Hz',ref:'NA §7.2.3(1)B, Tab. 3 – masse G + 0,2·Q, f = 17,75/√δ',val:f(res.QP.f,2)+' Hz',lim:'≥ '+f(D.local.f,1)+' Hz',r:D.local.f/res.QP.f,comb:res.QP.c.nom});
   const gov=lignes.reduce((a,b)=>b.r>a.r?b:a); gov.gov=true;
   return Object.assign(res,{lignes,gov,eM,eV,eL,eT,eW,wlim,w3lim,Ldev,maintien});
 }
@@ -270,11 +274,11 @@ function combosTab(Rz){
 }
 function notes(D,Rz){
   $('rNotes').innerHTML=`<ul class="note" style="font-size:12.5px">
-   <li>Poutre isostatique à inertie constante, flexion autour de l'axe fort, charges dans le plan de l'âme. Pour les UPN/UPE, la charge n'est pas appliquée au centre de cisaillement : la torsion n'est pas prise en compte.</li>
+   <li>Poutre isostatique à inertie constante, fléchie autour de l'axe fort y-y (charges verticales dans le plan de l'âme). Pour les UPN/UPE, la charge n'est pas appliquée au centre de cisaillement : la torsion n'est pas prise en compte. Classe des IPN/UPN : épaisseur d'aile moyenne (ailes inclinées).</li>
    <li>Combinaisons générées automatiquement : chaque action variable est tour à tour dominante, les autres d'accompagnement (ψ<sub>0</sub>) ou absentes ; G favorable (1,0) ou défavorable (1,35). W1 et W2 sont exclusifs.</li>
    <li>Déversement : M<sub>cr</sub> par la formule à 3 facteurs (NCCI SN003, k = k<sub>w</sub> = 1). C<sub>1</sub> = 1,127 / C<sub>2</sub> = 0,454 (charge répartie) ou 1,348 / 0,630 (charge ponctuelle centrée) ; C<sub>1</sub> = 1,0 entre maintiens latéraux (prudent). Méthode générale §6.3.2.2.</li>
    <li>Flèche totale w<sub>max</sub> et due aux charges variables w<sub>3</sub> sous combinaisons caractéristiques, sans contreflèche.</li>
-   <li>Fréquence : f<sub>1</sub> = 17,75/√δ (δ en mm sous G + ψ<sub>2</sub>·Q), exacte pour une charge répartie. Seuils de fréquence repris du classeur ; à confirmer selon le projet (EN 1990 A1.4.4).</li>
+   <li>Fréquence : f<sub>1</sub> = 17,75/√δ, δ en mm sous la masse de l'AN §7.2.3(1)B (G + 20 % de Q, 100 % de la part non structurale fixée) ; formule exacte pour une charge répartie. Seuils : Tableau 3 de l'AN (2,6 Hz habitations/bureaux, 5 Hz gymnases). Si f<sub>1</sub> est inférieure, l'AN demande une analyse dynamique affinée (accélérations).</li>
    <li>Non traités : voilement par cisaillement (h<sub>w</sub>/t<sub>w</sub> > 72ε), charges concentrées sur l'âme (EN 1993-1-5 §6), sections de classe 4, assemblages.</li></ul>`;
 }
 
