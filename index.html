@@ -39,6 +39,7 @@
   document.getElementById('f').addEventListener('submit',async ev=>{
     ev.preventDefault();
     const e=document.getElementById('e'); e.hidden=true;
+    if(typeof CALC_UTILISATEURS==='undefined'){ e.textContent="Erreur dans le fichier commun/utilisateurs.js (ligne mal collée ?) : aucun compte n'a pu être lu."; e.hidden=false; return; }
     let ok=false;
     try{ ok=await calcConnexion(u.value,p.value,m.checked); }
     catch(err){ e.textContent="Connexion impossible : ouvrir le site en https (GitHub Pages)."; e.hidden=false; return; }
