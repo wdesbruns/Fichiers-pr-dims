@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<script src="../commun/auth.js"></script>
+<script>calcProteger("../");</script>
+<title>FIP Calculettes — C1 Hypothèses climatiques et sismiques</title>
+<link rel="icon" href="../commun/img/picto-fip.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../commun/lib/leaflet/leaflet.css">
+<script src="../commun/lib/leaflet/leaflet.js"></script>
+<script src="data/zonage.js"></script>
+<script src="data/communes.js"></script>
+<script src="data/departements.js"></script>
+<style>
+:root{
+  --fip-bleu:#114088; --fip-bleu-fonce:#0b2d63; --fip-rouge:#e30009; --fip-ciel:#0098db;
+  --ink:#171a1e; --muted:#5f6670; --line:#e1e3e7; --bg:#f4f6f9; --card:#fff; --panel:#f6f7f9;
+  --saisie:#1f6fd1; --ok:#1d8a3a; --ok-soft:#e6f4ea; --warn:#9a6200; --warn-soft:#fdf2dc; --bad:#e30009; --bad-soft:#fde8e8;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+a{color:var(--fip-bleu)}
+/* ---------- en-tête ---------- */
+header{padding:10px 16px;border-bottom:3px solid var(--fip-bleu);background:#fff;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+header .brand{display:flex;align-items:center;gap:10px;text-decoration:none;padding-right:12px;border-right:1px solid var(--line)}
+header .brand img{height:30px}
+header .brand span{font-weight:800;color:var(--ink);font-size:13px;line-height:1.15}
+header .brand em{font-style:normal;color:var(--fip-rouge);display:block}
+header a.back{color:var(--fip-bleu);text-decoration:none;font-weight:600;white-space:nowrap}
+header h1{font-size:18px;margin:0;flex:1 1 auto}
+header h1 .code{font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:400;margin-right:6px}
+header .sub{color:var(--muted);font-size:12px}
+button{font:inherit;font-weight:600;border:1px solid var(--fip-bleu);background:var(--fip-bleu);color:#fff;border-radius:6px;padding:7px 14px;cursor:pointer}
+button.sec{background:#fff;color:var(--fip-bleu)}
+/* ---------- bandeau actions (type Dlubal) ---------- */
+.band{display:flex;align-items:stretch;background:#fff;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.actions{display:flex;gap:26px;padding:12px 26px}
+.act{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;color:var(--fip-bleu);padding:0;font-weight:700;font-size:13px;letter-spacing:.04em;cursor:pointer}
+.act .ic{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;border:1px solid #d5dbe4;background:#fff;color:var(--fip-bleu);font-size:24px;transition:.15s}
+.act.on .ic{background:var(--fip-bleu);color:#fff;border-color:var(--fip-bleu);box-shadow:0 4px 12px rgba(17,64,136,.3)}
+.act.on{color:var(--ink)}
+.legende{margin-left:auto;display:flex;align-items:center;gap:12px;padding:10px 16px;flex-wrap:wrap}
+.legende .t{font-weight:700;font-size:13px}
+.chips{display:flex}
+.chip{min-width:44px;height:38px;display:grid;place-items:center;font-weight:700;font-size:14px;padding:0 8px;border:2px solid transparent;color:#1d2330}
+.chip.cur{border-color:var(--ink)}
+/* ---------- carte + panneau ---------- */
+.geo{display:grid;grid-template-columns:350px 1fr;min-height:560px}
+.panneau{background:var(--fip-bleu-fonce);color:#fff;display:flex;flex-direction:column}
+.recherche{padding:14px;background:var(--fip-bleu);position:relative}
+.recherche input{width:100%;font:inherit;font-size:15px;padding:11px 12px;border:0;border-radius:4px;color:var(--saisie);font-weight:600}
+.sugg{position:absolute;left:14px;right:14px;top:58px;background:#fff;border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:1000;max-height:300px;overflow:auto}
+.sugg div{padding:8px 12px;color:var(--ink);cursor:pointer;border-bottom:1px solid var(--line);font-size:13px}
+.sugg div:hover,.sugg div.sel{background:#eaf1fa}
+.sugg small{color:var(--muted)}
+.loc{background:#fff;color:var(--ink);padding:12px 14px}
+.loc h3{margin:2px 0 8px;font-size:15px;text-transform:uppercase;letter-spacing:.03em}
+.loc table td{padding:4px 0;border-bottom:1px solid var(--line);font-size:13px}
+.loc table td:first-child{color:var(--muted);width:42%}
+.loc input.alt{width:90px;padding:3px 6px;border:1px solid #cfd4db;border-radius:4px;color:var(--saisie);font:inherit;font-weight:600}
+.loc details{margin-top:8px;font-size:13px}
+.loc details summary{cursor:pointer;color:var(--fip-bleu);font-weight:600}
+.zonerow{display:flex;justify-content:space-between;align-items:center;background:#fff;color:var(--fip-bleu);border-top:1px solid var(--line);font-weight:600;font-size:15px}
+.zonerow span{padding:11px 14px}
+.zonerow b{min-width:56px;align-self:stretch;display:grid;place-items:center;color:#1d2330}
+.res{padding:12px 14px 8px}
+.res .t{font-weight:700;font-size:13px;margin:6px 0 6px}
+.res .box{display:flex;align-items:center;background:rgba(0,0,0,.25);border-radius:3px;margin-bottom:8px}
+.res .box i{font-style:normal;font-size:20px;width:48px;text-align:center;color:var(--fip-rouge);border-right:1px solid rgba(255,255,255,.12)}
+.res .box b{font-size:20px;padding:10px 14px;font-weight:700}
+.res .note{font-size:11px;opacity:.8;margin-bottom:6px}
+.grp{background:#fff;color:var(--ink);padding:8px 14px;font-size:12px;border-top:1px solid var(--line)}
+.grp select{width:100%;margin-top:4px}
+#map{min-height:560px;flex:1 1 auto;background:#dfe7ef}
+.leaflet-container{font:inherit}
+.maptools{position:absolute;z-index:500;top:10px;right:10px;display:flex;background:#fff;border-radius:4px;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+.maptools button{background:#fff;color:var(--ink);border:0;border-radius:0;padding:8px 16px;font-weight:600}
+.maptools button.on{background:var(--panel);color:var(--fip-bleu);box-shadow:inset 0 -3px 0 var(--fip-bleu)}
+.mapwrap{position:relative;display:flex;flex-direction:column}
+/* ---------- contenu ---------- */
+main{max-width:1500px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:16px}
+.card h2{font-size:13px;margin:0 0 10px;color:var(--fip-bleu);text-transform:uppercase;letter-spacing:.05em;border-left:3px solid var(--fip-rouge);padding-left:8px}
+.card h3{font-size:13px;margin:14px 0 6px}
+label{display:block;font-size:12px;color:var(--muted);margin-top:8px}
+input,select{width:100%;font:inherit;padding:6px 8px;border:1px solid #cfd4db;border-radius:5px;background:#fff;color:var(--saisie);font-weight:600}
+input:focus,select:focus{outline:none;border-color:var(--fip-bleu);box-shadow:0 0 0 3px rgba(17,64,136,.18)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--fip-bleu);margin:4px 0 16px;flex-wrap:wrap}
+.tabs button{background:#fff;color:var(--ink);border:1px solid var(--line);border-bottom:0;border-radius:6px 6px 0 0;padding:9px 18px}
+.tabs button.on{background:var(--fip-bleu);color:#fff;border-color:var(--fip-bleu)}
+.panel{display:none}.panel.on{display:block}
+.cols{display:grid;grid-template-columns:minmax(280px,380px) 1fr;gap:16px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.ref{color:var(--muted);font-size:12px}
+tr.key td{font-weight:700;background:#eef4fb}
+tr.key td.n{color:var(--fip-bleu)}
+.msg{padding:7px 10px;border-radius:6px;margin:6px 0;font-size:13px}
+.msg.warn{background:var(--warn-soft);color:var(--warn)}
+.msg.bad{background:var(--bad-soft);color:var(--bad)}
+.msg.ok{background:var(--ok-soft);color:var(--ok)}
+.msg.info{background:#eaf1fa;color:var(--ink)}
+.note{font-size:12px;color:var(--muted)}
+.cpx td{padding:3px 4px}.cpx select,.cpx input{padding:4px 6px;font-size:12px}
+.cpx input.e{width:80px}
+svg text{font-family:inherit}
+.printhead{display:none}
+@media (max-width:950px){
+  .geo{grid-template-columns:1fr}
+  #map{min-height:380px;height:380px}
+  .cols{grid-template-columns:1fr}
+  .row4{grid-template-columns:1fr 1fr}
+  .actions{gap:14px;padding:10px 14px}
+  .legende{margin-left:0}
+  .chip{min-width:36px;font-size:12px}
+}
+@media print{
+  @page{size:A4;margin:11mm}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:#fff;font-size:10.5px}
+  header,.band,.geo,.tabs,.noprint{display:none!important}
+  main{padding:0}
+  .panel{display:block!important}
+  .panel:not(#p-syn){display:none!important}
+  .card{border:1px solid #bbb;break-inside:auto;padding:8px;margin-bottom:8px}
+  tr,h2,svg{break-inside:avoid}
+  th,td{padding:3px 5px}
+  .printhead{display:block;border-bottom:3px solid var(--fip-bleu);padding-bottom:6px;margin-bottom:8px;overflow:hidden}
+  .printhead img{height:36px;float:right}
+}
+</style>
+</head>
+<body>
+<header>
+  <a href="../accueil.html" class="brand" title="Retour à l'accueil"><img src="../commun/img/picto-fip.png" alt="FIP"><span>FIP<em>Calculettes</em></span></a>
+  <a href="../accueil.html" class="back">← Accueil</a>
+  <div style="flex:1 1 auto">
+    <h1><span class="code">C1</span>Hypothèses climatiques, sismiques et complexes</h1>
+    <div class="sub">NF EN 1991-1-3 / 1-4 + AN · arrêté du 22/10/2010 + NF EN 1998-1 + AN · NF EN 1991-1-1</div>
+  </div>
+  <button onclick="imprimer()">🖨️ Imprimer / PDF</button>
+</header>
+
+<!-- ======== BANDEAU (type Dlubal) ======== -->
+<div class="band">
+  <div class="actions">
+    <button class="act on" data-l="neige"><span class="ic">❄</span>NEIGE</button>
+    <button class="act" data-l="vent"><span class="ic">≋</span>VENT</button>
+    <button class="act" data-l="seisme"><span class="ic">〽</span>SISMICITÉ</button>
+  </div>
+  <div class="legende"><span class="t" id="legT"></span><div class="chips" id="chips"></div></div>
+</div>
+
+<div class="geo">
+  <div class="panneau">
+    <div class="recherche">
+      <input id="q" type="search" placeholder="Rechercher une adresse ou une commune" autocomplete="off">
+      <div class="sugg" id="sugg" hidden></div>
+    </div>
+    <div class="loc">
+      <h3>Localisation</h3>
+      <table>
+        <tr><td>Adresse</td><td id="lAdr">—</td></tr>
+        <tr><td>Commune</td><td id="lCom">—</td></tr>
+        <tr><td>Code INSEE / dép.</td><td id="lInsee">—</td></tr>
+        <tr><td>Latitude / Longitude</td><td id="lLL">—</td></tr>
+        <tr><td>Altitude du site A</td><td><input class="alt" id="alt" type="number" step="1" value="50"> m <span class="note" id="altSrc"></span></td></tr>
+      </table>
+      <details class="noprint" id="manu">
+        <summary>Saisie sans carte (département, commune ou INSEE)</summary>
+        <label>Département</label><select id="mDep"></select>
+        <label>Commune (base de zonage)</label><select id="mCom"></select>
+        <label>ou code INSEE</label><input id="mInsee" maxlength="5" placeholder="ex. 34172">
+      </details>
+    </div>
+    <div id="zones"></div>
+    <div class="res" id="resPanneau"></div>
+  </div>
+  <div class="mapwrap">
+    <div class="maptools"><button id="bPlan" class="on">Plan</button><button id="bSat">Satellite</button></div>
+    <div id="map"></div>
+  </div>
+</div>
+
+<main>
+  <div class="printhead"><img src="../commun/img/logo-fip.png" alt="FIP"><strong>Note d'hypothèses — actions climatiques, sismiques et poids des complexes</strong><br><span id="phInfo"></span></div>
+
+  <div class="card noprint">
+    <h2>Projet</h2>
+    <div class="row4">
+      <div><label>Affaire</label><input id="affaire" placeholder="ex. Hangar de stockage 40 × 20 m"></div>
+      <div><label>Phase / indice</label><input id="phase" placeholder="AVP – ind. A"></div>
+      <div><label>Date</label><input id="date" type="date"></div>
+      <div><label>Rédacteur</label><input id="auteur"></div>
+    </div>
+  </div>
+
+  <div class="tabs noprint" id="tabs">
+    <button data-p="p-vent" class="on">Vent</button><button data-p="p-neige">Neige</button><button data-p="p-seisme">Séisme</button><button data-p="p-cpx">Complexes</button><button data-p="p-syn">Synthèse</button>
+  </div>
+
+  <!-- ======== VENT ======== -->
+  <section class="panel on" id="p-vent"><div class="cols">
+    <div class="card">
+      <h2>Données vent</h2>
+      <label>Catégorie de terrain (rugosité la plus défavorable dans le rayon R)</label><select id="terrain"></select>
+      <div class="note" id="terrainDesc"></div>
+      <div class="row">
+        <div><label>Hauteur du bâtiment H (m)</label><input id="H" type="number" step="0.5" value="8"></div>
+        <div><label>Hauteur de référence z<sub>e</sub> (m)</label><input id="ze" type="number" step="0.5" value="8"></div>
+      </div>
+      <div class="row">
+        <div><label>c<sub>dir</sub></label><input id="cdir" type="number" step="0.05" value="1"></div>
+        <div><label>c<sub>season</sub></label><input id="cseason" type="number" step="0.05" value="1"></div>
+      </div>
+      <label>Coefficient d'orographie c<sub>o</sub></label><input id="co" type="number" step="0.05" value="1">
+      <label>Forçage de la zone de vent (facultatif)</label><select id="fVent"></select>
+      <div class="msg info small">Sur le littoral méditerranéen (hors Corse, zones 2 et 3), les vents forts viennent de l'intérieur des terres : prendre la catégorie II et non 0 (Fiche CSTB n°45). DROM : c<sub>dir</sub> et c<sub>season</sub> spécifiques à relever dans l'AN.</div>
+    </div>
+    <div>
+      <div class="card"><h2>Pression dynamique de pointe q<sub>p</sub>(z) — NF EN 1991-1-4 + AN</h2><div id="ventRes"></div></div>
+      <div class="card"><h2>Profil q<sub>p</sub>(z)</h2><div id="ventGraph"></div></div>
+    </div>
+  </div></section>
+
+  <!-- ======== NEIGE ======== -->
+  <section class="panel" id="p-neige"><div class="cols">
+    <div class="card">
+      <h2>Données neige</h2>
+      <div class="row">
+        <div><label>Pente versant 1 α<sub>1</sub> (°)</label><input id="a1" type="number" step="1" value="10"></div>
+        <div><label>Pente versant 2 α<sub>2</sub> (°)</label><input id="a2" type="number" step="1" value="10"></div>
+      </div>
+      <div class="row">
+        <div><label>Coefficient d'exposition C<sub>e</sub></label><select id="Ce"><option>0.8</option><option selected>1</option><option>1.2</option></select></div>
+        <div><label>Coefficient thermique C<sub>t</sub></label><select id="Ct"><option selected>1</option><option>0.8</option></select></div>
+      </div>
+      <div class="note">Pente en degrés (et non en %). C<sub>e</sub> : EN 1991-1-3 §5.2(7), Tab. 5.1, valeur retenue par l'AN à confirmer. C<sub>t</sub> : §5.2(8), 1,0 sauf toiture à forte transmission thermique.</div>
+      <label>Forçage de la zone de neige (facultatif)</label><select id="fNeige"></select>
+    </div>
+    <div>
+      <div class="card"><h2>Charge de neige — NF EN 1991-1-3 + AN</h2><div id="neigeRes"></div></div>
+      <div class="card"><h2>Neige sur toiture s = μ<sub>i</sub>·C<sub>e</sub>·C<sub>t</sub>·s<sub>k</sub></h2><div id="neigeToit"></div></div>
+    </div>
+  </div></section>
+
+  <!-- ======== SÉISME ======== -->
+  <section class="panel" id="p-seisme"><div class="cols">
+    <div class="card">
+      <h2>Données séisme</h2>
+      <div class="row">
+        <div><label>Catégorie d'importance</label><select id="catI"><option>I</option><option selected>II</option><option>III</option><option>IV</option></select></div>
+        <div><label>Classe de sol</label><select id="sol"><option>A</option><option selected>B</option><option>C</option><option>D</option><option>E</option></select></div>
+      </div>
+      <div class="row">
+        <div><label>Coefficient de comportement q</label><input id="qcomp" type="number" step="0.1" value="2"></div>
+        <div><label>Masse sismique m (t)</label><input id="masse" type="number" step="1" value="100"></div>
+      </div>
+      <label>Type d'ossature (estimation de T<sub>1</sub>)</label><select id="ossature"></select>
+      <label>Bâtiment de plus de 2 niveaux ?</label><select id="niv"><option>Non</option><option>Oui</option></select>
+      <label>Forçage de la zone de sismicité (facultatif)</label><select id="fSeisme"><option value="">— base de zonage —</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+      <div class="note">Catégorie : arrêté du 22/10/2010, art. 2. Classe de sol : NF EN 1998-1 §3.1.2, Tab. 3.1 (étude de sol). q : §4.3.3.4 et chapitres matériaux, à justifier. Masse : combinaison G + ψ<sub>2</sub>·Q.</div>
+    </div>
+    <div>
+      <div class="card"><h2>Action sismique — arrêté du 22/10/2010 + NF EN 1998-1 + AN</h2><div id="seismeRes"></div></div>
+      <div class="card"><h2>Spectres de réponse (η = 1, amortissement 5 %)</h2><div id="seismeGraph"></div></div>
+      <div class="card"><h2>Éléments non structuraux — F<sub>a</sub> = S<sub>a</sub>·W<sub>a</sub>·γ<sub>a</sub>/q<sub>a</sub> (EN 1998-1 §4.3.5.2)</h2><div id="seismeFa"></div></div>
+    </div>
+  </div></section>
+
+  <!-- ======== COMPLEXES ======== -->
+  <section class="panel" id="p-cpx">
+    <div class="card"><h2>A. Complexe de couverture</h2><div id="cpxCouv"></div></div>
+    <div class="card"><h2>B. Complexe de bardage</h2><div id="cpxBard"></div></div>
+    <div class="note">Mode « vol » : masse volumique (kg/m³) × épaisseur ; « surf » : masse surfacique (kg/m²) ; « libre » : saisie directe en daN/m². 1 kg = 9,81 N. Valeurs du catalogue INDICATIVES (fabricants, DTU) : à remplacer par les données du projet. Charges permanentes G (EN 1991-1-1 §5.2), hors ossature principale.</div>
+  </section>
+
+  <!-- ======== SYNTHÈSE ======== -->
+  <section class="panel" id="p-syn"><div id="syn"></div></section>
+</main>
+
+<script>
+/* =====================================================================
+   DONNÉES NORMATIVES (feuille « Listes » du classeur)
+   ===================================================================== */
+const VB0={'1':22,'2':24,'3':26,'4':28,'Guadeloupe':36,'Martinique':32,'Réunion':34,'Mayotte':30,'Guyane':17};
+const TERRAINS=[
+ {id:'Cat. 0',z0:.005,zmin:1,kI:1,d:"Mer ou zone côtière exposée aux vents de mer ; lacs et plans d'eau parcourus par le vent sur au moins 5 km"},
+ {id:'Cat. II',z0:.05,zmin:2,kI:.995,d:'Rase campagne, avec ou non quelques obstacles isolés séparés de plus de 40 fois leur hauteur'},
+ {id:'Cat. IIIa',z0:.2,zmin:5,kI:.97,d:'Campagne avec haies ; vignobles ; bocage ; habitat dispersé'},
+ {id:'Cat. IIIb',z0:.5,zmin:9,kI:.923,d:'Zones urbanisées ou industrielles ; bocage dense ; vergers'},
+ {id:'Cat. IV',z0:1,zmin:15,kI:.854,d:'Zones urbaines dont au moins 15 % de la surface est recouverte de bâtiments de hauteur moyenne > 15 m ; forêts'}];
+const RAYON=[[9,320],[18,750],[28,1250],[50,2500],[100,5800]];
+const NEIGE={A1:[.45,null],A2:[.45,1],B1:[.55,1],B2:[.55,1.35],C1:[.65,null],C2:[.65,1.35],D:[.9,1.8],E:[1.4,null],'Sans neige':[0,null]};
+const NEIGE_ORDRE=Object.keys(NEIGE);
+const AGR={1:.4,2:.7,3:1.1,4:1.6,5:3}, ALEA={1:'Très faible',2:'Faible',3:'Modéré',4:'Moyen',5:'Fort'};
+const GAMMA_I={I:.8,II:1,III:1.2,IV:1.4};
+const SOLS={A:[[1,.03,.2,2.5],[1,.15,.4,2]],B:[[1.35,.05,.25,2.5],[1.2,.15,.5,2]],C:[[1.5,.06,.4,2],[1.15,.2,.6,2]],D:[[1.6,.1,.6,1.5],[1.35,.2,.8,2]],E:[[1.8,.08,.45,1.25],[1.4,.15,.5,2]]};
+const EXIG={1:['Aucune exigence','Aucune exigence','Aucune exigence','Aucune exigence'],
+ 2:['Aucune exigence','Aucune exigence','Eurocode 8 (NF EN 1998-1 + AN)','Eurocode 8 (NF EN 1998-1 + AN)'],
+ 3:['Aucune exigence',"Eurocode 8, ou CPMI-EC8 zones 3-4 si domaine d'application respecté",'Eurocode 8 (NF EN 1998-1 + AN)','Eurocode 8 (NF EN 1998-1 + AN)'],
+ 4:['Aucune exigence',"Eurocode 8, ou CPMI-EC8 zones 3-4 si domaine d'application respecté",'Eurocode 8 (NF EN 1998-1 + AN)','Eurocode 8 (NF EN 1998-1 + AN)'],
+ 5:['Aucune exigence',"Eurocode 8, ou CPMI Antilles si domaine d'application respecté",'Eurocode 8 (NF EN 1998-1 + AN)','Eurocode 8 (NF EN 1998-1 + AN)']};
+const OSSATURES=[['Portiques spatiaux acier en flexion',.085],['Portiques spatiaux béton ou acier à contreventement excentré',.075],['Autres structures',.05]];
+const CPX_DEFAUT={couv:[["Tôle acier nervurée (e = épaisseur d'acier)",.75],['Pare-vapeur / écran (forfait)'],["Laine de roche haute densité – support d'étanchéité (≈ 150 kg/m³)",100],['Membrane synthétique monocouche (PVC / TPO / EPDM 1,5 mm)'],['Ossature secondaire acier légère – pannes / lisses (forfait)']],
+ bard:[["Tôle acier nervurée (e = épaisseur d'acier)",.75],['Laine de roche semi-rigide (≈ 45 kg/m³)',100],['Ossature secondaire acier légère – pannes / lisses (forfait)'],["Tôle acier nervurée (e = épaisseur d'acier)",.63]]};
+
+/* Couleurs de carte (palette proche des cartes de zonage usuelles) */
+const COUL={
+ neige:{A1:'#f4f19a',A2:'#bdbb72',B1:'#a7e3a3',B2:'#62b86a',C1:'#a9c9ef',C2:'#6d9bd6',D:'#d7a5f0',E:'#f2876a','Sans neige':'#d5d8dd'},
+ vent:{'1':'#d9eefb','2':'#9fd2f2','3':'#55a9e2','4':'#1f6fb8'},
+ seisme:{'1':'#fff3c9','2':'#ffd866','3':'#f5ab5e','4':'#e2584f','5':'#9b111e'}};
+const g=9.81;
+
+/* =====================================================================
+   OUTILS
+   ===================================================================== */
+const $=id=>document.getElementById(id);
+const num=(id,d=0)=>{const el=$(id);if(!el)return d;const v=parseFloat(String(el.value).replace(',','.'));return isFinite(v)?v:d};
+const f=(x,d=2)=>typeof x==='number'&&isFinite(x)?x.toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d}):(x??'—');
+const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().replace(/^(LE|LA|LES|L)[ '-]/,'').replace(/[^A-Z0-9]/g,'').replace(/^SAINTE/,'STE').replace(/^SAINT/,'ST');
+
+/* Base communes : INSEE;NOM;DEP;ZONE */
+const COMMUNES=COMMUNES_TXT.split('\n').map(l=>{const [i,n,d,z]=l.split(';');return{i,n,d,z:+z}});
+const PAR_INSEE=new Map(COMMUNES.map(c=>[c.i,c])), PAR_NOM=new Map(COMMUNES.map(c=>[c.d+'|'+norm(c.n),c]));
+const DEPTS=ZONAGE.depts.filter(d=>d.c&&d.n);
+function trouverCommune(insee,nom,dep){
+  let c=PAR_INSEE.get(insee); if(c) return {c,how:'INSEE'};
+  // arrondissements municipaux → commune
+  const arr={'75':'75056','69':'69123','13':'13055'};
+  if(insee&&/^(751|6938|132)/.test(insee)){c=PAR_INSEE.get(insee.slice(0,3)==='751'?arr['75']:insee.startsWith('6938')?arr['69']:arr['13']); if(c) return {c,how:'arrondissement → commune'};}
+  if(nom&&dep){c=PAR_NOM.get(dep+'|'+norm(nom)); if(c) return {c,how:'nom de commune (INSEE différent dans la base)'};}
+  return null;
+}
+/* zone sismique max par département (affichage carte, indicatif) */
+const SEISME_DEP={}; COMMUNES.forEach(c=>{SEISME_DEP[c.d]=Math.max(SEISME_DEP[c.d]||0,c.z)});
+
+/* =====================================================================
+   ÉTAT
+   ===================================================================== */
+const S={adr:'',commune:null,how:'',lat:null,lon:null,grpV:'',grpN:'',couche:'neige',alerte:''};
+
+/* =====================================================================
+   DÉTERMINATION DES ZONES (logique de la feuille « Projet »)
+   ===================================================================== */
+function zones(){
+  const dep=S.commune?.d||'';
+  const gv=ZONAGE.vent.filter(x=>x.d===dep), gn=ZONAGE.neige.filter(x=>x.d===dep);
+  const out={dep,gv,gn,msgs:[]};
+  // --- vent
+  let zv='',sv='';
+  if($('fVent').value){zv=$('fVent').value;sv='Forçage manuel – justifier la source';}
+  else if(gv.length===1){zv=String(gv[0].z);sv='Base de zonage – département à zone unique';}
+  else if(gv.length>1){const ch=gv.find(x=>String(x.g)===S.grpV);
+    if(ch){zv=String(ch.z);sv='Base de zonage – groupe de cantons choisi';}
+    else{zv=String(Math.max(...gv.map(x=>+x.z||0)));sv='⚠ Plusieurs zones dans le département : groupe non choisi → zone la plus défavorable';}}
+  if(zv&&!(zv in VB0)){sv='⚠ Zone non déterminée ('+zv+') : saisir un forçage';zv='';}
+  if(!zv&&!sv) sv='⚠ Zone non déterminée : choisir une localisation ou saisir un forçage';
+  // --- neige
+  let zn='',sn='';
+  if($('fNeige').value){zn=$('fNeige').value;sn='Forçage manuel – justifier la source';}
+  else if(gn.length===1){zn=gn[0].z;sn='Base de zonage – département à zone unique';}
+  else if(gn.length>1){const ch=gn.find(x=>String(x.g)===S.grpN);
+    if(ch){zn=ch.z;sn='Base de zonage – groupe de cantons choisi';}
+    else{zn=gn.reduce((a,b)=>NEIGE_ORDRE.indexOf(b.z)>NEIGE_ORDRE.indexOf(a.z)?b:a).z;sn='⚠ Plusieurs zones dans le département : groupe non choisi → zone la plus défavorable';}}
+  if(zn&&!(zn in NEIGE)){sn='⚠ Zone non déterminée : saisir un forçage';zn='';}
+  if(!zn&&!sn) sn='⚠ Zone non déterminée : choisir une localisation ou saisir un forçage';
+  // --- séisme
+  let zs='',ss='';
+  if($('fSeisme').value){zs=+$('fSeisme').value;ss='Forçage manuel – justifier la source';}
+  else if(S.commune){zs=S.commune.z;ss='Base de zonage – commune (décret 2010-1255)';}
+  else ss='⚠ Commune non identifiée : saisir un forçage';
+  const rv=gv.find(x=>String(x.g)===S.grpV)?.r||'', rn=gn.find(x=>String(x.g)===S.grpN)?.r||'';
+  return Object.assign(out,{zv,sv,zn,sn,zs,ss,rv,rn});
+}
+
+/* =====================================================================
+   CALCULS
+   ===================================================================== */
+function calcVent(zv){
+  const t=TERRAINS.find(x=>x.id===$('terrain').value), kr=.19*Math.pow(t.z0/.05,.07);
+  const vb0=VB0[zv], cdir=num('cdir',1), cse=num('cseason',1), co=num('co',1), rho=1.225, H=num('H'), ze=num('ze');
+  const vb=cdir*cse*vb0, qb=.5*rho*vb*vb;
+  const R=(RAYON.find(r=>H<=r[0])||[0,null])[1];
+  const prof=z=>{const zz=Math.max(z,t.zmin), cr=kr*Math.log(zz/t.z0), vm=cr*co*vb, Iv=t.kI/(co*Math.log(zz/t.z0)), qp=(1+7*Iv)*.5*rho*vm*vm;return{zz,cr,vm,Iv,qp,ce:qp/qb}};
+  const p=prof(ze);
+  const ctrl=ze>200?'ze > zmax = 200 m : hors domaine':ze<=0?'ze invalide':'OK';
+  return{t,kr,vb0,cdir,cse,co,rho,H,ze,vb,qb,R,p,prof,ctrl};
+}
+function calcNeige(zn){
+  const A=num('alt'), [sk0,sAd]=NEIGE[zn], E=zn==='E';
+  let ds=0;
+  if(!(A<=200||zn==='Sans neige')){
+    if(A<=500) ds=E?1.5*A/1000-.3:A/1000-.2;
+    else if(A<=1000) ds=E?3.5*A/1000-1.3:1.5*A/1000-.45;
+    else if(A<=2000) ds=E?7*A/1000-4.8:3.5*A/1000-2.45;
+    else ds=NaN;
+  }
+  const sk=sk0+ds, Ce=+$('Ce').value, Ct=+$('Ct').value, a1=num('a1'), a2=num('a2');
+  const mu=a=>a<=30?.8:a<60?.8*(60-a)/30:0, m1=mu(a1), m2=mu(a2), k=Ce*Ct;
+  const ctrl=A>2000?"A > 2000 m : hors domaine de l'AN":sAd!=null?'OK':'OK – pas de sAd défini pour cette zone';
+  return{A,sk0,ds,sk,sAd,Ce,Ct,a1,a2,m1,m2,
+    un:m1*k*sk, i:[m1*k*sk,m2*k*sk], ii:[.5*m1*k*sk,m2*k*sk], iii:[m1*k*sk,.5*m2*k*sk],
+    acc:sAd!=null?[m1*k*sAd,m2*k*sAd]:null, ctrl};
+}
+function calcSeisme(zs,Wcouv,Wbard){
+  const agR=AGR[zs], cat=$('catI').value, gI=GAMMA_I[cat], ag=gI*agR, alpha=ag/9.81;
+  const sol=$('sol').value, [S_,TB,TC,TD]=SOLS[sol][zs===5?1:0], q=num('qcomp',1.5), beta=.2;
+  const Se=T=>T<=TB?ag*S_*(1+T/TB*1.5):T<=TC?ag*S_*2.5:T<=TD?ag*S_*2.5*TC/T:ag*S_*2.5*TC*TD/(T*T);
+  const Sd=T=>T<=TB?ag*S_*(2/3+T/TB*(2.5/q-2/3)):T<=TC?ag*S_*2.5/q:T<=TD?Math.max(ag*S_*2.5/q*TC/T,beta*ag):Math.max(ag*S_*2.5/q*TC*TD/(T*T),beta*ag);
+  const Ct=OSSATURES.find(o=>o[0]===$('ossature').value)[1], H=num('H'), T1=Ct*Math.pow(H,.75);
+  const lam=($('niv').value==='Oui'&&T1<=2*TC)?.85:1, m=num('masse'), Fb=Sd(T1)*m*lam;
+  const domaine=T1<=Math.min(4*TC,2)?'T1 ≤ min(4TC ; 2 s) : critère §4.3.3.2.1 respecté':'T1 > min(4TC ; 2 s) : méthode des forces latérales non applicable';
+  const fa=['bard','couv'].map((k,i)=>{const zH=num('fa_zH_'+k,1),TaT=num('fa_TaT_'+k,1),qa=num('fa_qa_'+k,2),ga=num('fa_ga_'+k,1),W=i?Wcouv:Wbard;
+    const Sa=Math.max(alpha*S_,alpha*S_*(3*(1+zH)/(1+Math.pow(1-TaT,2))-.5));return{k,W,zH,TaT,qa,ga,Sa,Fa:Sa*W*ga/qa}});
+  return{zs,agR,cat,gI,ag,alpha,sol,S:S_,TB,TC,TD,q,beta,Se,Sd,Sepal:ag*S_*2.5,Sdpal:ag*S_*2.5/q,Ct,H,T1,lam,m,Fb,domaine,fa,
+    exig:EXIG[zs][['I','II','III','IV'].indexOf(cat)]};
+}
+function calcComplexe(k){
+  const lignes=[...document.querySelectorAll('#cpx_'+k+' tr[data-i]')].map(tr=>{
+    const nom=tr.querySelector('select').value; if(!nom) return null;
+    const m=ZONAGE.catalogue.find(x=>x.nom===nom), es=parseFloat(tr.querySelector('.e').value), lib=parseFloat(tr.querySelector('.l').value);
+    let e='',kN=0;
+    if(m.mode==='vol'){e=isFinite(es)?es:m.e;kN=m.val*e/1000*.00981;}
+    else if(m.mode==='surf') kN=m.val*.00981;
+    else kN=(isFinite(lib)?lib:0)/100;
+    return{tr,m,e,kN};
+  }).filter(Boolean);
+  const st=lignes.reduce((a,b)=>a+b.kN,0), maj=num('maj_'+k,3)/100;
+  return{lignes,st,maj,majv:st*maj,tot:st*(1+maj)};
+}
+
+/* =====================================================================
+   AFFICHAGE
+   ===================================================================== */
+const ligne=(p,v,u,r,key)=>`<tr class="${key?'key':''}"><td>${p}</td><td class="n">${v}</td><td>${u||''}</td><td class="ref">${r||''}</td></tr>`;
+const tete='<table><tr><th>Paramètre</th><th class="n">Valeur</th><th>Unité</th><th>Référence</th></tr>';
+const msgStatut=s=>s.startsWith('⚠')?`<div class="msg warn">${esc(s)}</div>`:`<div class="msg ok">${esc(s)}</div>`;
+
+function render(){
+  const Z=zones();
+  const cc=calcComplexe('couv'), cb=calcComplexe('bard');
+  const V=Z.zv?calcVent(Z.zv):null, N=Z.zn?calcNeige(Z.zn):null, E=Z.zs?calcSeisme(Z.zs,cc.tot,cb.tot):null;
+  window.__R={Z,V,N,E,cc,cb};
+  renderPanneau(Z,V,N,E); renderVent(Z,V); renderNeige(Z,N); renderSeisme(Z,E); renderCpx(cc,cb); renderSyn(Z,V,N,E,cc,cb); colorerCarte(Z);
+}
+
+function renderPanneau(Z,V,N,E){
+  const c=S.commune;
+  $('lAdr').textContent=S.adr||'—';
+  $('lCom').textContent=c?c.n:'—';
+  $('lInsee').innerHTML=c?`${c.i} / ${c.d}${S.how&&S.how!=='INSEE'?` <span class="note">(${esc(S.how)})</span>`:''}`:'—';
+  $('lLL').textContent=S.lat!=null?`${f(S.lat,4)}° / ${f(S.lon,4)}°`:'—';
+  const zr=(lab,z,col)=>`<div class="zonerow"><span>${lab}</span><b style="background:${col||'#eee'}">${z||'?'}</b></div>`;
+  let h=zr('Zone de charge de neige',Z.zn,COUL.neige[Z.zn])+zr('Zone de vent',Z.zv,COUL.vent[Z.zv])+zr('Zone de sismicité',Z.zs,COUL.seisme[Z.zs]);
+  const sel=(id,gr,val,lab)=>gr.length>1?`<div class="grp"><b>${lab}</b> — plusieurs zones dans le département (zonage par canton) :<select id="${id}"><option value="">— non choisi : zone la plus défavorable —</option>${gr.map(x=>`<option value="${x.g}" ${String(x.g)===val?'selected':''}>${esc(x.l)}</option>`).join('')}</select></div>`:'';
+  h+=sel('gN',Z.gn,S.grpN,'Neige')+sel('gV',Z.gv,S.grpV,'Vent');
+  $('zones').innerHTML=h;
+  if($('gN')) $('gN').onchange=e=>{S.grpN=e.target.value;render()};
+  if($('gV')) $('gV').onchange=e=>{S.grpV=e.target.value;render()};
+  const box=(ic,txt)=>`<div class="box"><i>${ic}</i><b>${txt}</b></div>`;
+  let r='';
+  if(S.couche==='neige'){r+=`<div class="t">Valeur caractéristique de la charge de neige</div>`+box('📍',N?`s<sub>k</sub> = ${f(N.sk,2)} kN/m²`:'s<sub>k</sub> = ?');
+    r+=`<div class="t">Valeur de calcul accidentelle</div>`+box('📍',N&&N.sAd!=null?`s<sub>Ad</sub> = ${f(N.sAd,2)} kN/m²`:'s<sub>Ad</sub> : non définie');}
+  if(S.couche==='vent'){r+=`<div class="t">Vitesse de base de référence</div>`+box('📍',V?`v<sub>b,0</sub> = ${f(V.vb0,0)} m/s`:'v<sub>b,0</sub> = ?');
+    r+=`<div class="t">Pression de pointe à z<sub>e</sub> = ${V?f(V.ze,1):'?'} m</div>`+box('📍',V?`q<sub>p</sub> = ${f(V.p.qp/1000,3)} kN/m²`:'q<sub>p</sub> = ?');}
+  if(S.couche==='seisme'){r+=`<div class="t">Accélération de référence au rocher</div>`+box('📍',E?`a<sub>gR</sub> = ${f(E.agR,1)} m/s²`:'a<sub>gR</sub> = ?');
+    r+=`<div class="t">Aléa sismique</div>`+box('📍',E?ALEA[E.zs]:'?');}
+  if(S.alerte) r=`<div class="msg warn" style="margin:0 0 8px">${esc(S.alerte)}</div>`+r;
+  r+=`<div class="note">À titre indicatif — altitude à confirmer (géomètre). Détails dans les onglets ci-dessous.</div>`;
+  $('resPanneau').innerHTML=r;
+  // légende
+  const L={neige:['Zone de charge de neige',Object.keys(COUL.neige).filter(k=>k!=='Sans neige'),Z.zn],vent:['Zone de vent',['1','2','3','4'],Z.zv],seisme:['Zone de sismicité',['1','2','3','4','5'],String(Z.zs)]}[S.couche];
+  $('legT').textContent=L[0]+(S.couche==='seisme'?' (carte : zone max. du département)':'');
+  $('chips').innerHTML=L[1].map(k=>`<span class="chip ${k===L[2]?'cur':''}" style="background:${COUL[S.couche][k]};${S.couche==='seisme'&&+k>=4||S.couche==='vent'&&+k>=3?'color:#fff':''}">${k}</span>`).join('');
+}
+
+function renderVent(Z,V){
+  let h=msgStatut(Z.sv)+(Z.rv?`<div class="msg warn">${esc(Z.rv)}</div>`:'');
+  if(!V){$('ventRes').innerHTML=h;$('ventGraph').innerHTML='';return;}
+  $('terrainDesc').textContent=V.t.d;
+  h+=tete+ligne('Zone de vent',Z.zv,'','NF EN 1991-1-4/NA')+ligne('Vitesse de base de référence v<sub>b,0</sub>',f(V.vb0,0),'m/s','§4.2(2) + AN')
+   +ligne('v<sub>b</sub> = c<sub>dir</sub>·c<sub>season</sub>·v<sub>b,0</sub>',f(V.vb,2),'m/s','§4.2(2), éq. (4.1)')
+   +ligne('ρ (masse volumique de l\'air)',f(V.rho,3),'kg/m³','§4.5(1) + AN')
+   +ligne('q<sub>b</sub> = ½·ρ·v<sub>b</sub>²',f(V.qb,1),'Pa','§4.5(1), éq. (4.10)')
+   +ligne('Catégorie de terrain',V.t.id,'','§4.3.2, Tab. 4.1 + AN')
+   +ligne('z<sub>0</sub> / z<sub>min</sub>',`${f(V.t.z0,3)} / ${f(V.t.zmin,0)}`,'m','Tab. 4.1 + AN')
+   +ligne('k<sub>r</sub> = 0,19·(z<sub>0</sub>/0,05)<sup>0,07</sup>',f(V.kr,4),'','§4.3.2, éq. (4.5)')
+   +ligne('k<sub>I</sub>',f(V.t.kI,3),'','§4.4(1) + AN')
+   +ligne('Rayon R de qualification du terrain',V.R?f(V.R,0):'H > 100 m : étude spécifique','m','NF EN 1991-1-4/NA §4.3.2 (Fiche CSTB n°45)')
+   +ligne('Hauteur de calcul max(z<sub>e</sub> ; z<sub>min</sub>)',f(V.p.zz,2),'m','§4.3.2')
+   +ligne('c<sub>r</sub>(z) = k<sub>r</sub>·ln(z/z<sub>0</sub>)',f(V.p.cr,4),'','§4.3.2, éq. (4.4)')
+   +ligne('v<sub>m</sub>(z) = c<sub>r</sub>·c<sub>o</sub>·v<sub>b</sub>',f(V.p.vm,2),'m/s','§4.3.1, éq. (4.3)')
+   +ligne('I<sub>v</sub>(z) = k<sub>I</sub>/(c<sub>o</sub>·ln(z/z<sub>0</sub>))',f(V.p.Iv,4),'','§4.4(1), éq. (4.7)')
+   +ligne('q<sub>p</sub>(z<sub>e</sub>) = [1 + 7·I<sub>v</sub>]·½·ρ·v<sub>m</sub>²',`${f(V.p.qp,1)} Pa = ${f(V.p.qp/1000,3)}`,'kN/m²','§4.5(1), éq. (4.8)',1)
+   +ligne('c<sub>e</sub>(z<sub>e</sub>) = q<sub>p</sub>/q<sub>b</sub>',f(V.p.ce,3),'','§4.5(1), éq. (4.9)')+'</table>';
+  h+=`<div class="msg ${V.ctrl==='OK'?'ok':'bad'}">Contrôle : ${esc(V.ctrl)}</div>`;
+  $('ventRes').innerHTML=h;
+  $('ventGraph').innerHTML=graphVent(V);
+}
+function graphVent(V){
+  const Zs=[2,3,4,5,6,8,9,10,12,15,18,20,25,28,30,40,50,60,80,100], P=Zs.map(z=>[z,V.prof(z).qp/1000]);
+  const W=520,Hh=300,m={l:52,r:16,t:12,b:38}, xm=Math.ceil(Math.max(...P.map(p=>p[1]))*5)/5, X=v=>m.l+v/xm*(W-m.l-m.r), Y=z=>Hh-m.b-z/100*(Hh-m.t-m.b);
+  let s=`<svg viewBox="0 0 ${W} ${Hh}" style="width:100%;max-width:560px">`;
+  for(let i=0;i<=5;i++){const v=xm*i/5;s+=`<line x1="${X(v)}" y1="${m.t}" x2="${X(v)}" y2="${Hh-m.b}" stroke="#e1e3e7"/><text x="${X(v)}" y="${Hh-m.b+14}" font-size="10" text-anchor="middle" fill="#5f6670">${f(v,1)}</text>`}
+  for(let z=0;z<=100;z+=20){s+=`<line x1="${m.l}" y1="${Y(z)}" x2="${W-m.r}" y2="${Y(z)}" stroke="#e1e3e7"/><text x="${m.l-6}" y="${Y(z)+3}" font-size="10" text-anchor="end" fill="#5f6670">${z}</text>`}
+  s+=`<polyline fill="none" stroke="#114088" stroke-width="2.2" points="${P.map(p=>X(p[1])+','+Y(p[0])).join(' ')}"/>`;
+  if(V.ze<=100){const x=X(V.p.qp/1000),y=Y(V.ze);s+=`<line x1="${m.l}" y1="${y}" x2="${x}" y2="${y}" stroke="#e30009" stroke-dasharray="4 3"/><circle cx="${x}" cy="${y}" r="4.5" fill="#e30009"/><text x="${x+8}" y="${y-6}" font-size="11" fill="#e30009" font-weight="700">z<tspan font-size="8" dy="2">e</tspan><tspan dy="-2"> = ${f(V.ze,1)} m : ${f(V.p.qp/1000,3)} kN/m²</tspan></text>`}
+  s+=`<text x="${(W+m.l)/2}" y="${Hh-6}" font-size="11" text-anchor="middle" fill="#171a1e">q<tspan font-size="8" dy="2">p</tspan><tspan dy="-2">(z) [kN/m²]</tspan></text><text x="12" y="${Hh/2}" font-size="11" fill="#171a1e" transform="rotate(-90 12 ${Hh/2})" text-anchor="middle">z [m]</text></svg>`;
+  return s+`<div class="note">Catégorie ${V.t.id}, c<sub>o</sub> = ${f(V.co,2)} ; q<sub>p</sub>(z) constant sous z<sub>min</sub> = ${V.t.zmin} m.</div>`;
+}
+
+function renderNeige(Z,N){
+  let h=msgStatut(Z.sn)+(Z.rn?`<div class="msg warn">${esc(Z.rn)}</div>`:'');
+  if(!N){$('neigeRes').innerHTML=h;$('neigeToit').innerHTML='';return;}
+  h+=tete+ligne('Zone de neige',Z.zn,'','NF EN 1991-1-3/NA')+ligne('Altitude A',f(N.A,0),'m','Projet')
+   +ligne('s<sub>k,0</sub> (A ≤ 200 m)',f(N.sk0,2),'kN/m²','NF EN 1991-1-3/NA §4.1')
+   +ligne(`Δs<sub>${Z.zn==='E'?2:1}</sub> (variation due à l'altitude)`,f(N.ds,3),'kN/m²','NA §4.1 : 200-500 / 500-1000 / 1000-2000 m')
+   +ligne('s<sub>k</sub> = s<sub>k,0</sub> + Δs',f(N.sk,3),'kN/m²','NA §4.1',1)
+   +ligne('s<sub>Ad</sub> (accidentelle, indép. de l\'altitude)',N.sAd!=null?f(N.sAd,2):'— (non définie)','kN/m²','§4.3 + AN',N.sAd!=null)
+   +ligne('C<sub>e</sub> / C<sub>t</sub>',`${f(N.Ce,1)} / ${f(N.Ct,1)}`,'','§5.2(7)-(8)')
+   +ligne('μ<sub>1</sub>(α<sub>1</sub>) / μ<sub>1</sub>(α<sub>2</sub>)',`${f(N.m1,3)} / ${f(N.m2,3)}`,'','§5.3, Tab. 5.2')+'</table>';
+  h+=`<div class="msg ${N.ctrl.startsWith('OK')?'ok':'bad'}">Contrôle : ${esc(N.ctrl)}</div>`;
+  $('neigeRes').innerHTML=h;
+  const c=(v)=>f(v,3);
+  let t=`<table><tr><th>Cas de charge</th><th class="n">Versant 1</th><th class="n">Versant 2</th><th>Référence</th></tr>
+   <tr><td>Toiture à un versant – durable/transitoire</td><td class="n">${c(N.un)}</td><td class="n">—</td><td class="ref">§5.3.2, Fig. 5.2</td></tr>
+   <tr class="key"><td>Deux versants – cas (i) non redistribuée</td><td class="n">${c(N.i[0])}</td><td class="n">${c(N.i[1])}</td><td class="ref">§5.3.3, Fig. 5.3 (i)</td></tr>
+   <tr><td>Deux versants – cas (ii) 0,5 μ<sub>1</sub> sur versant 1</td><td class="n">${c(N.ii[0])}</td><td class="n">${c(N.ii[1])}</td><td class="ref">§5.3.3, Fig. 5.3 (ii)</td></tr>
+   <tr><td>Deux versants – cas (iii) 0,5 μ<sub>1</sub> sur versant 2</td><td class="n">${c(N.iii[0])}</td><td class="n">${c(N.iii[1])}</td><td class="ref">§5.3.3, Fig. 5.3 (iii)</td></tr>
+   <tr><td>Situation accidentelle μ<sub>i</sub>·C<sub>e</sub>·C<sub>t</sub>·s<sub>Ad</sub></td><td class="n">${N.acc?c(N.acc[0]):'—'}</td><td class="n">${N.acc?c(N.acc[1]):'—'}</td><td class="ref">§5.2 + AN – EN 1990</td></tr></table><div class="note">Valeurs en kN/m² de projection horizontale. Non traité : accumulations (acrotères, toitures à niveaux multiples, §5.3.6 et Annexe B), neige en débord (§5.2(9)), autres formes de toiture.</div>`;
+  $('neigeToit').innerHTML=schemaToit(N)+t;
+}
+function schemaToit(N){
+  const r=d=>d*Math.PI/180, W=420, x0=40, xm=210, x1=380, yb=150, h1=Math.min(70,Math.tan(r(N.a1))*170), h2=Math.min(70,Math.tan(r(N.a2))*170), yt=yb-Math.max(h1,h2);
+  const ys1=yb-h1+(Math.max(h1,h2)-h1), top=Math.min(yb-h1,yb-h2);
+  const bloc=(xa,xb,v,mx,lab)=>{const hh=Math.max(4,40*v/(mx||1));return `<rect x="${xa}" y="${top-14-hh}" width="${xb-xa}" height="${hh}" fill="#a9c9ef" stroke="#114088" stroke-width=".8"/><text x="${(xa+xb)/2}" y="${top-18-hh}" text-anchor="middle" font-size="11" fill="#114088" font-weight="700">${lab}</text>`};
+  const mx=Math.max(N.i[0],N.i[1]);
+  return `<svg viewBox="0 0 ${W} 180" style="width:100%;max-width:460px">
+   ${bloc(x0,xm,N.i[0],mx,f(N.i[0],2)+' kN/m²')}${bloc(xm,x1,N.i[1],mx,f(N.i[1],2)+' kN/m²')}
+   <polygon points="${x0},${yb} ${xm},${yb-Math.max(h1,4)} ${x1},${yb}" fill="#eef1f5" stroke="#171a1e" stroke-width="1.5"/>
+   <line x1="${x0}" y1="${yb}" x2="${x0}" y2="172" stroke="#171a1e" stroke-width="1.5"/><line x1="${x1}" y1="${yb}" x2="${x1}" y2="172" stroke="#171a1e" stroke-width="1.5"/>
+   <text x="${x0+38}" y="${yb-6}" font-size="11">α₁ = ${f(N.a1,0)}°</text><text x="${x1-38}" y="${yb-6}" font-size="11" text-anchor="end">α₂ = ${f(N.a2,0)}°</text>
+   <text x="${W/2}" y="176" font-size="10" text-anchor="middle" fill="#5f6670">Cas (i) : neige non redistribuée</text></svg>`;
+}
+
+function renderSeisme(Z,E){
+  let h=msgStatut(Z.ss);
+  if(!E){$('seismeRes').innerHTML=h;$('seismeGraph').innerHTML='';$('seismeFa').innerHTML='';return;}
+  h+=tete+ligne('Zone de sismicité / aléa',`${E.zs} – ${ALEA[E.zs]}`,'','Décret n°2010-1255 (art. R.563-4 C. env.)')
+   +ligne('a<sub>gR</sub> (accélération au rocher)',f(E.agR,2),'m/s²','Arrêté 22/10/2010, art. 4 ; EN 1998-1 §3.2.1')
+   +ligne('Catégorie d\'importance / γ<sub>I</sub>',`${E.cat} / ${f(E.gI,1)}`,'','Arrêté art. 2 ; EN 1998-1 §4.2.5')
+   +ligne('a<sub>g</sub> = γ<sub>I</sub>·a<sub>gR</sub>',f(E.ag,3),'m/s²','EN 1998-1 §3.2.1(3)',1)
+   +ligne('a<sub>g</sub>/g',f(E.alpha,4),'','§3.2.2.5, §4.3.5.2')
+   +ligne('Classe de sol / S',`${E.sol} / ${f(E.S,2)}`,'','Arrêté art. 4 ; EN 1998-1 Tab. 3.2')
+   +ligne('T<sub>B</sub> / T<sub>C</sub> / T<sub>D</sub>',`${f(E.TB,2)} / ${f(E.TC,2)} / ${f(E.TD,2)}`,'s','Arrêté art. 4')
+   +ligne('Palier élastique S<sub>e</sub> = a<sub>g</sub>·S·2,5',f(E.Sepal,3),'m/s²','§3.2.2.2, éq. (3.3)')
+   +ligne('q / β',`${f(E.q,2)} / ${f(E.beta,1)}`,'','§3.2.2.5')
+   +ligne('Palier de calcul S<sub>d</sub> = a<sub>g</sub>·S·2,5/q',`${f(E.Sdpal,3)} (${f(E.Sdpal/9.81,3)} g)`,'m/s²','§3.2.2.5, éq. (3.14)',1)
+   +ligne('C<sub>t</sub> / H',`${f(E.Ct,3)} / ${f(E.H,1)} m`,'','§4.3.3.2.2 (4.6)')
+   +ligne('T<sub>1</sub> = C<sub>t</sub>·H<sup>3/4</sup>',f(E.T1,3),'s','§4.3.3.2.2, éq. (4.6)')
+   +ligne('S<sub>d</sub>(T<sub>1</sub>) / λ',`${f(E.Sd(E.T1),3)} / ${f(E.lam,2)}`,'m/s²','§3.2.2.5 ; §4.3.3.2.2(1)')
+   +ligne('F<sub>b</sub> = S<sub>d</sub>(T<sub>1</sub>)·m·λ (indicatif)',f(E.Fb,1),'kN','§4.3.3.2.2, éq. (4.5)',1)
+   +ligne('F<sub>b</sub>/(m·g)',f(E.Fb/(E.m*9.81),4),'','')+'</table>';
+  h+=`<div class="msg ${E.domaine.includes('non')?'bad':'ok'}">${esc(E.domaine)} (régularité §4.2.3 non vérifiée ici)</div>`;
+  h+=`<div class="msg ${E.exig.startsWith('Aucune')?'ok':'warn'}"><b>Exigence réglementaire</b> (zone ${E.zs}, catégorie ${E.cat}) : ${esc(E.exig)} <span class="note">— arrêté du 22/10/2010, art. 3-4, à vérifier sur la version consolidée</span></div>`;
+  $('seismeRes').innerHTML=h;
+  $('seismeGraph').innerHTML=graphSpectre(E);
+  // Fa
+  const inp=(k,n,v,st)=>`<input id="fa_${n}_${k}" type="number" step="${st}" value="${$('fa_'+n+'_'+k)?.value??v}" style="width:70px">`;
+  let t=`<table class="cpx"><tr><th>Élément</th><th class="n">W<sub>a</sub> (kN/m²)</th><th>z/H</th><th>T<sub>a</sub>/T<sub>1</sub></th><th>q<sub>a</sub></th><th>γ<sub>a</sub></th><th class="n">S<sub>a</sub></th><th class="n">F<sub>a</sub> (kN/m²)</th></tr>`;
+  E.fa.forEach(x=>{t+=`<tr><td>${x.k==='bard'?'Bardage':'Couverture'} (onglet Complexes)</td><td class="n">${f(x.W,3)}</td><td>${inp(x.k,'zH',1,.1)}</td><td>${inp(x.k,'TaT',1,.1)}</td><td>${inp(x.k,'qa',2,.5)}</td><td>${inp(x.k,'ga',1,.1)}</td><td class="n">${f(x.Sa,3)}</td><td class="n"><b>${f(x.Fa,4)}</b></td></tr>`});
+  t+=`</table><div class="note">S<sub>a</sub> = α·S·[3(1+z/H)/(1+(1−T<sub>a</sub>/T<sub>1</sub>)²) − 0,5] ≥ α·S (éq. 4.24) ; q<sub>a</sub> = 2,0 pour façades/cloisons (Tab. 4.4) ; γ<sub>a</sub> = 1,0 (§4.3.5.3) ; z/H = 1 et T<sub>a</sub>/T<sub>1</sub> = 1 (enveloppe) → S<sub>a</sub> = 5,5·α·S. Hypothèses à justifier selon l'élément (fixations comprises).</div>`;
+  const foc=document.activeElement?.id; $('seismeFa').innerHTML=t;
+  document.querySelectorAll('#seismeFa input').forEach(i=>i.oninput=render);
+  if(foc&&$(foc)&&foc.startsWith('fa_')){$(foc).focus();}
+}
+function graphSpectre(E){
+  const W=560,Hh=300,m={l:52,r:16,t:14,b:38}, Tm=4, N=200, pts=[...Array(N+1)].map((_,i)=>i*Tm/N);
+  const ym=Math.ceil(E.Sepal/9.81*1.1*10)/10||.1, X=t=>m.l+t/Tm*(W-m.l-m.r), Y=v=>Hh-m.b-v/ym*(Hh-m.t-m.b);
+  let s=`<svg viewBox="0 0 ${W} ${Hh}" style="width:100%;max-width:600px">`;
+  for(let t=0;t<=Tm;t+=.5) s+=`<line x1="${X(t)}" y1="${m.t}" x2="${X(t)}" y2="${Hh-m.b}" stroke="#e1e3e7"/><text x="${X(t)}" y="${Hh-m.b+14}" font-size="10" text-anchor="middle" fill="#5f6670">${f(t,1)}</text>`;
+  for(let i=0;i<=5;i++){const v=ym*i/5;s+=`<line x1="${m.l}" y1="${Y(v)}" x2="${W-m.r}" y2="${Y(v)}" stroke="#e1e3e7"/><text x="${m.l-6}" y="${Y(v)+3}" font-size="10" text-anchor="end" fill="#5f6670">${f(v,2)}</text>`}
+  s+=`<polyline fill="none" stroke="#0098db" stroke-width="2" points="${pts.map(t=>X(t)+','+Y(E.Se(t)/9.81)).join(' ')}"/>`;
+  s+=`<polyline fill="none" stroke="#114088" stroke-width="2.4" points="${pts.map(t=>X(t)+','+Y(E.Sd(t)/9.81)).join(' ')}"/>`;
+  if(E.T1<=Tm){const x=X(E.T1),y=Y(E.Sd(E.T1)/9.81);s+=`<line x1="${x}" y1="${Hh-m.b}" x2="${x}" y2="${y}" stroke="#e30009" stroke-dasharray="4 3"/><circle cx="${x}" cy="${y}" r="4.5" fill="#e30009"/><text x="${x+7}" y="${y-7}" font-size="11" fill="#e30009" font-weight="700">T₁ = ${f(E.T1,2)} s</text>`}
+  s+=`<rect x="${W-190}" y="${m.t+4}" width="172" height="40" fill="#fff" stroke="#e1e3e7"/><line x1="${W-182}" y1="${m.t+17}" x2="${W-160}" y2="${m.t+17}" stroke="#0098db" stroke-width="2"/><text x="${W-154}" y="${m.t+21}" font-size="11">S<tspan font-size="8" dy="2">e</tspan><tspan dy="-2">(T)/g élastique</tspan></text>
+   <line x1="${W-182}" y1="${m.t+34}" x2="${W-160}" y2="${m.t+34}" stroke="#114088" stroke-width="2.4"/><text x="${W-154}" y="${m.t+38}" font-size="11">S<tspan font-size="8" dy="2">d</tspan><tspan dy="-2">(T)/g calcul (q = ${f(E.q,1)})</tspan></text>
+   <text x="${(W+m.l)/2}" y="${Hh-6}" font-size="11" text-anchor="middle">T [s]</text><text x="12" y="${Hh/2}" font-size="11" transform="rotate(-90 12 ${Hh/2})" text-anchor="middle">S/g</text></svg>`;
+  return s;
+}
+
+/* ---------- complexes ---------- */
+function initCpx(){
+  const fams=[...new Set(ZONAGE.catalogue.map(m=>m.fam))];
+  const opts='<option value="">—</option>'+fams.map(fa=>`<optgroup label="${esc(fa)}">${ZONAGE.catalogue.filter(m=>m.fam===fa).map(m=>`<option>${esc(m.nom)}</option>`).join('')}</optgroup>`).join('');
+  ['couv','bard'].forEach(k=>{
+    let h=`<table class="cpx" id="cpx_${k}"><tr><th>N°</th><th>Matériau (catalogue)</th><th>e saisie (mm)</th><th>Libre (daN/m²)</th><th>Mode</th><th class="n">e utilisée</th><th class="n">kN/m²</th><th class="n">daN/m²</th><th>Observation</th></tr>`;
+    for(let i=0;i<10;i++) h+=`<tr data-i="${i}"><td>${i+1}</td><td><select>${opts}</select></td><td><input class="e" type="number" step="any"></td><td><input class="l" type="number" step="any"></td><td class="mo"></td><td class="n eu"></td><td class="n kn"></td><td class="n dan"></td><td class="note ob"></td></tr>`;
+    h+=`<tr><td></td><td>Sous-total des couches</td><td colspan="4"></td><td class="n" id="st_${k}"></td><td class="n" id="std_${k}"></td><td></td></tr>
+      <tr><td></td><td>Majoration forfaitaire (recouvrements, fixations…) en %</td><td><input id="maj_${k}" type="number" step="0.5" value="3"></td><td colspan="3"></td><td class="n" id="mj_${k}"></td><td class="n" id="mjd_${k}"></td><td></td></tr>
+      <tr class="key"><td></td><td>POIDS PROPRE DU COMPLEXE – ${k==='couv'?'COUVERTURE':'BARDAGE'}</td><td colspan="4"></td><td class="n" id="tot_${k}"></td><td class="n" id="totd_${k}"></td><td></td></tr></table>`;
+    $(k==='couv'?'cpxCouv':'cpxBard').innerHTML=h;
+    CPX_DEFAUT[k].forEach((d,i)=>{const tr=document.querySelector(`#cpx_${k} tr[data-i="${i}"]`);tr.querySelector('select').value=d[0];if(d[1]!=null)tr.querySelector('.e').value=d[1];});
+  });
+  document.querySelectorAll('#p-cpx input,#p-cpx select').forEach(el=>el.addEventListener('input',render));
+}
+function renderCpx(cc,cb){
+  [['couv',cc],['bard',cb]].forEach(([k,c])=>{
+    document.querySelectorAll(`#cpx_${k} tr[data-i]`).forEach(tr=>{const l=c.lignes.find(x=>x.tr===tr);
+      tr.querySelector('.mo').textContent=l?l.m.mode:''; tr.querySelector('.eu').textContent=l&&l.e!==''?f(l.e,2):'';
+      tr.querySelector('.kn').textContent=l?f(l.kN,4):''; tr.querySelector('.dan').textContent=l?f(l.kN*100,2):''; tr.querySelector('.ob').textContent=l?l.m.obs:'';
+      tr.querySelector('.e').disabled=!(l&&l.m.mode==='vol'); tr.querySelector('.l').disabled=!(l&&l.m.mode==='libre');
+      if(l&&l.m.mode==='vol') tr.querySelector('.e').placeholder=l.m.e;});
+    $('st_'+k).textContent=f(c.st,4);$('std_'+k).textContent=f(c.st*100,2);$('mj_'+k).textContent=f(c.majv,4);$('mjd_'+k).textContent=f(c.majv*100,2);
+    $('tot_'+k).textContent=f(c.tot,4);$('totd_'+k).textContent=f(c.tot*100,2);
+  });
+}
+
+/* ---------- synthèse ---------- */
+function renderSyn(Z,V,N,E,cc,cb){
+  const c=S.commune, T=(titre,rows)=>`<div class="card"><h2>${titre}</h2><table><tr><th>Paramètre</th><th class="n">Valeur</th><th>Unité</th><th>Référence normative</th><th>Contrôle</th></tr>${rows}</table></div>`;
+  const r=(p,v,u,ref,ct,key)=>`<tr class="${key?'key':''}"><td>${p}</td><td class="n">${v}</td><td>${u||''}</td><td class="ref">${ref||''}</td><td class="note">${ct?esc(ct):''}</td></tr>`;
+  const dt=$('date').value?new Date($('date').value).toLocaleDateString('fr-FR'):'';
+  let h=`<div class="card"><h2>Projet et localisation</h2><table>
+    <tr><td>Affaire</td><td><b>${esc($('affaire').value)||'—'}</b> &nbsp; ${esc($('phase').value)} &nbsp; ${dt} &nbsp; ${$('auteur').value?'Rédacteur : '+esc($('auteur').value):''}</td></tr>
+    <tr><td>Localisation</td><td>${c?`${esc(S.adr?S.adr+' – ':'')}${esc(c.n)} – INSEE ${c.i} – dép. ${c.d}`:'⚠ commune non identifiée'}${S.lat!=null?` – ${f(S.lat,4)}°N, ${f(S.lon,4)}°E`:''} – altitude ${f(num('alt'),0)} m</td></tr></table></div>`;
+  h+=T('Vent – NF EN 1991-1-4 + AN',!V?r('Zone de vent','—','','',Z.sv):
+    r('Zone de vent',Z.zv,'','NF EN 1991-1-4/NA',Z.sv)+r('Vitesse de base de référence v<sub>b,0</sub>',f(V.vb0,0),'m/s','§4.2(2) + AN')+r('c<sub>dir</sub> · c<sub>season</sub>',f(V.cdir*V.cse,2),'','§4.2(2)')
+    +r('Vitesse de référence v<sub>b</sub>',f(V.vb,2),'m/s','§4.2(2), éq. (4.1)')+r('Pression dynamique de référence q<sub>b</sub>',f(V.qb,1),'Pa','§4.5(1), éq. (4.10)')
+    +r('Catégorie de terrain',V.t.id,'','§4.3.2, Tab. 4.1 + AN')+r('Hauteur de référence z<sub>e</sub>',f(V.ze,1),'m','§7.2.2')+r('Coefficient d\'exposition c<sub>e</sub>(z<sub>e</sub>)',f(V.p.ce,3),'','§4.5(1), éq. (4.9)')
+    +r('Pression dynamique de pointe q<sub>p</sub>(z<sub>e</sub>)',f(V.p.qp/1000,3),'kN/m²','§4.5(1), éq. (4.8)',V.ctrl,1));
+  h+=T('Neige – NF EN 1991-1-3 + AN',!N?r('Zone de neige','—','','',Z.sn):
+    r('Zone de neige',Z.zn,'','NF EN 1991-1-3/NA',Z.sn)+r('Altitude A',f(N.A,0),'m','')+r('s<sub>k,0</sub>',f(N.sk0,2),'kN/m²','NA §4.1')+r('Δs (correction d\'altitude)',f(N.ds,3),'kN/m²','NA §4.1')
+    +r('Charge de neige sur le sol s<sub>k</sub>',f(N.sk,3),'kN/m²','NA §4.1',N.ctrl,1)+r('Charge accidentelle sur le sol s<sub>Ad</sub>',N.sAd!=null?f(N.sAd,2):'—','kN/m²','§4.3 + AN')
+    +r('Pente α<sub>1</sub> / α<sub>2</sub>',`${f(N.a1,1)} / ${f(N.a2,1)}`,'°','')+r('μ<sub>1</sub>(α<sub>1</sub>) / μ<sub>1</sub>(α<sub>2</sub>)',`${f(N.m1,3)} / ${f(N.m2,3)}`,'','Tab. 5.2')+r('C<sub>e</sub> / C<sub>t</sub>',`${f(N.Ce,1)} / ${f(N.Ct,1)}`,'','§5.2(7)-(8)')
+    +r('Neige sur toiture – cas (i) versant 1 / versant 2',`${f(N.i[0],3)} / ${f(N.i[1],3)}`,'kN/m²','§5.3.3, Fig. 5.3','',1)
+    +r('Neige sur toiture – cas redistribué (ii) / (iii)',`${f(Math.max(...N.ii),3)} / ${f(Math.max(...N.iii),3)}`,'kN/m²','§5.3.3 (max. sur les 2 versants)'));
+  h+=T('Séisme – arrêté du 22/10/2010 modifié + NF EN 1998-1 + AN',!E?r('Zone de sismicité','—','','',Z.ss):
+    r('Zone de sismicité',E.zs,'','Décret n°2010-1255',Z.ss)+r('Aléa sismique',ALEA[E.zs],'','Décret n°2010-1255 (art. R.563-4 C. env.)')+r('Catégorie d\'importance / γ<sub>I</sub>',`${E.cat} / ${f(E.gI,1)}`,'','Arrêté art. 1-2')
+    +r('a<sub>gR</sub>',f(E.agR,2),'m/s²','Arrêté art. 4')+r('a<sub>g</sub> = γ<sub>I</sub>·a<sub>gR</sub>',f(E.ag,3),'m/s²','EN 1998-1 §3.2.1','',1)+r('Classe de sol / S',`${E.sol} / ${f(E.S,2)}`,'','EN 1998-1 Tab. 3.1-3.2')
+    +r('T<sub>B</sub> / T<sub>C</sub> / T<sub>D</sub>',`${f(E.TB,2)} / ${f(E.TC,2)} / ${f(E.TD,2)}`,'s','Arrêté art. 4')+r('Coefficient de comportement q',f(E.q,2),'','EN 1998-1 §3.2.2.5')
+    +r('Palier du spectre de calcul S<sub>d</sub>',f(E.Sdpal,3),'m/s²','§3.2.2.5, éq. (3.14)','',1)+r('Période fondamentale estimée T<sub>1</sub>',f(E.T1,3),'s','§4.3.3.2.2',E.domaine)
+    +r('Effort tranchant à la base F<sub>b</sub> (indicatif)',f(E.Fb,1),'kN','§4.3.3.2.2, éq. (4.5)')+r('Force sismique sur le bardage F<sub>a</sub>',f(E.fa[0].Fa,4),'kN/m²','§4.3.5.2, éq. (4.24)')
+    +r('Force sismique sur la couverture F<sub>a</sub>',f(E.fa[1].Fa,4),'kN/m²','§4.3.5.2, éq. (4.24)')+r('Exigence réglementaire',E.exig,'','Arrêté art. 3-4','',1));
+  h+=T('Complexes – charges permanentes (EN 1991-1-1)',
+    r('Poids propre du complexe de couverture',`${f(cc.tot,3)} kN/m² = ${f(cc.tot*100,1)}`,'daN/m²','EN 1991-1-1 §5.2','',1)
+    +r('Poids propre du complexe de bardage',`${f(cb.tot,3)} kN/m² = ${f(cb.tot*100,1)}`,'daN/m²','EN 1991-1-1 §5.2','',1));
+  if(V&&E) h+=`<div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><h2>Profil q<sub>p</sub>(z)</h2>${graphVent(V)}</div><div><h2>Spectres de réponse</h2>${graphSpectre(E)}</div></div>`;
+  h+=`<div class="note">Zones issues de la base de zonage du classeur « ${esc(ZONAGE.source)} » (vent/neige : par canton ; séisme : par commune), à confirmer sur les textes en vigueur. Outil d'aide : les résultats doivent être vérifiés par l'ingénieur ; il ne dispense pas de la lecture des textes. Non traités : Cp<sub>e</sub>/Cp<sub>i</sub>, accumulations de neige, orographie (c<sub>o</sub> ≠ 1 à saisir), cas cycloniques des DROM.</div>`;
+  $('syn').innerHTML=h;
+  $('phInfo').innerHTML=`Affaire : ${esc($('affaire').value)||'—'} · ${esc($('phase').value)||''} · Date : ${dt||new Date().toLocaleDateString('fr-FR')} · Rédacteur : ${esc($('auteur').value)||'—'}`;
+}
+
+/* =====================================================================
+   CARTE (Leaflet + Géoplateforme IGN)
+   ===================================================================== */
+let map,couche,marqueur,fonds={};
+function initCarte(){
+  map=L.map('map',{zoomControl:true}).setView([46.6,2.4],6);
+  const wmts=(layer,fmt)=>`https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=${layer}&STYLE=normal&TILEMATRIXSET=PM&FORMAT=${fmt}&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}`;
+  fonds.plan=L.tileLayer(wmts('GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2','image/png'),{maxZoom:18,attribution:'© IGN – Géoplateforme'}).addTo(map);
+  fonds.sat=L.tileLayer(wmts('ORTHOIMAGERY.ORTHOPHOTOS','image/jpeg'),{maxZoom:19,attribution:'© IGN – Géoplateforme'});
+  $('bPlan').onclick=()=>{map.removeLayer(fonds.sat);fonds.plan.addTo(map);$('bPlan').classList.add('on');$('bSat').classList.remove('on')};
+  $('bSat').onclick=()=>{map.removeLayer(fonds.plan);fonds.sat.addTo(map);$('bSat').classList.add('on');$('bPlan').classList.remove('on')};
+  couche=L.geoJSON(DEPTS_GEO,{style:styleDep,onEachFeature:(ft,l)=>l.bindTooltip(()=>infoDep(ft.properties.c,ft.properties.n),{sticky:true})}).addTo(map);
+  map.on('click',e=>choisirPoint(e.latlng.lat,e.latlng.lng));
+  setTimeout(()=>map.invalidateSize(),200); window.addEventListener('resize',()=>map.invalidateSize());
+}
+function zoneDep(dep){
+  if(S.couche==='seisme') return {z:String(SEISME_DEP[dep]||''),multi:false};
+  const gr=ZONAGE[S.couche].filter(x=>x.d===dep); if(!gr.length) return {z:'',multi:false};
+  if(S.couche==='vent') return {z:String(Math.max(...gr.map(x=>+x.z||0))),multi:new Set(gr.map(x=>x.z)).size>1};
+  return {z:gr.reduce((a,b)=>NEIGE_ORDRE.indexOf(b.z)>NEIGE_ORDRE.indexOf(a.z)?b:a).z,multi:new Set(gr.map(x=>x.z)).size>1};
+}
+function styleDep(ft){const {z,multi}=zoneDep(ft.properties.c), sel=S.commune&&S.commune.d===ft.properties.c;
+  return{fillColor:COUL[S.couche][z]||'#ccc',fillOpacity:.55,color:sel?'#e30009':multi?'#5f6670':'#8a929c',weight:sel?3:multi?1.4:.6,dashArray:multi?'5 4':null};}
+function infoDep(c,n){
+  if(S.couche==='seisme') return `<b>${c} – ${esc(n)}</b><br>Zone de sismicité max. du département : ${SEISME_DEP[c]||'?'}<br><i>zonage exact par commune</i>`;
+  const gr=ZONAGE[S.couche].filter(x=>x.d===c);
+  return `<b>${c} – ${esc(n)}</b><br>`+gr.map(x=>`Zone ${esc(x.z)} : ${esc(x.c.length>70?x.c.slice(0,70)+'…':x.c)}`).join('<br>');
+}
+function colorerCarte(){ if(couche) couche.setStyle(styleDep); }
+
+/* ---------- recherche d'adresse (BAN via Géoplateforme) ---------- */
+let tmr,res=[],idx=-1;
+async function geocoder(q){
+  const urls=[`https://data.geopf.fr/geocodage/search?q=${encodeURIComponent(q)}&limit=6`,`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=6`];
+  for(const u of urls){try{const r=await fetch(u);if(r.ok) return (await r.json()).features||[];}catch(e){}}
+  throw new Error('service indisponible');
+}
+async function inverse(lat,lon){
+  const urls=[`https://data.geopf.fr/geocodage/reverse?lon=${lon}&lat=${lat}&limit=1`,`https://api-adresse.data.gouv.fr/reverse/?lon=${lon}&lat=${lat}&limit=1`];
+  for(const u of urls){try{const r=await fetch(u);if(r.ok) return ((await r.json()).features||[])[0];}catch(e){}}
+  return null;
+}
+async function altitude(lat,lon){
+  try{const r=await fetch(`https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json?lon=${lon}&lat=${lat}&resource=ign_rge_alti_wld&zonly=true`);
+    const j=await r.json(), z=j.elevations?.[0]; const v=typeof z==='object'?z.z:z; return v>-1000?v:null;}catch(e){return null}
+}
+function afficherSugg(){
+  const b=$('sugg'); if(!res.length){b.hidden=true;return}
+  b.innerHTML=res.map((ft,i)=>`<div data-i="${i}" class="${i===idx?'sel':''}">${esc(ft.properties.label)}<br><small>${esc(ft.properties.context||'')} · INSEE ${esc(ft.properties.citycode)}</small></div>`).join('');
+  b.hidden=false; b.querySelectorAll('div').forEach(d=>d.onclick=()=>choisirFeature(res[+d.dataset.i]));
+}
+function choisirFeature(ft,garderAdr){
+  $('sugg').hidden=true; res=[];
+  const p=ft.properties,[lon,lat]=ft.geometry.coordinates;
+  const dep=p.citycode?.startsWith('97')?p.citycode.slice(0,3):p.citycode?.slice(0,2);
+  const t=trouverCommune(p.citycode,p.city,dep)||(p.oldcitycode?trouverCommune(p.oldcitycode,p.oldcity,dep):null);
+  S.adr=p.type==='municipality'?'':(p.name||'');
+  S.commune=t?.c||null; S.how=t?.how||''; S.lat=lat; S.lon=lon; S.grpV='';S.grpN='';
+  S.alerte=t?'':`Commune « ${p.city} » (INSEE ${p.citycode}) absente de la base de zonage (commune nouvelle ?). Utiliser la saisie sans carte ou les forçages.`;
+  $('q').value=p.label;
+  placerMarqueur(lat,lon); majAltitude(lat,lon);
+  synchroManu(); render();
+}
+async function choisirPoint(lat,lon){
+  const ft=await inverse(lat,lon);
+  if(ft){ft.geometry.coordinates=[lon,lat];choisirFeature(ft);} else {S.alerte='Aucune adresse trouvée à cet endroit (hors France ou service indisponible).';render();}
+}
+function placerMarqueur(lat,lon){ if(!map) return; if(marqueur) marqueur.setLatLng([lat,lon]); else marqueur=L.marker([lat,lon]).addTo(map); map.setView([lat,lon],Math.max(map.getZoom(),9)); }
+async function majAltitude(lat,lon){
+  $('altSrc').textContent='(IGN…)';
+  const z=await altitude(lat,lon);
+  if(z!=null){$('alt').value=Math.round(z);$('altSrc').textContent='(IGN RGE ALTI)';} else $('altSrc').textContent='(à saisir)';
+  render();
+}
+
+/* ---------- saisie sans carte ---------- */
+function initManu(){
+  $('mDep').innerHTML='<option value="">—</option>'+DEPTS.map(d=>`<option value="${d.c}">${d.c} – ${esc(d.n)}</option>`).join('');
+  $('mDep').onchange=()=>{remplirCommunes();};
+  $('mCom').onchange=()=>{const c=PAR_INSEE.get($('mCom').value); if(c) choisirCommuneBase(c);};
+  $('mInsee').oninput=()=>{const v=$('mInsee').value.trim(); if(v.length===5){const c=PAR_INSEE.get(v); if(c) choisirCommuneBase(c); }};
+}
+function remplirCommunes(){const d=$('mDep').value;$('mCom').innerHTML='<option value="">—</option>'+COMMUNES.filter(c=>c.d===d).map(c=>`<option value="${c.i}">${esc(c.n)}</option>`).join('');}
+function choisirCommuneBase(c){ S.alerte='';S.commune=c;S.how='INSEE';S.adr='';S.lat=null;S.lon=null;S.grpV='';S.grpN=''; if(marqueur){map.removeLayer(marqueur);marqueur=null;} synchroManu(); render(); }
+function synchroManu(){ if(!S.commune) return; if($('mDep').value!==S.commune.d){$('mDep').value=S.commune.d;remplirCommunes();} $('mCom').value=S.commune.i; }
+
+/* ---------- impression ---------- */
+function imprimer(){ render(); setTimeout(()=>window.print(),50); }
+
+/* =====================================================================
+   INITIALISATION
+   ===================================================================== */
+function init(){
+  $('terrain').innerHTML=TERRAINS.map(t=>`<option ${t.id==='Cat. IIIa'?'selected':''}>${t.id}</option>`).join('');
+  $('ossature').innerHTML=OSSATURES.map(o=>`<option>${o[0]}</option>`).join('');
+  $('fVent').innerHTML='<option value="">— base de zonage —</option>'+Object.keys(VB0).map(k=>`<option>${k}</option>`).join('');
+  $('fNeige').innerHTML='<option value="">— base de zonage —</option>'+Object.keys(NEIGE).map(k=>`<option>${k}</option>`).join('');
+  $('date').valueAsDate=new Date();
+  initCpx(); initManu();
+  document.querySelectorAll('.act').forEach(b=>b.onclick=()=>{document.querySelectorAll('.act').forEach(x=>x.classList.toggle('on',x===b));S.couche=b.dataset.l;render();});
+  document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id===b.dataset.p));});
+  document.querySelectorAll('main .card input, main .card select, #alt').forEach(el=>{ if(!el.closest('#p-cpx')) el.addEventListener('input',render); });
+  // recherche
+  $('q').addEventListener('input',()=>{clearTimeout(tmr);const v=$('q').value.trim();if(v.length<3){res=[];afficherSugg();return}
+    tmr=setTimeout(async()=>{try{res=await geocoder(v);idx=-1;afficherSugg();}catch(e){res=[];$('sugg').innerHTML='<div>Service de recherche indisponible : utiliser la saisie sans carte.</div>';$('sugg').hidden=false;}},250)});
+  $('q').addEventListener('keydown',e=>{if(!res.length)return;if(e.key==='ArrowDown'){idx=Math.min(idx+1,res.length-1);afficherSugg();e.preventDefault()}
+    else if(e.key==='ArrowUp'){idx=Math.max(idx-1,0);afficherSugg();e.preventDefault()} else if(e.key==='Enter'){choisirFeature(res[Math.max(idx,0)]);e.preventDefault()}});
+  document.addEventListener('click',e=>{if(!e.target.closest('.recherche'))$('sugg').hidden=true});
+  try{ initCarte(); }catch(e){ $('map').innerHTML='<div class="msg warn" style="margin:20px">Carte indisponible : utiliser la saisie sans carte.</div>'; }
+  // exemple pré-rempli (cf. classeur) : Montpellier, altitude 50 m
+  const ex=PAR_INSEE.get('34172'); if(ex){S.commune=ex;S.how='INSEE';S.adr='Exemple';S.lat=43.6108;S.lon=3.8767;S.grpN='2';placerMarqueur(S.lat,S.lon);map&&map.setView([S.lat,S.lon],7);synchroManu();}
+  $('altSrc').textContent='(exemple)';
+  render();
+}
+init();
+</script>
+</body>
+</html>
