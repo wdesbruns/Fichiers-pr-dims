@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<script src="../commun/auth.js?v=1.4"></script>
+<script>calcProteger("../");</script>
+<title>FIP Calculettes — P2 Poteau acier</title>
+<link rel="icon" href="../commun/img/picto-fip.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../commun/calc.css?v=1.4">
+<script src="../commun/data/profils.js?v=1.4"></script>
+<script src="../commun/acier.js?v=1.4"></script>
+</head>
+<body>
+<header>
+  <a href="../accueil.html" class="brand" title="Retour à l'accueil"><img src="../commun/img/picto-fip.png" alt="FIP"><span>FIP<em>Calculettes</em></span></a>
+  <a href="../accueil.html" class="back">← Accueil</a>
+  <div style="flex:1 1 auto">
+    <h1><span class="code">P2</span>Poteau acier — compression et flexion</h1>
+    <div class="sub">NF EN 1990 + AN · NF EN 1993-1-1 + AN : §6.2.4, §6.3.1 flambement, §6.3.2 déversement, §6.3.3 + Annexe B interaction N–M, §7.2</div>
+  </div>
+  <button onclick="window.print()">🖨️ Imprimer / PDF</button>
+</header>
+
+<main>
+<section id="form">
+  <div class="card">
+    <h2>Projet</h2>
+    <div class="row"><div><label>Affaire</label><input id="affaire"></div><div><label>N° de note</label><input id="ndc"></div></div>
+    <div class="row"><div><label>Repère du poteau</label><input id="repere" value="POTEAU"></div><div><label>Rédacteur</label><input id="auteur"></div></div>
+  </div>
+
+  <div class="card">
+    <h2>Profilé et géométrie</h2>
+    <div class="row3">
+      <div><label>Famille</label><select id="fam"></select></div>
+      <div><label>Profilé</label><select id="prof"></select></div>
+      <div><label>Nuance</label><select id="nuance"><option>S235</option><option selected>S275</option><option>S355</option></select></div>
+    </div>
+    <button class="sec noprint" id="opti" style="margin-top:8px;width:100%">⚙ Proposer le profilé le plus léger de la famille</button>
+    <div class="row"><div><label>Hauteur H (m)</label><input id="H" type="number" step="0.1" value="6"></div>
+      <div><label>Liaisons (pied – tête)</label><select id="liaison"><option value="ART-ART">Articulé – articulé (k = 1)</option><option value="ENC-ART">Encastré – articulé (k = 0,7)</option><option value="ENC-ENC">Encastré – encastré (k = 0,5)</option><option value="ENC-LIBRE">Encastré – libre (k = 2)</option></select></div></div>
+    <div class="row3">
+      <div><label>L<sub>cr,y</sub> (m)</label><input id="Lcry" type="number" step="0.1"></div>
+      <div><label>L<sub>cr,z</sub> (m)</label><input id="Lcrz" type="number" step="0.1"></div>
+      <div><label>L<sub>déversement</sub> (m)</label><input id="Llt" type="number" step="0.1"></div>
+    </div>
+    <div class="note">Vide = k·H selon les liaisons. Saisir L<sub>cr,z</sub> réduite s'il existe des maintiens (lisses de bardage, butons) dans le plan faible.</div>
+  </div>
+
+  <div class="card">
+    <h2>Charges caractéristiques</h2>
+    <div class="row">
+      <div><label>Catégorie d'exploitation Q</label><select id="catQ"></select></div>
+      <div><label>Neige</label><select id="altN"><option value="0">Altitude ≤ 1000 m</option><option value="1">Altitude > 1000 m</option></select></div>
+    </div>
+    <div class="row"><div><label>Surface reprise (m²)</label><input id="surf" type="number" step="0.5" value="10"></div><div><label>Excentricité de la charge en tête e<sub>y</sub> (mm)</label><input id="ecc" type="number" step="5" value="0"></div></div>
+    <table class="saisie" style="margin-top:8px"><tr><th>Action</th><th>Surfacique (daN/m²)</th><th>Ponctuelle en tête (kN)</th><th>Vent latéral (kN/m)</th></tr>
+      <tr><td>G (hors PP)</td><td><input id="s_G" type="number" value="100"></td><td><input id="n_G" type="number" value="0"></td><td></td></tr>
+      <tr><td>Q</td><td><input id="s_Q" type="number" value="250"></td><td><input id="n_Q" type="number" value="0"></td><td></td></tr>
+      <tr><td>S</td><td><input id="s_S" type="number" value="55"></td><td><input id="n_S" type="number" value="0"></td><td></td></tr>
+      <tr><td>W1 (− = soulèvement)</td><td><input id="s_W1" type="number" value="0"></td><td><input id="n_W1" type="number" value="0"></td><td><input id="w_W1" type="number" step="0.05" value="0"></td></tr>
+      <tr><td>W2 (− = soulèvement)</td><td><input id="s_W2" type="number" value="0"></td><td><input id="n_W2" type="number" value="0"></td><td><input id="w_W2" type="number" step="0.05" value="0"></td></tr>
+    </table>
+    <div class="note">Vent latéral = pression × largeur de reprise, appliqué sur toute la hauteur (flexion autour de y). Le poids propre du poteau est ajouté à G (section en pied, prudent).</div>
+    <button class="sec noprint" id="import" style="margin-top:8px;width:100%">⬇ Importer les réactions de la dernière poutre P1</button>
+    <div class="note" id="importInfo"></div>
+  </div>
+
+  <div class="card">
+    <h2>Critère ELS</h2>
+    <label>Déplacement horizontal sous vent ≤ H / …</label><input id="dlim" type="number" step="10" value="150">
+    <div class="note">NF EN 1993-1-1/NA §7.2.2 : valeur usuelle H/150 pour les poteaux de bâtiments industriels sans pont roulant (à adapter au projet).</div>
+  </div>
+</section>
+
+<section id="res">
+  <div class="printhead"><img src="../commun/img/logo-fip.png" alt="FIP"><strong>Note de calcul — poteau acier</strong><br><span id="phInfo"></span></div>
+  <div class="card" id="rHero"></div>
+  <div class="card"><h2>Schéma et section</h2><div class="grid2"><div id="rSchema"></div><div id="rSection"></div></div></div>
+  <div class="card"><h2>Vérifications (taux = sollicitation / résistance)</h2><div id="rRatios"></div></div>
+  <div class="card"><h2>Données de calcul (combinaison dimensionnante)</h2><div id="rData"></div></div>
+  <div class="card"><details><summary>Combinaisons d'actions générées (NF EN 1990 éq. 6.10 + AN)</summary><div id="rComb"></div></details></div>
+  <div class="card"><h2>Hypothèses et limites</h2><div id="rNotes"></div></div>
+</section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const num=(id,d=0)=>{const el=$(id);if(!el)return d;const v=parseFloat(String(el.value).replace(',','.'));return isFinite(v)?v:d};
+const f=fmtN, ACT=['G','Q','S','W1','W2'], KLIA={'ART-ART':1,'ENC-ART':0.7,'ENC-ENC':0.5,'ENC-LIBRE':2};
+
+function init(){
+  $('fam').innerHTML=familles().filter(x=>!/^U/.test(x)).map(x=>`<option ${x==='HEA'?'selected':''}>${x}</option>`).join('');
+  remplirProfils('HEA 200');
+  $('catQ').innerHTML=Object.entries(CAT_Q).map(([k,c])=>`<option value="${k}">${c.n}</option>`).join('');
+  $('fam').onchange=()=>{remplirProfils();calc()};
+  $('opti').onclick=optimiser; $('import').onclick=importer;
+  document.querySelectorAll('#form input,#form select').forEach(el=>{if(el.id!=='fam')el.addEventListener('input',calc)});
+  calc();
+}
+function remplirProfils(sel){const fa=$('fam').value;$('prof').innerHTML=PROFILS.filter(p=>p.f===fa).map(p=>`<option ${p.n===sel?'selected':''}>${p.n}</option>`).join('');}
+function importer(){
+  let o=null; try{o=JSON.parse(localStorage.getItem('fip.reactions'));}catch(e){}
+  if(!o){$('importInfo').textContent='Aucune réaction enregistrée : utiliser le bouton « Envoyer vers P2 » dans la calculette poutre.';return;}
+  ACT.forEach(a=>{$('n_'+a).value=(num('n_'+a)+(o[a]||0)).toFixed(2);});
+  if(o.cat) $('catQ').value=o.cat; if(o.altN) $('altN').value=o.altN;
+  $('importInfo').textContent='✓ Ajouté : réactions de '+o.de+' (cliquer à nouveau pour une 2e poutre symétrique).'; calc();
+}
+
+function donnees(p){
+  const H=num('H',1), k=KLIA[$('liaison').value], surf=num('surf'), e=num('ecc')/1000, N={}, w={};
+  ACT.forEach(a=>{N[a]=num('s_'+a)*surf/100+num('n_'+a); w[a]=num('w_'+a);});
+  const pp=p.m*ACIER.g/1000*H; N.G+=pp;
+  const cat=$('catQ').value, vars=[], non0=a=>N[a]||w[a];
+  if(non0('Q')) vars.push({id:'Q',psi:CAT_Q[cat].psi,exclut:cat==='H'?['S','W1','W2']:[]});
+  if(non0('S')) vars.push({id:'S',psi:PSI_NEIGE($('altN').value==='1')});
+  if(non0('W1')) vars.push({id:'W1',psi:PSI_VENT,grp:'W'});
+  if(non0('W2')) vars.push({id:'W2',psi:PSI_VENT,grp:'W'});
+  return {H,k,liaison:$('liaison').value,Lcry:num('Lcry',0)||k*H,Lcrz:num('Lcrz',0)||k*H,Llt:num('Llt',0)||(k===2?2*H:H),e,N,w,pp,cat,vars};
+}
+
+/* ---------- vérification d'un profilé ---------- */
+function verifier(p,D){
+  const nuance=$('nuance').value, fy=fyDe(nuance,p), clN=classeSection(p,fy,'compression'), clM=classeSection(p,fy,'flexion');
+  const cl=Math.max(clN.cl||1,clM.cl||1), A=p.A*1e-4, NRk=A*fy*1e3, Wy=(cl>=3?p.Wely:p.Wply)*1e-6, MRk=Wy*fy*1e3, cb=courbes(p);
+  const l1=93.9*epsilon(fy), lamy=D.Lcry/(p.iy/100)/l1, lamz=D.Lcrz/(p.iz/100)/l1;
+  const chy=chi(lamy,cb.y).chi, chz=chi(lamz,cb.z).chi;
+  const cant=D.liaison==='ENC-LIBRE', combos=genererCombinaisons(D.vars), out=[];
+  for(const c of combos.ELU){
+    const fc=a=>c.f[a]||0;
+    const NEd=ACT.reduce((s,a)=>s+fc(a)*D.N[a],0);                       // + = compression
+    const qw=Math.abs(ACT.reduce((s,a)=>s+fc(a)*D.w[a],0));
+    const Mw=cant?qw*D.H*D.H/2:qw*D.H*D.H/8, Me=Math.abs(NEd*D.e), MEd=cant?Mw+Me:Math.max(Mw+Me/2,Me);
+    const VEd=cant?qw*D.H:qw*D.H/2;
+    // facteurs de moment équivalent (Annexe B, Tab. B.3)
+    let Cm; if(Mw===0) Cm=cant?1:0.6; else if(Me===0) Cm=cant?0.9:0.95; else Cm=1.0;
+    Cm=Math.max(Cm,0.4);
+    // déversement
+    let chiLT=1, mcr=Infinity, lamLT=0, C1=cant?1.0:(Mw>0&&Me===0?1.127:Me>0&&Mw===0?1.77:1.0);
+    if(MEd>0&&p.Iw){mcr=Mcr(p,D.Llt,C1,0,0);lamLT=Math.sqrt(MRk/mcr);chiLT=(lamLT<=0.2||MEd/mcr<=0.04)?1:chi(lamLT,cb.lt).chi;}
+    const r={c,NEd,MEd,VEd,qw,Cm,C1,chiLT,mcr,lamLT};
+    if(NEd>=0){
+      r.rN=NEd/(NRk/ACIER.gM0); r.rFy=NEd/(chy*NRk/ACIER.gM1); r.rFz=NEd/(chz*NRk/ACIER.gM1);
+      const ny=NEd/(chy*NRk/ACIER.gM1), nz=NEd/(chz*NRk/ACIER.gM1);
+      let kyy,kzy;
+      if(cl<=2){kyy=Cm*(1+Math.min(Math.max(lamy-0.2,0),0.8)*ny);
+        kzy=lamz<0.4?Math.min(0.6+lamz,1-0.1*lamz/(Cm-0.25)*nz):Math.max(1-0.1*Math.min(lamz,1)/(Cm-0.25)*nz,1-0.1/(Cm-0.25)*nz);}
+      else{kyy=Cm*(1+0.6*Math.min(lamy,1)*ny); kzy=Math.max(1-0.05*Math.min(lamz,1)/(Cm-0.25)*nz,1-0.05/(Cm-0.25)*nz);}
+      const m=MEd/(chiLT*MRk/ACIER.gM1);
+      r.kyy=kyy;r.kzy=kzy;r.r661=ny+kyy*m;r.r662=nz+kzy*m;
+    } else { r.rN=-NEd/(NRk/ACIER.gM0); r.rFy=r.rFz=0; r.r661=r.rN+MEd/(MRk/ACIER.gM0); r.r662=0; r.trac=true; }
+    r.rM=MEd/(MRk/ACIER.gM0); r.rV=VEd/(p.Avz*1e-4*fy*1e3/(Math.sqrt(3)*ACIER.gM0));
+    out.push(r);
+  }
+  // ELS : déplacement sous vent caractéristique
+  const EI=ACIER.E*1e6*p.Iy*1e-8, qk=Math.max(Math.abs(D.w.W1||0),Math.abs(D.w.W2||0))*1e3;
+  const d=(cant?qk*D.H**4/(8*EI):5*qk*D.H**4/(384*EI))*1000, dlim=D.H*1000/num('dlim',150);
+  const mx=k=>out.reduce((a,b)=>(b[k]||0)>(a[k]||0)?b:a);
+  const eN=mx('rN'),eFy=mx('rFy'),eFz=mx('rFz'),e1=mx('r661'),e2=mx('r662'),eV=mx('rV');
+  const L=[{n:'Résistance de section N<sub>Ed</sub> ≤ N<sub>c,Rd</sub> = A·f<sub>y</sub>/γ<sub>M0</sub>',ref:'§6.2.4',val:f(eN.NEd,1)+' kN',lim:f(NRk,1)+' kN',r:eN.rN,comb:eN.c.nom},
+    {n:`Flambement axe fort y (courbe ${cb.cy})`,ref:`§6.3.1 – λ̄<sub>y</sub> = ${f(lamy,3)}, χ<sub>y</sub> = ${f(chy,3)}`,val:f(eFy.NEd,1)+' kN',lim:f(chy*NRk,1)+' kN',r:eFy.rFy,comb:eFy.c.nom},
+    {n:`Flambement axe faible z (courbe ${cb.cz})`,ref:`§6.3.1 – λ̄<sub>z</sub> = ${f(lamz,3)}, χ<sub>z</sub> = ${f(chz,3)}`,val:f(eFz.NEd,1)+' kN',lim:f(chz*NRk,1)+' kN',r:eFz.rFz,comb:eFz.c.nom}];
+  if(out.some(r=>r.MEd>0)){
+    L.push({n:'Interaction N–M (6.61) – plan y',ref:'§6.3.3 + Annexe B (méthode 2)',val:`N = ${f(e1.NEd,1)} kN · M = ${f(e1.MEd,2)} kNm`,lim:'1,00',r:e1.r661,comb:e1.c.nom});
+    L.push({n:'Interaction N–M (6.62) – plan z / déversement',ref:'§6.3.3 + Annexe B (méthode 2)',val:`N = ${f(e2.NEd,1)} kN · M = ${f(e2.MEd,2)} kNm`,lim:'1,00',r:e2.r662,comb:e2.c.nom});
+    L.push({n:'Cisaillement V<sub>Ed</sub> ≤ V<sub>pl,Rd</sub>',ref:'§6.2.6',val:f(eV.VEd,2)+' kN',lim:f(p.Avz*1e-4*fy*1e3/Math.sqrt(3),1)+' kN',r:eV.rV,comb:eV.c.nom});
+    L.push({n:`Déplacement sous vent ≤ H/${num('dlim',150)}`,ref:'§7.2.2 – ELS caractéristique (vent seul)',val:f(d,1)+' mm',lim:f(dlim,1)+' mm',r:d/dlim});
+  }
+  const gov=L.reduce((a,b)=>b.r>a.r?b:a); gov.gov=true;
+  return {fy,clN,clM,cl,NRk,MRk,Wy,cb,l1,lamy,lamz,chy,chz,out,combos,lignes:L,gov,e1,e2,d,dlim,tension:out.some(r=>r.trac)};
+}
+
+function calc(){
+  const p=profil($('prof').value); if(!p) return;
+  const D=donnees(p), R=verifier(p,D), ok=R.gov.r<=1;
+  $('phInfo').innerHTML=`Affaire : ${escH($('affaire').value)||'—'} · Note : ${escH($('ndc').value)||'—'} · Repère : ${escH($('repere').value)||'—'} · Rédacteur : ${escH($('auteur').value)||'—'} · ${new Date().toLocaleDateString('fr-FR')}`;
+  const Nmax=Math.max(...R.out.map(r=>r.NEd)), Nmin=Math.min(...R.out.map(r=>r.NEd));
+  $('rHero').innerHTML=`<div class="hero">
+    <div class="kpi ${ok?'ok':'ko'}"><div class="l">Verdict — ${escH(p.n)} ${$('nuance').value}</div><div class="v">${ok?'● CONFORME':'▲ NON VÉRIFIÉ'}</div></div>
+    <div class="kpi"><div class="l">Taux maximal</div><div class="v">${f(R.gov.r*100,0)} %</div></div>
+    <div class="kpi"><div class="l">Critère dimensionnant</div><div class="v" style="font-size:15px;color:var(--fip-rouge)">▲ ${R.gov.n}</div></div>
+    <div class="kpi"><div class="l">N<sub>Ed</sub> max / min (ELU)</div><div class="v">${f(Nmax,1)} / ${f(Nmin,1)} kN</div></div></div>
+    ${R.cl===4?'<div class="msg bad">Section de classe 4 : calcul non couvert (aire efficace, EN 1993-1-5). Choisir un profilé plus compact.</div>':''}
+    ${Nmin<0?'<div class="msg warn">Traction possible (soulèvement au vent) : vérifier aussi les ancrages en pied et l\'assemblage en tête.</div>':''}
+    ${Math.max(R.lamy,R.lamz)>2?'<div class="msg warn">Élancement réduit > 2 : poteau très élancé, sensibilité accrue aux imperfections.</div>':''}`;
+  $('rSchema').innerHTML=schema(D,R);
+  $('rSection').innerHTML=svgSection(p)+`<div class="note">Compression : ${escH(R.clN.txt)}<br>Flexion : ${escH(R.clM.txt)}</div>`;
+  $('rRatios').innerHTML=barresRatios(R.lignes);
+  const e=R.gov.n.includes('6.62')?R.e2:R.e1;
+  $('rData').innerHTML=`<table>
+   <tr><td>Profilé / matériau</td><td>${escH(p.n)} – A = ${f(p.A,1)} cm² – i<sub>y</sub> = ${f(p.iy,2)} cm – i<sub>z</sub> = ${f(p.iz,2)} cm – W<sub>pl,y</sub> = ${f(p.Wply,1)} cm³ · ${$('nuance').value} f<sub>y</sub> = ${R.fy} MPa · γ<sub>M0</sub> = γ<sub>M1</sub> = 1,0</td></tr>
+   <tr><td>Longueurs de flambement</td><td>L<sub>cr,y</sub> = ${f(D.Lcry,2)} m ; L<sub>cr,z</sub> = ${f(D.Lcrz,2)} m ; L<sub>LT</sub> = ${f(D.Llt,2)} m · λ<sub>1</sub> = 93,9ε = ${f(R.l1,1)}</td></tr>
+   <tr><td>Résistances caractéristiques</td><td>N<sub>Rk</sub> = ${f(R.NRk,1)} kN ; M<sub>y,Rk</sub> = ${f(R.MRk,2)} kNm (${R.cl>=3?'W<sub>el</sub>':'W<sub>pl</sub>'}, classe ${R.cl})</td></tr>
+   <tr><td>Combinaison retenue</td><td>${escH(e.c.nom)} : N<sub>Ed</sub> = ${f(e.NEd,1)} kN ; M<sub>y,Ed</sub> = ${f(e.MEd,2)} kNm ; C<sub>my</sub> = C<sub>mLT</sub> = ${f(e.Cm,2)} ; C<sub>1</sub> = ${f(e.C1,2)} ; M<sub>cr</sub> = ${isFinite(e.mcr)?f(e.mcr,1)+' kNm':'—'} ; λ̄<sub>LT</sub> = ${f(e.lamLT,3)} ; χ<sub>LT</sub> = ${f(e.chiLT,3)} ; k<sub>yy</sub> = ${f(e.kyy,3)} ; k<sub>zy</sub> = ${f(e.kzy,3)}</td></tr>
+   <tr><td>Charges caractéristiques en tête</td><td>${ACT.filter(a=>D.N[a]).map(a=>`${a} = ${f(D.N[a],2)} kN`).join(' ; ')} (G dont poids propre ${f(D.pp,2)} kN)${D.e?` ; excentricité ${f(D.e*1000,0)} mm`:''}</td></tr></table>`;
+  $('rComb').innerHTML=`<table><tr><th>Combinaison ELU</th><th class="n">N<sub>Ed</sub> (kN)</th><th class="n">M<sub>y,Ed</sub> (kNm)</th><th class="n">(6.61)</th><th class="n">(6.62)</th></tr>`+
+    R.out.slice().sort((a,b)=>Math.max(b.r661,b.r662)-Math.max(a.r661,a.r662)).map(r=>`<tr><td>${escH(r.c.nom)}</td><td class="n">${f(r.NEd,1)}</td><td class="n">${f(r.MEd,2)}</td><td class="n">${f(r.r661*100,0)} %</td><td class="n">${f(r.r662*100,0)} %</td></tr>`).join('')+`</table>`;
+  $('rNotes').innerHTML=`<ul class="note" style="font-size:12.5px">
+   <li>Poteau à section constante ; flexion autour de l'axe fort y seulement (vent latéral et excentricité de la charge). Flexion biaxiale non traitée.</li>
+   <li>Moments : articulé en tête et en pied → M = qH²/8 (vent) et N·e en tête ; encastré en pied et libre en tête → M = qH²/2 + N·e en pied. Autres liaisons : moments pris comme articulé-articulé (prudent).</li>
+   <li>Interaction : NF EN 1993-1-1 §6.3.3, éq. (6.61) et (6.62), facteurs k<sub>yy</sub>, k<sub>zy</sub> de l'Annexe B (barres sensibles aux déformations de torsion). C<sub>m</sub> selon le Tab. B.3 : 0,95 (charge répartie), 0,6 (N·e en tête seul, ψ = 0), 1,0 (prudent si combiné ou console).</li>
+   <li>Déversement : M<sub>cr</sub> avec charge au centre de cisaillement (z<sub>g</sub> = 0), méthode générale §6.3.2.2.</li>
+   <li>Imperfections globales (défaut d'aplomb φ, §5.3.2) et effets du 2<sup>nd</sup> ordre du portique non pris en compte : à traiter dans le calcul d'ensemble (structure contreventée supposée).</li>
+   <li>Non traités : flambement par torsion / flexion-torsion (UPN, UPE), pied de poteau, assemblages, sections de classe 4.</li></ul>`;
+}
+function schema(D,R){
+  const W=300,Hs=340,x=150,y0=70,y1=310,cant=D.liaison==='ENC-LIBRE';
+  const pied=D.liaison.startsWith('ENC')?`<rect x="${x-26}" y="${y1}" width="52" height="8" fill="#171a1e"/><path d="M${x-26},${y1+8} l-6,8 M${x-13},${y1+8} l-6,8 M${x},${y1+8} l-6,8 M${x+13},${y1+8} l-6,8 M${x+26},${y1+8} l-6,8" stroke="#171a1e"/>`:`<polygon points="${x},${y1} ${x-12},${y1+18} ${x+12},${y1+18}" fill="none" stroke="#171a1e" stroke-width="1.5"/>`;
+  const tete=cant?'':D.liaison.endsWith('ENC')?`<rect x="${x-26}" y="${y0-8}" width="52" height="8" fill="#171a1e"/>`:`<polygon points="${x},${y0} ${x-12},${y0-16} ${x+12},${y0-16}" fill="none" stroke="#171a1e" stroke-width="1.5"/><line x1="${x-18}" y1="${y0-18}" x2="${x+18}" y2="${y0-18}" stroke="#171a1e"/>`;
+  const k=D.k, mode=[...Array(41)].map((_,i)=>{const t=i/40, yy=y1-(y1-y0)*t; let u;
+    if(k===2) u=1-Math.cos(Math.PI*t/2); else if(k===1) u=Math.sin(Math.PI*t); else if(k===0.5) u=(1-Math.cos(2*Math.PI*t))/2; else u=Math.sin(1.4303*Math.PI*t)*Math.exp(-0)*0.9+0.0;
+    return `${x+28*u},${yy}`;}).join(' ');
+  const wind=(D.w.W1||D.w.W2)?[...Array(8)].map((_,i)=>{const yy=y0+12+i*(y1-y0-24)/7;return `<line x1="${x-70}" y1="${yy}" x2="${x-10}" y2="${yy}" stroke="#0098db" stroke-width="1.3" marker-end="url(#fv)"/>`}).join('')+`<text x="${x-75}" y="${y0+4}" font-size="11" fill="#0098db" font-weight="700">q<tspan font-size="8" dy="2">w</tspan></text>`:'';
+  return `<svg viewBox="0 0 ${W} ${Hs}" style="width:100%;max-width:${W}px"><defs><marker id="fn" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8z" fill="#e30009"/></marker><marker id="fv" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7z" fill="#0098db"/></marker></defs>
+   <line x1="${x+(D.e?8:0)}" y1="${y0-56}" x2="${x+(D.e?8:0)}" y2="${y0-20}" stroke="#e30009" stroke-width="2.6" marker-end="url(#fn)"/><text x="${x+14}" y="${y0-46}" font-size="11" fill="#e30009" font-weight="700">N${D.e?' (e = '+f(D.e*1000,0)+' mm)':''}</text>
+   <rect x="${x-5}" y="${y0}" width="10" height="${y1-y0}" fill="#cfd8e3" stroke="#171a1e"/>${pied}${tete}${wind}
+   <polyline points="${mode}" fill="none" stroke="#e30009" stroke-dasharray="5 4" stroke-width="1.4"/>
+   <line x1="${x+70}" y1="${y0}" x2="${x+70}" y2="${y1}" stroke="#171a1e" stroke-width=".8"/><text x="${x+76}" y="${(y0+y1)/2}" font-size="12" font-weight="700">H = ${f(D.H,2)} m</text>
+   <text x="${x+76}" y="${(y0+y1)/2+16}" font-size="10.5" fill="#e30009">L<tspan font-size="8" dy="2">cr,y</tspan><tspan dy="-2"> = ${f(D.Lcry,2)} m</tspan></text>
+   <text x="${x+76}" y="${(y0+y1)/2+30}" font-size="10.5" fill="#e30009">L<tspan font-size="8" dy="2">cr,z</tspan><tspan dy="-2"> = ${f(D.Lcrz,2)} m</tspan></text></svg>
+   <div class="note">Déformée de flambement indicative (k = ${D.k}).</div>`;
+}
+function optimiser(){
+  const fa=$('fam').value, cands=PROFILS.filter(p=>p.f===fa).sort((a,b)=>a.m-b.m);
+  for(const p of cands){const R=verifier(p,donnees(p));if(R.gov.r<=1&&R.cl!==4){$('prof').value=p.n;calc();return;}}
+  alert('Aucun profilé de la famille '+fa+' ne convient.');
+}
+init();
+</script>
+</body>
+</html>

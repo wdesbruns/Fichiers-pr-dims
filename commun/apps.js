@@ -9,10 +9,11 @@
    vignette : petit schéma SVG affiché sur la carte (facultatif)
    marqueur de catégorie : ● ▬ → ■ ◆ … (couleur d'accent FIP)
    ===================================================================== */
-const CALC_VERSION = "v1.3";
+const CALC_VERSION = "v1.4";
 
 const CALC_CATEGORIES = [
   { id: "tuy", nom: "Tuyauterie", sousTitre: "Supportage, portées et descentes de charges · CODETI / EN 13480-3, ASME B31.3", couleur: "#e30009", marqueur: "●" },
+  { id: "acier", nom: "Structure acier", sousTitre: "Poutres et poteaux laminés · NF EN 1990 + AN (combinaisons), NF EN 1993-1-1 + AN", couleur: "#e30009", marqueur: "◆" },
   { id: "clim", nom: "Actions climatiques et sismiques", sousTitre: "Vent, neige, séisme, poids des complexes · NF EN 1991-1-3 / 1-4, NF EN 1998-1 + AN, arrêté du 22/10/2010", couleur: "#e30009", marqueur: "▬" },
   { id: "avenir", nom: "À venir", sousTitre: "Emplacements réservés pour les prochaines calculettes", couleur: "#e30009", marqueur: "■" },
 ];
@@ -28,8 +29,8 @@ const CALC_APPS = [
     statut: "ok",
     vignette: `
 <svg viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg" font-family="Lato,Arial,sans-serif">
-  <defs><marker id="v1a" markerWidth="6" markerHeight="6" refX="3" refY="5" orient="auto"><path d="M0,0 L6,0 L3,6z" fill="#0098db"/></marker>
-  <marker id="v1k" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6z" fill="#171a1e"/></marker></defs>
+  <defs><marker id="v1a" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6z" fill="#0098db"/></marker>
+  <marker id="v1k" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto-start-reverse"><path d="M0,0 L6,3 L0,6z" fill="#171a1e"/></marker></defs>
   <text x="62" y="18" font-size="9" fill="#5f6670">Tuyauterie remplie : q = q₀ + q_fluide</text>
   ${[...Array(13)].map((_, i) => `<line x1="${70 + i * 22}" y1="26" x2="${70 + i * 22}" y2="44" stroke="#0098db" stroke-width="1.2" marker-end="url(#v1a)"/>`).join("")}
   <text x="44" y="38" font-size="11" font-weight="700" fill="#0098db">q</text>
@@ -44,6 +45,52 @@ const CALC_APPS = [
   <line x1="70" y1="84" x2="70" y2="118" stroke="#171a1e" stroke-width=".5"/><line x1="334" y1="84" x2="334" y2="118" stroke="#171a1e" stroke-width=".5"/>
   <text x="202" y="126" font-size="10" text-anchor="middle" fill="#171a1e">L = portée entre supports</text>
   <text x="202" y="142" font-size="9" text-anchor="middle" fill="#5f6670">σ = P·D/4e + M/Z ≤ f  ·  δ  ·  f₁</text>
+</svg>`,
+  },
+  {
+    code: "P1",
+    titre: "Poutre acier sur deux appuis",
+    description: "Charges réparties et ponctuelles, combinaisons ELU/ELS générées (EN 1990 + AN), flexion, cisaillement, déversement, flèches, fréquence, réactions par action, optimisation du profilé.",
+    url: "poutre/",
+    categorie: "acier",
+    normes: ["NF EN 1990", "NF EN 1993-1-1", "§6.3.2", "§7.2"],
+    statut: "ok",
+    vignette: `
+<svg viewBox="0 0 400 195" xmlns="http://www.w3.org/2000/svg" font-family="Inter,Arial,sans-serif">
+  <defs><marker id="p1a" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6z" fill="#0098db"/></marker><marker id="p1r" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7z" fill="#e30009"/></marker></defs>
+  ${[...Array(12)].map((_, i) => `<line x1="${50 + i * 24}" y1="22" x2="${50 + i * 24}" y2="40" stroke="#0098db" stroke-width="1.1" marker-end="url(#p1a)"/>`).join("")}
+  <line x1="200" y1="8" x2="200" y2="40" stroke="#e30009" stroke-width="2.2" marker-end="url(#p1r)"/><text x="206" y="16" font-size="9" fill="#e30009" font-weight="700">P</text>
+  <rect x="50" y="43" width="264" height="9" fill="#cfd8e3" stroke="#171a1e"/>
+  <polygon points="50,52 42,64 58,64" fill="none" stroke="#171a1e"/><polygon points="314,52 306,64 322,64" fill="none" stroke="#171a1e"/>
+  <path d="M50,80 Q182,148 314,80" fill="#114088" fill-opacity=".14" stroke="#114088" stroke-width="1.8"/><line x1="50" y1="80" x2="314" y2="80" stroke="#8a929c"/>
+  <text x="50" y="76" font-size="9" fill="#114088" font-weight="700">M (kNm)</text><text x="182" y="128" font-size="9" fill="#e30009" text-anchor="middle" font-weight="700">M_Ed max</text>
+  <g transform="translate(336,40)"><path d="M0,0 h44 v6 h-19 v60 h19 v6 h-44 v-6 h19 v-60 h-19 z" fill="#cfd8e3" stroke="#171a1e"/><text x="22" y="88" font-size="9" text-anchor="middle" font-weight="700">IPE</text></g>
+  <g font-size="9"><rect x="50" y="152" width="200" height="7" fill="#eef0f3"/><rect x="50" y="152" width="150" height="7" fill="#1d8a3a"/><text x="256" y="159">Flexion 75 %</text>
+  <rect x="50" y="166" width="200" height="7" fill="#eef0f3"/><rect x="50" y="166" width="182" height="7" fill="#b26a00"/><text x="256" y="173">Déversement 91 %</text>
+  <rect x="50" y="180" width="200" height="7" fill="#eef0f3"/><rect x="50" y="180" width="120" height="7" fill="#1d8a3a"/><text x="256" y="187">Flèche 60 %</text></g>
+</svg>`,
+  },
+  {
+    code: "P2",
+    titre: "Poteau acier – compression et flexion",
+    description: "Flambement y/z, déversement, interaction N–M (Annexe B), vent latéral et excentricité, traction au soulèvement, import des réactions de la poutre P1, optimisation du profilé.",
+    url: "poteau/",
+    categorie: "acier",
+    normes: ["NF EN 1990", "NF EN 1993-1-1", "§6.3.1", "§6.3.3"],
+    statut: "ok",
+    vignette: `
+<svg viewBox="0 0 400 195" xmlns="http://www.w3.org/2000/svg" font-family="Inter,Arial,sans-serif">
+  <defs><marker id="p2n" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7z" fill="#e30009"/></marker><marker id="p2w" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6z" fill="#0098db"/></marker></defs>
+  <line x1="120" y1="6" x2="120" y2="26" stroke="#e30009" stroke-width="2.4" marker-end="url(#p2n)"/><text x="128" y="16" font-size="10" fill="#e30009" font-weight="700">N_Ed</text>
+  <polygon points="120,30 110,18 130,18" fill="none" stroke="#171a1e"/>
+  <rect x="116" y="30" width="8" height="140" fill="#cfd8e3" stroke="#171a1e"/>
+  <polygon points="120,170 110,184 130,184" fill="none" stroke="#171a1e"/>
+  ${[...Array(6)].map((_, i) => `<line x1="62" y1="${42 + i * 24}" x2="110" y2="${42 + i * 24}" stroke="#0098db" stroke-width="1.1" marker-end="url(#p2w)"/>`).join("")}
+  <text x="58" y="36" font-size="10" fill="#0098db" font-weight="700">q_w</text>
+  <path d="M120,30 Q160,100 120,170" fill="none" stroke="#e30009" stroke-dasharray="5 4"/>
+  <text x="170" y="94" font-size="10" fill="#e30009">L_cr,y / L_cr,z</text>
+  <g transform="translate(250,30)"><path d="M0,0 h70 v9 h-31 v52 h31 v9 h-70 v-9 h31 v-52 h-31 z" fill="#cfd8e3" stroke="#171a1e"/><text x="35" y="88" font-size="9" text-anchor="middle" font-weight="700">HEA</text></g>
+  <text x="250" y="140" font-size="9.5" fill="#171a1e">χy · χz · χLT</text><text x="250" y="156" font-size="9.5" fill="#171a1e">N/(χN_Rk) + k·M/(χLT M_Rk) ≤ 1</text>
 </svg>`,
   },
   {

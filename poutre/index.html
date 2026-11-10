@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<script src="../commun/auth.js?v=1.4"></script>
+<script>calcProteger("../");</script>
+<title>FIP Calculettes — P1 Poutre sur deux appuis</title>
+<link rel="icon" href="../commun/img/picto-fip.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../commun/calc.css?v=1.4">
+<script src="../commun/data/profils.js?v=1.4"></script>
+<script src="../commun/acier.js?v=1.4"></script>
+</head>
+<body>
+<header>
+  <a href="../accueil.html" class="brand" title="Retour à l'accueil"><img src="../commun/img/picto-fip.png" alt="FIP"><span>FIP<em>Calculettes</em></span></a>
+  <a href="../accueil.html" class="back">← Accueil</a>
+  <div style="flex:1 1 auto">
+    <h1><span class="code">P1</span>Poutre acier sur deux appuis</h1>
+    <div class="sub">NF EN 1990 + AN (combinaisons) · NF EN 1993-1-1 + AN (§6.2, §6.3.2, §7.2) · charges réparties et ponctuelles</div>
+  </div>
+  <button onclick="window.print()">🖨️ Imprimer / PDF</button>
+</header>
+
+<main>
+<section id="form">
+  <div class="card">
+    <h2>Projet</h2>
+    <div class="row"><div><label>Affaire</label><input id="affaire" placeholder="ex. CROIX MARE"></div><div><label>N° de note</label><input id="ndc" placeholder="ex. PREDIM 01"></div></div>
+    <div class="row"><div><label>Repère de la poutre</label><input id="repere" value="SOLIVE"></div><div><label>Rédacteur</label><input id="auteur"></div></div>
+  </div>
+
+  <div class="card">
+    <h2>Profilé et géométrie</h2>
+    <div class="row3">
+      <div><label>Famille</label><select id="fam"></select></div>
+      <div><label>Profilé</label><select id="prof"></select></div>
+      <div><label>Nuance</label><select id="nuance"><option>S235</option><option selected>S275</option><option>S355</option></select></div>
+    </div>
+    <button class="sec noprint" id="opti" style="margin-top:8px;width:100%">⚙ Proposer le profilé le plus léger de la famille</button>
+    <div class="row3">
+      <div><label>Portée L (m)</label><input id="L" type="number" step="0.1" value="5"></div>
+      <div><label>Bande de charge (m)</label><input id="bande" type="number" step="0.05" value="2"></div>
+      <div><label>Long. de déversement (m)</label><input id="Ldev" type="number" step="0.1" value="2"></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="maintien"> Semelle comprimée maintenue en continu (pas de déversement)</label>
+    <label>Niveau d'application des charges</label>
+    <select id="niveau"><option value="1" selected>Semelle supérieure (déstabilisant)</option><option value="0">Centre de cisaillement</option><option value="-1">Semelle inférieure (stabilisant)</option></select>
+  </div>
+
+  <div class="card">
+    <h2>Charges caractéristiques</h2>
+    <div class="row">
+      <div><label>Catégorie d'exploitation Q</label><select id="catQ"></select></div>
+      <div><label>Neige</label><select id="altN"><option value="0">Altitude ≤ 1000 m</option><option value="1">Altitude > 1000 m</option></select></div>
+    </div>
+    <h3>Charges réparties (sur toute la portée)</h3>
+    <table class="saisie"><tr><th>Action</th><th>daN/m² (× bande)</th><th>daN/m (linéique)</th></tr>
+      <tr><td>G – permanente (hors poids propre)</td><td><input id="qs_G" type="number" value="100"></td><td><input id="ql_G" type="number" value="0"></td></tr>
+      <tr><td>Q – exploitation</td><td><input id="qs_Q" type="number" value="456"></td><td><input id="ql_Q" type="number" value="0"></td></tr>
+      <tr><td>S – neige</td><td><input id="qs_S" type="number" value="0"></td><td><input id="ql_S" type="number" value="0"></td></tr>
+      <tr><td>W1 – vent cas 1 (+ = vers le bas)</td><td><input id="qs_W1" type="number" value="0"></td><td><input id="ql_W1" type="number" value="0"></td></tr>
+      <tr><td>W2 – vent cas 2 (− = soulèvement)</td><td><input id="qs_W2" type="number" value="0"></td><td><input id="ql_W2" type="number" value="0"></td></tr>
+    </table>
+    <h3>Charges ponctuelles (daN)</h3>
+    <table class="saisie" id="tPts"><tr><th>a (m)</th><th>G</th><th>Q</th><th>S</th><th>W1</th><th>W2</th></tr></table>
+    <div class="note">Poids propre du profilé ajouté automatiquement à G. Vent : W1 et W2 ne sont jamais combinés ensemble ; la catégorie H n'est pas combinée avec la neige ni le vent (NF EN 1991-1-1 §3.3.2(1)).</div>
+  </div>
+
+  <div class="card">
+    <h2>Critères ELS</h2>
+    <label>Utilisation (limites de flèche, NF EN 1993-1-1/NA §7.2.1)</label><select id="util"></select>
+    <label>Fréquence propre minimale (planchers)</label><select id="local"></select>
+  </div>
+</section>
+
+<section id="res">
+  <div class="printhead"><img src="../commun/img/logo-fip.png" alt="FIP"><strong>Note de calcul — poutre acier sur deux appuis</strong><br><span id="phInfo"></span></div>
+  <div class="card" id="rHero"></div>
+  <div class="card"><h2>Schéma statique et charges</h2><div class="grid2"><div id="rSchema"></div><div id="rSection"></div></div></div>
+  <div class="card"><h2>Vérifications (taux = sollicitation / résistance)</h2><div id="rRatios"></div></div>
+  <div class="card"><h2>Diagrammes — combinaisons dimensionnantes</h2><div id="rDiag"></div></div>
+  <div class="card"><h2>Descente de charges aux appuis</h2><div id="rReac"></div></div>
+  <div class="card"><h2>Données de calcul</h2><div id="rData"></div></div>
+  <div class="card"><details id="dComb"><summary>Combinaisons d'actions générées (NF EN 1990 éq. 6.10 et 6.14b + AN)</summary><div id="rComb"></div></details></div>
+  <div class="card"><h2>Hypothèses et limites</h2><div id="rNotes"></div></div>
+</section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const num=(id,d=0)=>{const el=$(id);if(!el)return d;const v=parseFloat(String(el.value).replace(',','.'));return isFinite(v)?v:d};
+const f=fmtN, ACT=['G','Q','S','W1','W2'];
+const NPTS=4;
+
+/* ---------- initialisation des listes ---------- */
+function init(){
+  $('fam').innerHTML=familles().map(x=>`<option ${x==='IPE'?'selected':''}>${x}</option>`).join('');
+  remplirProfils('IPE 220');
+  $('catQ').innerHTML=Object.entries(CAT_Q).map(([k,c])=>`<option value="${k}">${c.n}</option>`).join('');
+  $('util').innerHTML=UTILISATIONS.map((u,i)=>`<option value="${i}" ${i===3?'selected':''}>${u.n} (L/${u.wmax}${u.w3?' ; L/'+u.w3:''})</option>`).join('');
+  $('local').innerHTML=LOCAUX_FREQ.map((l,i)=>`<option value="${i}">${l.n}${l.f?' – '+l.f+' Hz':''}</option>`).join('');
+  let h='';for(let i=0;i<NPTS;i++) h+=`<tr><td><input id="pa_${i}" type="number" step="0.1"></td>${ACT.map(a=>`<td><input id="p${a}_${i}" type="number"></td>`).join('')}</tr>`;
+  $('tPts').insertAdjacentHTML('beforeend',h);
+  $('fam').onchange=()=>{remplirProfils();calc()};
+  $('opti').onclick=optimiser;
+  document.querySelectorAll('#form input,#form select').forEach(el=>{if(el.id!=='fam')el.addEventListener('input',calc)});
+  calc();
+}
+function remplirProfils(sel){const fa=$('fam').value;$('prof').innerHTML=PROFILS.filter(p=>p.f===fa).map(p=>`<option ${p.n===sel?'selected':''}>${p.n}</option>`).join('');}
+
+/* ---------- lecture des données ---------- */
+function donnees(p){
+  const L=num('L',1), bande=num('bande',1), q={}, pts=[];
+  ACT.forEach(a=>q[a]=(num('qs_'+a)*bande+num('ql_'+a))/100);                     // daN → kN
+  const pp=p.m*ACIER.g/1000; q.G+=pp;
+  for(let i=0;i<NPTS;i++){const a=num('pa_'+i,NaN);if(!isFinite(a)||a<0||a>L)continue;
+    const P={};ACT.forEach(x=>P[x]=num('p'+x+'_'+i)/100); if(ACT.some(x=>P[x]))pts.push({a,P});}
+  const cat=$('catQ').value, psiS=PSI_NEIGE($('altN').value==='1');
+  const vars=[];
+  const non0=a=>q[a]||pts.some(t=>t.P[a]);
+  if(non0('Q')) vars.push({id:'Q',psi:CAT_Q[cat].psi,exclut:cat==='H'?['S','W1','W2']:[]});
+  if(non0('S')) vars.push({id:'S',psi:psiS});
+  if(non0('W1')) vars.push({id:'W1',psi:PSI_VENT,grp:'W'});
+  if(non0('W2')) vars.push({id:'W2',psi:PSI_VENT,grp:'W'});
+  return {L,bande,q,pts,pp,cat,vars,util:UTILISATIONS[+$('util').value],local:LOCAUX_FREQ[+$('local').value]};
+}
+
+/* ---------- analyse d'une combinaison (isostatique) ---------- */
+function analyse(D,fac,p,exclureG){
+  const L=D.L, fc=a=>(a==='G'&&exclureG)?0:(fac[a]||0);
+  const q=ACT.reduce((s,a)=>s+fc(a)*D.q[a],0);
+  const P=D.pts.map(t=>({a:t.a,P:ACT.reduce((s,a)=>s+fc(a)*t.P[a],0)})).filter(t=>t.P);
+  const RA=q*L/2+P.reduce((s,t)=>s+t.P*(L-t.a)/L,0), RB=q*L+P.reduce((s,t)=>s+t.P,0)-RA;
+  const xs=[...new Set([...Array(201)].map((_,i)=>+(i*L/200).toFixed(6)).concat(P.map(t=>t.a)))].sort((a,b)=>a-b);
+  const EI=ACIER.E*1e6*p.Iy*1e-8;                                               // N·m²
+  const V=xs.map(x=>RA-q*x-P.filter(t=>t.a<x).reduce((s,t)=>s+t.P,0));
+  const M=xs.map(x=>RA*x-q*x*x/2-P.filter(t=>t.a<x).reduce((s,t)=>s+t.P*(x-t.a),0));
+  const W=xs.map(x=>{let d=q*1e3*x*(L**3-2*L*x*x+x**3)/(24*EI);
+    P.forEach(t=>{const a=t.a,b=L-a,F=t.P*1e3; d+= x<=a? F*b*x*(L*L-b*b-x*x)/(6*L*EI) : F*a*(L-x)*(L*L-a*a-(L-x)**2)/(6*L*EI);});
+    return d*1000;});                                                                  // mm (+ = vers le bas)
+  const ab=a=>Math.max(...a.map(Math.abs));
+  return {q,P,RA,RB,xs,V,M,W,Mmax:ab(M),Vmax:ab(V),wmax:ab(W),Msign:Math.sign(M[M.map(Math.abs).indexOf(ab(M))])||1};
+}
+
+/* ---------- résistances (EN 1993-1-1) ---------- */
+function resistances(p,nuance,D){
+  const fy=fyDe(nuance,p), cl=classeSection(p,fy,'flexion'), W=(cl.cl===3?p.Wely:p.Wply)*1e-6;
+  const McRd=W*fy*1e3/ACIER.gM0, VplRd=p.Avz*1e-4*fy*1e3/(Math.sqrt(3)*ACIER.gM0);
+  const cb=courbes(p);
+  return {fy,cl,W,McRd,VplRd,cb};
+}
+function verifier(p,D){
+  const nuance=$('nuance').value, R=resistances(p,nuance,D), combos=genererCombinaisons(D.vars);
+  const L=D.L, Ldev=Math.min(num('Ldev',L),L), niv=+$('niveau').value, maintien=$('maintien').checked;
+  const res={ELU:[],CAR:[],R,combos};
+  // ---- ELU
+  for(const c of combos.ELU){
+    const A=analyse(D,c.f,p);
+    // interaction M-V (§6.2.8) sur toute la poutre
+    let rMV=0;
+    A.xs.forEach((x,i)=>{const Ve=Math.abs(A.V[i]);let Mr=R.McRd;
+      if(Ve>0.5*R.VplRd){const rho=(2*Ve/R.VplRd-1)**2;
+        if(p.tw&&p.tf&&/^(IPE|HE)/.test(p.f)){const Aw=(p.h-2*p.tf)*p.tw;Mr=Math.min(R.McRd,(R.W*1e9-rho*Aw*Aw/(4*p.tw))*R.fy/1e6/ACIER.gM0);}
+        else Mr=R.McRd*(1-rho);}
+      rMV=Math.max(rMV,Math.abs(A.M[i])/Mr);});
+    // déversement
+    let LT={chi:1,Mcr:Infinity,lam:0,C1:null,C2:null,zg:0};
+    if(!maintien&&A.Mmax>0){
+      const Mq=A.q*L*L/8, unif=Math.abs(Mq)>=0.5*A.Mmax, unPt=A.P.length===1&&Math.abs(A.P[0].a-L/2)<0.1*L;
+      let C1=1.127,C2=0.454; if(!unif){if(unPt){C1=1.348;C2=0.630;}else{C1=1.0;C2=0.5;}}
+      if(Ldev<0.999*L){C1=1.0;C2=0;}
+      const zg=niv*p.h/2000*A.Msign;
+      const mcr=Mcr(p,Ldev,C1,C2,zg), lam=Math.sqrt(R.W*R.fy*1e3/mcr);
+      let k=chi(lam,R.cb.lt).chi; if(lam<=0.2||A.Mmax/mcr<=0.04) k=1;
+      LT={chi:k,Mcr:mcr,lam,C1,C2,zg};
+    }
+    const MbRd=LT.chi*R.W*R.fy*1e3/ACIER.gM1;
+    res.ELU.push({c,A,rM:A.Mmax/R.McRd,rMV,rV:A.Vmax/R.VplRd,rLT:A.Mmax/MbRd,LT,MbRd});
+  }
+  // ---- ELS caractéristique : flèche totale et due aux variables (w3)
+  for(const c of combos.CAR){ const A=analyse(D,c.f,p), Av=analyse(D,c.f,p,true); res.CAR.push({c,A,Av,wtot:A.wmax,wvar:Av.wmax}); }
+  // ---- fréquence (quasi-permanente, f = 17,75/√δ[mm])
+  const Aqp=analyse(D,combos.QP[0].f,p); res.QP={c:combos.QP[0],A:Aqp,f:Aqp.wmax>0?17.75/Math.sqrt(Aqp.wmax):Infinity};
+  // ---- synthèse des taux
+  const mx=(arr,k)=>arr.reduce((a,b)=>b[k]>a[k]?b:a);
+  const eM=mx(res.ELU,'rMV'), eV=mx(res.ELU,'rV'), eL=mx(res.ELU,'rLT'), eT=mx(res.CAR,'wtot'), eW=mx(res.CAR,'wvar');
+  const wlim=L*1000/D.util.wmax, w3lim=D.util.w3?L*1000/D.util.w3:null;
+  const lignes=[
+    {k:'M',n:'Flexion M<sub>y,Ed</sub> ≤ M<sub>c,Rd</sub> (avec interaction V)',ref:'§6.2.5 (6.12-6.13), §6.2.8',val:f(eM.A.Mmax,2)+' kNm',lim:f(R.McRd,2)+' kNm',r:eM.rMV,comb:eM.c.nom,e:eM},
+    {k:'V',n:'Cisaillement V<sub>z,Ed</sub> ≤ V<sub>pl,Rd</sub>',ref:'§6.2.6 (6.17-6.18)',val:f(eV.A.Vmax,2)+' kN',lim:f(R.VplRd,2)+' kN',r:eV.rV,comb:eV.c.nom,e:eV},
+  ];
+  if(!maintien) lignes.push({k:'LT',n:'Déversement M<sub>y,Ed</sub> ≤ M<sub>b,Rd</sub> = χ<sub>LT</sub>·W·f<sub>y</sub>/γ<sub>M1</sub>',ref:'§6.3.2.1-6.3.2.2 (cas général)',val:f(eL.A.Mmax,2)+' kNm',lim:f(eL.MbRd,2)+' kNm',r:eL.rLT,comb:eL.c.nom,e:eL});
+  lignes.push({k:'W',n:'Flèche totale w<sub>max</sub> ≤ L/'+D.util.wmax,ref:'NA §7.2.1 – ELS caractéristique',val:f(eT.wtot,1)+' mm',lim:f(wlim,1)+' mm',r:eT.wtot/wlim,comb:eT.c.nom,e:eT});
+  if(w3lim) lignes.push({k:'W3',n:'Flèche due aux variables w<sub>3</sub> ≤ L/'+D.util.w3,ref:'NA §7.2.1 – ELS caractéristique sans G',val:f(eW.wvar,1)+' mm',lim:f(w3lim,1)+' mm',r:eW.wvar/w3lim,comb:eW.c.nom.replace(/^1·G \+ /,''),e:eW});
+  if(D.local.f) lignes.push({k:'F',n:'Fréquence propre f<sub>1</sub> ≥ '+D.local.f+' Hz',ref:'§7.2.3 – G + ψ₂Q, f = 17,75/√δ',val:f(res.QP.f,2)+' Hz',lim:'≥ '+f(D.local.f,1)+' Hz',r:D.local.f/res.QP.f,comb:res.QP.c.nom});
+  const gov=lignes.reduce((a,b)=>b.r>a.r?b:a); gov.gov=true;
+  return Object.assign(res,{lignes,gov,eM,eV,eL,eT,eW,wlim,w3lim,Ldev,maintien});
+}
+
+/* ---------- calcul + affichage ---------- */
+let dernier=null;
+function calc(){
+  const p=profil($('prof').value); if(!p) return;
+  const D=donnees(p), Rz=verifier(p,D); dernier={p,D,Rz};
+  const ok=Rz.gov.r<=1;
+  $('phInfo').innerHTML=`Affaire : ${escH($('affaire').value)||'—'} · Note : ${escH($('ndc').value)||'—'} · Repère : ${escH($('repere').value)||'—'} · Rédacteur : ${escH($('auteur').value)||'—'} · ${new Date().toLocaleDateString('fr-FR')}`;
+  $('rHero').innerHTML=`<div class="hero">
+    <div class="kpi ${ok?'ok':'ko'}"><div class="l">Verdict — ${escH(p.n)} ${$('nuance').value}</div><div class="v">${ok?'● CONFORME':'▲ NON VÉRIFIÉ'}</div></div>
+    <div class="kpi"><div class="l">Taux maximal</div><div class="v">${f(Rz.gov.r*100,0)} %</div></div>
+    <div class="kpi"><div class="l">Critère dimensionnant</div><div class="v" style="font-size:15px;color:var(--fip-rouge)">▲ ${Rz.gov.n}</div></div>
+    <div class="kpi"><div class="l">Réaction max ELU</div><div class="v">${f(Math.max(...Rz.ELU.map(e=>Math.max(Math.abs(e.A.RA),Math.abs(e.A.RB)))),2)} kN</div></div></div>
+    ${Rz.R.cl.cl===4?'<div class="msg bad">Section de classe 4 en flexion : calcul non couvert par cet outil (EN 1993-1-5).</div>':''}
+    ${D.vars.length===0?'<div class="msg info">Aucune charge variable : seule la combinaison 1,35·G est étudiée.</div>':''}`;
+  $('rSchema').innerHTML=schema(D);
+  $('rSection').innerHTML=svgSection(p)+`<div class="note">${escH(Rz.R.cl.txt)}</div>`;
+  $('rRatios').innerHTML=barresRatios(Rz.lignes);
+  const e=Rz.gov.k==='LT'?Rz.eL:Rz.gov.k==='V'?Rz.eV:Rz.eM;
+  $('rDiag').innerHTML=`<div class="note">ELU : ${escH(e.c.nom)}</div>`+svgDiagramme(e.A.xs,e.A.V,{titre:'Effort tranchant V (kN)',unite:'kN',couleur:'#0098db'})
+    +svgDiagramme(e.A.xs,e.A.M,{titre:'Moment fléchissant M (kNm)',unite:'kNm',couleur:'#114088',inverse:true})
+    +`<div class="note">ELS caractéristique : ${escH(Rz.eT.c.nom)}</div>`+svgDiagramme(Rz.eT.A.xs,Rz.eT.A.W,{titre:'Flèche w (mm)',unite:'mm',couleur:'#e30009',inverse:true});
+  reactions(p,D,Rz); donneesCalc(p,D,Rz); combosTab(Rz); notes(D,Rz);
+}
+function schema(D){
+  const W=560,x0=50,x1=510,y=95,L=D.L,X=a=>x0+a/L*(x1-x0);
+  const qmax=Math.max(...ACT.map(a=>Math.abs(D.q[a])),1e-9), qtot=ACT.reduce((s,a)=>s+Math.max(0,D.q[a]),0);
+  let s=`<svg viewBox="0 0 ${W} 190" style="width:100%;max-width:${W}px"><defs><marker id="fl" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7z" fill="#0098db"/></marker><marker id="fr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8z" fill="#e30009"/></marker><marker id="fk" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto-start-reverse"><path d="M0,0 L7,3.5 L0,7z" fill="#171a1e"/></marker></defs>`;
+  for(let i=0;i<=18;i++){const xx=x0+i*(x1-x0)/18;s+=`<line x1="${xx}" y1="${y-42}" x2="${xx}" y2="${y-6}" stroke="#0098db" stroke-width="1.2" marker-end="url(#fl)"/>`;}
+  s+=`<line x1="${x0}" y1="${y-42}" x2="${x1}" y2="${y-42}" stroke="#0098db"/><text x="${x0}" y="${y-48}" font-size="11" fill="#0098db" font-weight="700">G = ${f(D.q.G,2)} · Q = ${f(D.q.Q,2)}${D.q.S?' · S = '+f(D.q.S,2):''}${D.q.W1?' · W1 = '+f(D.q.W1,2):''}${D.q.W2?' · W2 = '+f(D.q.W2,2):''} kN/m</text>`;
+  D.pts.forEach(t=>{const Pt=ACT.reduce((s,a)=>s+t.P[a],0);s+=`<line x1="${X(t.a)}" y1="${y-78}" x2="${X(t.a)}" y2="${y-6}" stroke="#e30009" stroke-width="2.4" marker-end="url(#fr)"/><text x="${X(t.a)+4}" y="${y-68}" font-size="10" fill="#e30009" font-weight="700">P = ${f(Pt,2)} kN</text>`;});
+  s+=`<rect x="${x0}" y="${y-5}" width="${x1-x0}" height="10" fill="#cfd8e3" stroke="#171a1e"/>
+    <polygon points="${x0},${y+5} ${x0-10},${y+22} ${x0+10},${y+22}" fill="none" stroke="#171a1e" stroke-width="1.4"/><line x1="${x0-14}" y1="${y+24}" x2="${x0+14}" y2="${y+24}" stroke="#171a1e"/>
+    <polygon points="${x1},${y+5} ${x1-10},${y+22} ${x1+10},${y+22}" fill="none" stroke="#171a1e" stroke-width="1.4"/><circle cx="${x1-5}" cy="${y+27}" r="2.5" fill="none" stroke="#171a1e"/><circle cx="${x1+5}" cy="${y+27}" r="2.5" fill="none" stroke="#171a1e"/>
+    <text x="${x0-4}" y="${y+40}" font-size="11" font-weight="700" fill="#114088" text-anchor="middle">A</text><text x="${x1+4}" y="${y+40}" font-size="11" font-weight="700" fill="#114088" text-anchor="middle">B</text>
+    <line x1="${x0}" y1="${y+52}" x2="${x1}" y2="${y+52}" stroke="#171a1e" marker-start="url(#fk)" marker-end="url(#fk)"/><text x="${(x0+x1)/2}" y="${y+66}" font-size="12" text-anchor="middle" font-weight="700">L = ${f(L,2)} m · bande ${f(D.bande,2)} m</text>`;
+  const Ld=Math.min(num('Ldev',L),L);
+  if(!$('maintien').checked&&Ld<L){for(let a=Ld;a<L-1e-6;a+=Ld)s+=`<line x1="${X(a)}" y1="${y-8}" x2="${X(a)}" y2="${y+8}" stroke="#e30009" stroke-width="2"/>`;s+=`<text x="${(x0+x1)/2}" y="${y+84}" font-size="10.5" fill="#e30009" text-anchor="middle">│ maintiens latéraux tous les ${f(Ld,2)} m (longueur de déversement)</text>`;}
+  return s+`</svg><div class="note">G inclut le poids propre (${f(D.pp,3)} kN/m). Charges caractéristiques.</div>`;
+}
+function reactions(p,D,Rz){
+  const r=ACT.map(a=>{const fac={};fac[a]=1;const A=analyse(D,fac,p);return{a,RA:A.RA,RB:A.RB};});
+  const eluA=Math.max(...Rz.ELU.map(e=>e.A.RA)), eluB=Math.max(...Rz.ELU.map(e=>e.A.RB)), eluMin=Math.min(...Rz.ELU.map(e=>Math.min(e.A.RA,e.A.RB)));
+  $('rReac').innerHTML=`<table><tr><th>Action (caractéristique)</th><th class="n">R<sub>A</sub> (kN)</th><th class="n">R<sub>B</sub> (kN)</th></tr>`+
+    r.filter(x=>x.RA||x.RB).map(x=>`<tr><td>${x.a}${x.a==='G'?' (dont poids propre '+f(D.pp*D.L/2,2)+' kN)':''}</td><td class="n">${f(x.RA,2)}</td><td class="n">${f(x.RB,2)}</td></tr>`).join('')+
+    `<tr style="font-weight:700"><td>ELU maximale (enveloppe)</td><td class="n">${f(eluA,2)}</td><td class="n">${f(eluB,2)}</td></tr>`+
+    (eluMin<0?`<tr><td>ELU minimale (soulèvement)</td><td class="n" colspan="2">${f(eluMin,2)} kN</td></tr>`:'')+`</table>
+    <div class="note">Réactions par action, à reprendre dans la descente de charges (poteau, assemblage). Les combinaisons se font sur le poteau avec ses propres coefficients.</div>
+    <button class="sec noprint" id="envoi" style="margin-top:8px">➜ Envoyer ces réactions vers la calculette poteau (P2)</button> <span class="note" id="envoiOk"></span>`;
+  $('envoi').onclick=()=>{const R=Math.max;const o={de:`${$('repere').value||'Poutre'} (${p.n}, L = ${D.L} m)`,cat:D.cat,altN:$('altN').value};
+    r.forEach(x=>o[x.a]=Math.max(x.RA,x.RB)); try{localStorage.setItem('fip.reactions',JSON.stringify(o));$('envoiOk').textContent='✓ Réactions enregistrées : ouvrir P2 et cliquer « Importer ».';}catch(e){$('envoiOk').textContent='Stockage indisponible sur ce navigateur.';}};
+}
+function donneesCalc(p,D,Rz){
+  const R=Rz.R, L=Rz.eL.LT;
+  $('rData').innerHTML=`<table>
+   <tr><td>Profilé</td><td>${escH(p.n)} – ${p.m} kg/m – A = ${f(p.A,1)} cm² – I<sub>y</sub> = ${f(p.Iy,0)} cm⁴ – W<sub>pl,y</sub> = ${f(p.Wply,1)} cm³ – W<sub>el,y</sub> = ${f(p.Wely,1)} cm³ – A<sub>vz</sub> = ${f(p.Avz,2)} cm² – I<sub>z</sub> = ${f(p.Iz,1)} cm⁴ – I<sub>t</sub> = ${f(p.It,2)} cm⁴ – I<sub>w</sub> = ${f(p.Iw,0)} cm⁶</td></tr>
+   <tr><td>Matériau</td><td>${$('nuance').value} : f<sub>y</sub> = ${R.fy} MPa (EN 1993-1-1 Tab. 3.1) ; E = 210 000 MPa ; G = 81 000 MPa ; γ<sub>M0</sub> = γ<sub>M1</sub> = 1,0 (AN)</td></tr>
+   <tr><td>Classe de section</td><td>${escH(R.cl.txt)} → W = ${R.cl.cl===3?'W<sub>el,y</sub>':'W<sub>pl,y</sub>'}</td></tr>
+   <tr><td>Résistances</td><td>M<sub>c,Rd</sub> = W·f<sub>y</sub>/γ<sub>M0</sub> = ${f(R.McRd,2)} kNm ; V<sub>pl,Rd</sub> = A<sub>vz</sub>·f<sub>y</sub>/(√3·γ<sub>M0</sub>) = ${f(R.VplRd,2)} kN</td></tr>
+   ${Rz.maintien?'<tr><td>Déversement</td><td>Semelle comprimée maintenue : non vérifié</td></tr>':`<tr><td>Déversement (comb. dimensionnante)</td><td>L<sub>cr</sub> = ${f(Rz.Ldev,2)} m ; C<sub>1</sub> = ${f(L.C1,3)} ; C<sub>2</sub> = ${f(L.C2,3)} ; z<sub>g</sub> = ${f(L.zg*1000,0)} mm ; M<sub>cr</sub> = ${f(L.Mcr,2)} kNm ; λ̄<sub>LT</sub> = ${f(L.lam,3)} ; courbe ${escH(R.cb.clt)} (α<sub>LT</sub> = ${R.cb.lt}) ; χ<sub>LT</sub> = ${f(L.chi,3)}</td></tr>`}
+   <tr><td>Combinaisons</td><td>${Rz.combos.ELU.length} ELU (6.10, γ<sub>G</sub> = 1,35 / 1,00 ; γ<sub>Q</sub> = 1,5) · ${Rz.combos.CAR.length} ELS caractéristiques · catégorie ${D.cat} : ψ = ${CAT_Q[D.cat].psi.join(' / ')}</td></tr></table>`;
+}
+function combosTab(Rz){
+  $('rComb').innerHTML=`<table><tr><th>Combinaison ELU</th><th class="n">M<sub>Ed</sub></th><th class="n">V<sub>Ed</sub></th><th class="n">Taux M</th><th class="n">Taux LT</th></tr>`+
+    Rz.ELU.slice().sort((a,b)=>b.rLT-a.rLT).map(e=>`<tr><td>${escH(e.c.nom)}</td><td class="n">${f(e.A.Mmax,2)}</td><td class="n">${f(e.A.Vmax,2)}</td><td class="n">${f(e.rMV*100,0)} %</td><td class="n">${f(e.rLT*100,0)} %</td></tr>`).join('')+
+    `</table><table style="margin-top:8px"><tr><th>Combinaison ELS caractéristique</th><th class="n">w<sub>tot</sub> (mm)</th><th class="n">w<sub>3</sub> (mm)</th></tr>`+
+    Rz.CAR.map(e=>`<tr><td>${escH(e.c.nom)}</td><td class="n">${f(e.wtot,2)}</td><td class="n">${f(e.wvar,2)}</td></tr>`).join('')+`</table>`;
+}
+function notes(D,Rz){
+  $('rNotes').innerHTML=`<ul class="note" style="font-size:12.5px">
+   <li>Poutre isostatique à inertie constante, flexion autour de l'axe fort, charges dans le plan de l'âme. Pour les UPN/UPE, la charge n'est pas appliquée au centre de cisaillement : la torsion n'est pas prise en compte.</li>
+   <li>Combinaisons générées automatiquement : chaque action variable est tour à tour dominante, les autres d'accompagnement (ψ<sub>0</sub>) ou absentes ; G favorable (1,0) ou défavorable (1,35). W1 et W2 sont exclusifs.</li>
+   <li>Déversement : M<sub>cr</sub> par la formule à 3 facteurs (NCCI SN003, k = k<sub>w</sub> = 1). C<sub>1</sub> = 1,127 / C<sub>2</sub> = 0,454 (charge répartie) ou 1,348 / 0,630 (charge ponctuelle centrée) ; C<sub>1</sub> = 1,0 entre maintiens latéraux (prudent). Méthode générale §6.3.2.2.</li>
+   <li>Flèche totale w<sub>max</sub> et due aux charges variables w<sub>3</sub> sous combinaisons caractéristiques, sans contreflèche.</li>
+   <li>Fréquence : f<sub>1</sub> = 17,75/√δ (δ en mm sous G + ψ<sub>2</sub>·Q), exacte pour une charge répartie. Seuils de fréquence repris du classeur ; à confirmer selon le projet (EN 1990 A1.4.4).</li>
+   <li>Non traités : voilement par cisaillement (h<sub>w</sub>/t<sub>w</sub> > 72ε), charges concentrées sur l'âme (EN 1993-1-5 §6), sections de classe 4, assemblages.</li></ul>`;
+}
+
+/* ---------- optimisation : profilé le plus léger conforme ---------- */
+function optimiser(){
+  const fa=$('fam').value, cands=PROFILS.filter(p=>p.f===fa).sort((a,b)=>a.m-b.m);
+  for(const p of cands){const Rz=verifier(p,donnees(p));if(Rz.gov.r<=1&&Rz.R.cl.cl!==4){$('prof').value=p.n;calc();return;}}
+  alert('Aucun profilé de la famille '+fa+' ne convient : changer de famille ou de nuance.');
+}
+init();
+</script>
+</body>
+</html>
