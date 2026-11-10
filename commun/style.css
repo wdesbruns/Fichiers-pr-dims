@@ -8,14 +8,14 @@
   --ink:#171a1e; --muted:#5f6670; --line:#dfe3ea; --bg:#f4f6f9; --card:#ffffff;
   --panel:#f7f8fa; --bleu-pale:#eaf1fa; --ok:#1d8a3a; --ok-pale:#e6f4ea; --rouge-pale:#fde8e8;
   --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
-  --font:"Lato",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --font:"Inter","Lato",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--font)}
 a{color:var(--fip-bleu)}
-input{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bleu-pale);color:var(--fip-bleu);font-weight:700}
-input:focus{outline:2px solid var(--fip-ciel);outline-offset:1px;background:#fff}
-label{display:block;font-size:13px;color:var(--muted);margin:14px 0 4px}
+input{width:100%;font:inherit;padding:9px 12px;border:1px solid #cfd4db;border-radius:6px;background:#fff;color:var(--fip-bleu)}
+input:focus{outline:none;border-color:var(--fip-bleu);box-shadow:0 0 0 3px rgba(17,64,136,.18)}
+label{display:block;font-size:14px;color:var(--ink);margin:16px 0 6px}
 button{font:inherit;font-weight:700;border:1px solid var(--fip-bleu);background:var(--fip-bleu);color:#fff;border-radius:6px;padding:10px 16px;cursor:pointer}
 button:hover{background:var(--fip-bleu-fonce)}
 button.secondaire{background:transparent;color:var(--fip-bleu)}
