@@ -7,12 +7,13 @@
      3. si besoin, ajouter une catégorie dans CALC_CATEGORIES.
    statut : "ok" (disponible) ou "bientot" (carte grisée « à venir »)
    vignette : petit schéma SVG affiché sur la carte (facultatif)
+   marqueur de catégorie : ● ▬ → ■ ◆ … (couleur d'accent FIP)
    ===================================================================== */
-const CALC_VERSION = "v1.1";
+const CALC_VERSION = "v1.2";
 
 const CALC_CATEGORIES = [
-  { id: "tuy", nom: "Tuyauterie", sousTitre: "Supportage, portées et descentes de charges · CODETI / EN 13480-3, ASME B31.3", couleur: "#0098db", marqueur: "●" },
-  { id: "avenir", nom: "À venir", sousTitre: "Emplacements réservés pour les prochaines calculettes", couleur: "#5f6670", marqueur: "■" },
+  { id: "tuy", nom: "Tuyauterie", sousTitre: "Supportage, portées et descentes de charges · CODETI / EN 13480-3, ASME B31.3", couleur: "#e30009", marqueur: "●" },
+  { id: "avenir", nom: "À venir", sousTitre: "Emplacements réservés pour les prochaines calculettes", couleur: "#e30009", marqueur: "■" },
 ];
 
 const CALC_APPS = [
