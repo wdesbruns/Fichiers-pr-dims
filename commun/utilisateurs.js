@@ -14,5 +14,5 @@
    Compte provisoire livré : admin / Calculettes2026!  → À REMPLACER.
    ===================================================================== */
 const CALC_UTILISATEURS = [
-  { u: "admin", h: "bef20846588c9647c3a1c9ddc41bd662c7a38ec90abcdcff7c9a35cdf47ab114" }," },
+  { u: "admin", h: "bef20846588c9647c3a1c9ddc41bd662c7a38ec90abcdcff7c9a35cdf47ab114" },
 ];
