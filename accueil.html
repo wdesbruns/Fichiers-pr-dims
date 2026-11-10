@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Calculettes — Accueil</title>
+<script src="commun/auth.js"></script>
+<script>calcProteger("");</script>
+<link rel="stylesheet" href="commun/style.css">
+<script src="commun/apps.js"></script>
+<style>
+  main{max-width:1100px;margin:0 auto;padding:16px}
+  .outils{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:4px 0 16px}
+  .outils input{max-width:360px}
+  h2{font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:22px 0 10px}
+  .grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+  a.tuile{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;transition:border-color .15s,transform .15s}
+  a.tuile:hover{border-color:var(--accent);transform:translateY(-2px)}
+  a.tuile.bientot{opacity:.55;pointer-events:none;border-style:dashed}
+  .ic{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-size:22px}
+  .tuile b{font-size:16px}
+  .tuile p{margin:0;font-size:13px;color:var(--muted)}
+  .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
+  .tag{font-size:11px;padding:1px 8px;border-radius:10px;border:1px solid var(--line);color:var(--muted)}
+  footer{max-width:1100px;margin:30px auto;padding:0 16px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <span class="logo">Σ</span>
+  <h1>Mes calculettes</h1>
+  <span class="note" id="qui"></span>
+  <button class="secondaire" onclick="calcDeconnexion('')">Déconnexion</button>
+</div>
+<main>
+  <div class="outils"><input id="q" type="search" placeholder="Rechercher (ex. tuyauterie, B31.3…)"></div>
+  <div id="liste"></div>
+</main>
+<footer>
+  Outils d'aide au calcul : les résultats doivent être vérifiés par un ingénieur qualifié. ·
+  <a href="commun/empreinte.html">Gérer les comptes</a>
+</footer>
+<script>
+  const s=calcSession(); if(s) document.getElementById('qui').textContent='Connecté : '+s.u;
+  const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function afficher(){
+    const q=document.getElementById('q').value.trim().toLowerCase();
+    const apps=CALC_APPS.filter(a=>!q||[a.titre,a.description,a.categorie,...a.normes].join(' ').toLowerCase().includes(q));
+    const cats=[...new Set(apps.map(a=>a.categorie))];
+    document.getElementById('liste').innerHTML=cats.map(c=>`<h2>${esc(c)}</h2><div class="grille">`+
+      apps.filter(a=>a.categorie===c).map(a=>`<a class="tuile ${a.statut==='bientot'?'bientot':''}" href="${a.statut==='ok'?esc(a.url):'#'}">
+        <span class="ic">${esc(a.icone||'Σ')}</span><b>${esc(a.titre)}</b><p>${esc(a.description)}</p>
+        <span class="tags">${a.normes.map(n=>`<span class="tag">${esc(n)}</span>`).join('')}${a.statut==='bientot'?'<span class="tag">à venir</span>':''}</span></a>`).join('')+`</div>`).join('')
+      ||'<p class="note">Aucune calculette ne correspond.</p>';
+  }
+  document.getElementById('q').addEventListener('input',afficher); afficher();
+</script>
+</body>
+</html>

@@ -1,22 +1,40 @@
-# Portée maximale entre supports de tuyauterie
+# Calculettes
 
-Application web en un seul fichier (`index.html`), sans installation, utilisable dans un navigateur.
+Portail de calculettes d'ingénierie (site statique, GitHub Pages).
 
-## Fonctions
-- Calcul de la **portée maximale** entre supports selon CODETI Div.1 / EN 13480-3 ou ASME B31.3 :
-  - contrainte longitudinale soutenue (poids + pression) : EN 13480-3 §12.3.2 / B31.3 §302.3.5(c) ;
-  - flèche absolue (2,5 mm par défaut) et/ou relative (L/n) ;
-  - fréquence propre minimale (optionnelle).
-- Mise en évidence du **critère dimensionnant**.
-- Mode **vérification** d'une portée donnée : taux de travail et avertissements.
-- Récapitulatif des charges : à vide, fluide, eau, rempli.
-- **Descente de charges** aux supports, avec la part tube et la part fluide séparées pour le classement G/Q Eurocode.
-- Bases de données : tubes ASME B36.10M / B36.19M (DN15 à DN600, schedules), matériaux (P235GH, P265GH, 16Mo3, P355NH, 1.4301, 1.4307, 1.4404, 1.4571, A106 B, A53 B, API 5L B, A312 TP304/304L/316/316L) et fluides courants.
-- Schéma des notations et bouton **Imprimer / PDF**.
+## Structure
+```
+index.html                 ← page de connexion (l'adresse à communiquer)
+accueil.html               ← tableau de bord : une tuile par calculette
+portee-tuyauterie/         ← portée entre supports (CODETI / EN 13480-3, ASME B31.3)
+commun/
+  utilisateurs.js          ← comptes autorisés (identifiant + empreinte du mot de passe)
+  apps.js                  ← liste des calculettes affichées sur l'accueil
+  auth.js                  ← logique de connexion / protection des pages
+  style.css                ← style commun
+  empreinte.html           ← outil pour générer la ligne d'un compte
+robots.txt                 ← demande aux moteurs de recherche de ne pas indexer
+```
 
-## Utilisation
-- **En ligne via GitHub Pages** : Settings → Pages → Source « Deploy from a branch », branche `main`, dossier `/ (root)`. L'application est alors disponible à `https://<utilisateur>.github.io/<dépôt>/`.
-- **En local** : télécharger `index.html` et l'ouvrir dans un navigateur.
+## Comptes
+Compte provisoire : `admin` / `Calculettes2026!`, **à remplacer dès la mise en ligne**.
 
-## Avertissement
-Les caractéristiques matériaux sont indicatives. Les vérifier sur les normes produit et sur l'édition du code applicable avant toute utilisation contractuelle.
+1. Se connecter, puis cliquer sur « Gérer les comptes » en bas de l'accueil.
+2. Générer la ligne de son compte et la copier.
+3. Sur GitHub, ouvrir `commun/utilisateurs.js` → ✏️ Edit, coller la ligne, supprimer la ligne `admin` → Commit.
+
+## Ajouter une calculette
+1. Créer un dossier (ex. `poutre-acier/index.html`).
+2. En tête de la page, ajouter :
+   ```html
+   <meta name="robots" content="noindex, nofollow">
+   <script src="../commun/auth.js"></script>
+   <script>calcProteger("../");</script>
+   ```
+3. Ajouter une entrée dans `commun/apps.js`.
+
+## Sécurité : à savoir
+La connexion protège contre l'**accès fortuit**, pas contre une personne déterminée. Un site statique n'a pas de serveur pour contrôler l'accès, et le dépôt public est lisible par tous. Les mots de passe ne sont pas stockés en clair (seule leur empreinte SHA-256 l'est). Malgré cela, ne pas réutiliser un mot de passe important et ne pas publier de données confidentielles. Pour une vraie protection, passer à Cloudflare Pages + Cloudflare Access (gratuit), sans réécrire les calculettes.
+
+## Mise en ligne
+Settings → Pages → Deploy from a branch → `main` / `(root)`. Adresse : `https://<utilisateur>.github.io/Calculettes/`.
