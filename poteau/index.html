@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=1.4"></script>
+<script src="../commun/auth.js?v=1.5"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — P2 Poteau acier</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=1.4">
-<script src="../commun/data/profils.js?v=1.4"></script>
-<script src="../commun/acier.js?v=1.4"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=1.5">
+<script src="../commun/data/profils.js?v=1.5"></script>
+<script src="../commun/acier.js?v=1.5"></script>
 </head>
 <body>
 <header>
@@ -200,7 +200,7 @@ function calc(){
   $('rComb').innerHTML=`<table><tr><th>Combinaison ELU</th><th class="n">N<sub>Ed</sub> (kN)</th><th class="n">M<sub>y,Ed</sub> (kNm)</th><th class="n">(6.61)</th><th class="n">(6.62)</th></tr>`+
     R.out.slice().sort((a,b)=>Math.max(b.r661,b.r662)-Math.max(a.r661,a.r662)).map(r=>`<tr><td>${escH(r.c.nom)}</td><td class="n">${f(r.NEd,1)}</td><td class="n">${f(r.MEd,2)}</td><td class="n">${f(r.r661*100,0)} %</td><td class="n">${f(r.r662*100,0)} %</td></tr>`).join('')+`</table>`;
   $('rNotes').innerHTML=`<ul class="note" style="font-size:12.5px">
-   <li>Poteau à section constante ; flexion autour de l'axe fort y seulement (vent latéral et excentricité de la charge). Flexion biaxiale non traitée.</li>
+   <li>Prédimensionnement d'un poteau à section constante. Le flambement est vérifié selon les deux axes (y-y fort et z-z faible). La flexion est facultative : vent latéral et excentricité, autour de l'axe fort y-y uniquement. Avec un vent latéral et une excentricité nuls, le calcul se limite à la compression avec flambement, comme dans le classeur.</li>
    <li>Moments : articulé en tête et en pied → M = qH²/8 (vent) et N·e en tête ; encastré en pied et libre en tête → M = qH²/2 + N·e en pied. Autres liaisons : moments pris comme articulé-articulé (prudent).</li>
    <li>Interaction : NF EN 1993-1-1 §6.3.3, éq. (6.61) et (6.62), facteurs k<sub>yy</sub>, k<sub>zy</sub> de l'Annexe B (barres sensibles aux déformations de torsion). C<sub>m</sub> selon le Tab. B.3 : 0,95 (charge répartie), 0,6 (N·e en tête seul, ψ = 0), 1,0 (prudent si combiné ou console).</li>
    <li>Déversement : M<sub>cr</sub> avec charge au centre de cisaillement (z<sub>g</sub> = 0), méthode générale §6.3.2.2.</li>

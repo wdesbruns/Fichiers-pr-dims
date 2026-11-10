@@ -81,9 +81,9 @@ function genererCombinaisons(vars) {
    SECTIONS (NF EN 1993-1-1 §5.5, Tab. 5.2)
    ===================================================================== */
 function classeSection(p, fy, sollic) {          // sollic : 'flexion' | 'compression'
-  if (!(p.tw && p.tf && p.b) || !/^(IPE|HE)/.test(p.f)) return { cl: null, txt: "non vérifiée (dimensions absentes de la base)" };
-  const e = epsilon(fy);
-  const cf = (p.b - p.tw - 2 * p.r) / 2 / p.tf;            // semelle comprimée (console)
+  if (!(p.tw && p.tf && p.b)) return { cl: null, txt: "non vérifiée (dimensions absentes de la base)" };
+  const e = epsilon(fy), U = /^U/.test(p.f);
+  const cf = (U ? p.b - p.tw - p.r : (p.b - p.tw - 2 * p.r) / 2) / p.tf;   // semelle comprimée (console) ; tf moyen pour ailes inclinées
   const cw = (p.h - 2 * p.tf - 2 * p.r) / p.tw;            // âme
   const clF = cf <= 9 * e ? 1 : cf <= 10 * e ? 2 : cf <= 14 * e ? 3 : 4;
   const lim = sollic === "flexion" ? [72, 83, 124] : [33, 38, 42];
