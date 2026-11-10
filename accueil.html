@@ -4,55 +4,117 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Calculettes — Accueil</title>
+<title>FIP Calculettes — Accueil</title>
 <script src="commun/auth.js"></script>
 <script>calcProteger("");</script>
+<link rel="icon" href="commun/img/picto-fip.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="commun/style.css">
 <script src="commun/apps.js"></script>
 <style>
-  main{max-width:1100px;margin:0 auto;padding:16px}
-  .outils{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:4px 0 16px}
-  .outils input{max-width:360px}
-  h2{font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:22px 0 10px}
-  .grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
-  a.tuile{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;transition:border-color .15s,transform .15s}
-  a.tuile:hover{border-color:var(--accent);transform:translateY(-2px)}
-  a.tuile.bientot{opacity:.55;pointer-events:none;border-style:dashed}
-  .ic{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-size:22px}
-  .tuile b{font-size:16px}
-  .tuile p{margin:0;font-size:13px;color:var(--muted)}
-  .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
-  .tag{font-size:11px;padding:1px 8px;border-radius:10px;border:1px solid var(--line);color:var(--muted)}
-  footer{max-width:1100px;margin:30px auto;padding:0 16px;font-size:12px;color:var(--muted)}
+  .app{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
+  /* ---------- barre latérale ---------- */
+  .side{background:#eef1f5;border-right:1px solid var(--line);padding:18px 14px;position:sticky;top:0;height:100vh;overflow:auto;display:flex;flex-direction:column}
+  .side .logo{width:170px;display:block;margin:4px auto 10px}
+  .side .id{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 14px;border-bottom:1px solid var(--line)}
+  .side .id .marque{font-size:16px}
+  .side .id .mono{font-size:11px;color:var(--muted)}
+  .nav-actif{display:flex;gap:8px;align-items:center;margin:14px 0 6px;padding:9px 12px;background:#fff;border:1px solid var(--line);border-radius:6px;font-weight:700;color:var(--ink);text-decoration:none}
+  .nav-actif::before{content:"▲";color:var(--fip-rouge);font-size:12px}
+  .grp{margin-top:18px;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);display:flex;gap:8px;align-items:center;padding:0 4px}
+  .side a.item{display:grid;grid-template-columns:34px 1fr;gap:4px;padding:6px 4px;color:var(--ink);text-decoration:none;font-size:14px;border-radius:4px}
+  .side a.item:hover{background:#fff}
+  .side a.item .mono{font-size:11px;color:var(--muted);padding-top:2px}
+  .side a.item.bientot{opacity:.5}
+  .side .bas{margin-top:auto;padding-top:16px;border-top:1px solid var(--line);font-size:13px}
+  .side .bas button{width:100%;margin-top:8px;padding:7px}
+  /* ---------- contenu ---------- */
+  main{padding:30px 34px 50px;max-width:1150px}
+  h1{font-size:28px;margin:0 0 8px;color:var(--ink)}
+  .lead{color:var(--muted);max-width:780px;margin:0 0 20px}
+  .etapes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:12px}
+  .etape{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px 16px;font-size:14px}
+  .etape b.n{display:block;font-size:12px;letter-spacing:.08em;color:var(--muted);margin-bottom:4px}
+  .bleu{color:var(--fip-bleu);font-weight:700}.rouge{color:var(--fip-rouge);font-weight:700}.vert{color:var(--ok);font-weight:700}
+  .recherche{max-width:380px;margin:18px 0 0;background:#fff;color:var(--ink);font-weight:400}
+  section h2{font-size:21px;margin:34px 0 2px;display:flex;align-items:center;gap:10px}
+  section h2 i{font-style:normal;font-size:14px}
+  section .st{color:var(--muted);margin:0 0 14px;font-size:14px}
+  .grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px}
+  a.mod{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px;text-decoration:none;color:var(--ink);transition:border-color .15s,box-shadow .15s}
+  a.mod:hover{border-color:var(--fip-bleu);box-shadow:0 6px 20px rgba(17,64,136,.10)}
+  a.mod.bientot{pointer-events:none;border-style:dashed;opacity:.6}
+  .mod .tete{display:flex;gap:8px;align-items:baseline;font-weight:700;font-size:16px;margin-bottom:10px}
+  .mod .tete .mono{font-size:11px;color:var(--muted);font-weight:400}
+  .mod .vig{background:var(--panel);border:1px solid #e8ebf0;border-radius:4px;padding:8px;min-height:120px;display:grid;place-items:center}
+  .mod .vig svg{width:100%;height:auto;max-height:190px}
+  .mod .vig.vide{color:var(--muted);font-size:30px}
+  .mod p{margin:10px 0 0;font-size:13px;color:var(--muted)}
+  .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+  .tag{font-size:11px;padding:1px 7px;border-radius:3px;background:var(--bleu-pale);color:var(--fip-bleu);font-weight:700}
+  footer{margin-top:40px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+  @media (max-width:900px){
+    .app{grid-template-columns:1fr}
+    .side{position:static;height:auto;border-right:0;border-bottom:3px solid var(--fip-bleu)}
+    .side nav{display:none}
+    main{padding:20px 16px 40px}
+    .etapes{grid-template-columns:1fr}
+    .grille{grid-template-columns:1fr}
+  }
 </style>
 </head>
 <body>
-<div class="topbar">
-  <span class="logo">Σ</span>
-  <h1>Mes calculettes</h1>
-  <span class="note" id="qui"></span>
-  <button class="secondaire" onclick="calcDeconnexion('')">Déconnexion</button>
+<div class="app">
+  <aside class="side">
+    <img class="logo" src="commun/img/logo-fip.png" alt="FIP — France Ingénierie Process">
+    <div class="id"><span class="marque">FIP <em>Calculettes</em></span><span class="mono" id="ver"></span></div>
+    <a class="nav-actif" href="accueil.html">Choisir une calculette</a>
+    <nav id="nav"></nav>
+    <div class="bas">
+      <div class="note" id="qui"></div>
+      <a href="commun/empreinte.html" class="note">Gérer les comptes</a>
+      <button class="secondaire" onclick="calcDeconnexion('')">Déconnexion</button>
+    </div>
+  </aside>
+  <main>
+    <h1>Choisissez une calculette</h1>
+    <p class="lead">Chaque module applique les règles des codes cités (CODETI, EN 13480, ASME, Eurocodes et annexes nationales françaises), avec les paragraphes de référence rappelés dans les résultats. Vous saisissez les données, le schéma et le verdict se mettent à jour instantanément.</p>
+    <div class="etapes">
+      <div class="etape"><b class="n">1 · SAISIR</b>Les champs <span class="bleu">bleus</span> sont à renseigner. Les bases de données (tubes, matériaux, fluides) pré-remplissent les valeurs, qui restent modifiables.</div>
+      <div class="etape"><b class="n">2 · LIRE LE RÉSULTAT</b>Chaque critère donne un <b>taux = sollicitation / limite</b>. Taux ≤ 100 % : <span class="vert">● OK</span>. Taux > 100 % : <span class="rouge">▲ NON CONFORME</span>. Le critère <span class="rouge">▲ dimensionnant</span> est mis en évidence.</div>
+      <div class="etape"><b class="n">3 · JUSTIFIER</b>Le bouton <b>Imprimer / PDF</b> produit une note de calcul avec les hypothèses, les formules et les références normatives.</div>
+    </div>
+    <input id="q" class="recherche" type="search" placeholder="Rechercher un module (ex. tuyauterie, B31.3…)">
+    <div id="liste"></div>
+    <footer>Outils d'aide au calcul : les résultats doivent être vérifiés par un ingénieur qualifié. · <span class="mono" id="ver2"></span></footer>
+  </main>
 </div>
-<main>
-  <div class="outils"><input id="q" type="search" placeholder="Rechercher (ex. tuyauterie, B31.3…)"></div>
-  <div id="liste"></div>
-</main>
-<footer>
-  Outils d'aide au calcul : les résultats doivent être vérifiés par un ingénieur qualifié. ·
-  <a href="commun/empreinte.html">Gérer les comptes</a>
-</footer>
 <script>
   const s=calcSession(); if(s) document.getElementById('qui').textContent='Connecté : '+s.u;
+  document.getElementById('ver').textContent='moteur '+CALC_VERSION; document.getElementById('ver2').textContent='FIP Calculettes '+CALC_VERSION;
   const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const lien=a=>a.statut==='ok'?esc(a.url):'#';
+  // barre latérale
+  document.getElementById('nav').innerHTML=CALC_CATEGORIES.map(c=>{
+    const apps=CALC_APPS.filter(a=>a.categorie===c.id); if(!apps.length) return '';
+    return `<div class="grp"><span style="color:${c.couleur}">${c.marqueur}</span>${esc(c.nom)}</div>`+
+      apps.map(a=>`<a class="item ${a.statut}" href="${lien(a)}"><span class="mono">${esc(a.code)}</span><span>${esc(a.titre)}</span></a>`).join('');
+  }).join('');
+  // cartes
   function afficher(){
     const q=document.getElementById('q').value.trim().toLowerCase();
-    const apps=CALC_APPS.filter(a=>!q||[a.titre,a.description,a.categorie,...a.normes].join(' ').toLowerCase().includes(q));
-    const cats=[...new Set(apps.map(a=>a.categorie))];
-    document.getElementById('liste').innerHTML=cats.map(c=>`<h2>${esc(c)}</h2><div class="grille">`+
-      apps.filter(a=>a.categorie===c).map(a=>`<a class="tuile ${a.statut==='bientot'?'bientot':''}" href="${a.statut==='ok'?esc(a.url):'#'}">
-        <span class="ic">${esc(a.icone||'Σ')}</span><b>${esc(a.titre)}</b><p>${esc(a.description)}</p>
-        <span class="tags">${a.normes.map(n=>`<span class="tag">${esc(n)}</span>`).join('')}${a.statut==='bientot'?'<span class="tag">à venir</span>':''}</span></a>`).join('')+`</div>`).join('')
-      ||'<p class="note">Aucune calculette ne correspond.</p>';
+    const ok=a=>!q||[a.code,a.titre,a.description,...a.normes].join(' ').toLowerCase().includes(q);
+    const html=CALC_CATEGORIES.map(c=>{
+      const apps=CALC_APPS.filter(a=>a.categorie===c.id&&ok(a)); if(!apps.length) return '';
+      return `<section><h2><i style="color:${c.couleur}">${c.marqueur}</i>${esc(c.nom)}</h2><p class="st">${esc(c.sousTitre)}</p><div class="grille">`+
+        apps.map(a=>`<a class="mod ${a.statut}" href="${lien(a)}">
+          <div class="tete"><span class="mono">${esc(a.code)}</span>${esc(a.titre)}</div>
+          <div class="vig ${a.vignette?'':'vide'}">${a.vignette||'＋'}</div>
+          <p>${esc(a.description)}</p>
+          <div class="tags">${a.normes.map(n=>`<span class="tag">${esc(n)}</span>`).join('')}${a.statut==='bientot'?'<span class="tag">à venir</span>':''}</div></a>`).join('')+
+        `</div></section>`;}).join('');
+    document.getElementById('liste').innerHTML=html||'<p class="note" style="margin-top:20px">Aucun module ne correspond.</p>';
   }
   document.getElementById('q').addEventListener('input',afficher); afficher();
 </script>

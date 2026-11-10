@@ -1,6 +1,6 @@
-# Calculettes
+# FIP Calculettes
 
-Portail de calculettes d'ingénierie (site statique, GitHub Pages).
+Portail de calculettes du bureau d'études, aux couleurs FIP (bleu #114088, rouge #e30009, ciel #0098db). Site statique, GitHub Pages.
 
 ## Structure
 ```
@@ -11,7 +11,8 @@ commun/
   utilisateurs.js          ← comptes autorisés (identifiant + empreinte du mot de passe)
   apps.js                  ← liste des calculettes affichées sur l'accueil
   auth.js                  ← logique de connexion / protection des pages
-  style.css                ← style commun
+  style.css                ← style commun (charte FIP)
+  img/                     ← logo et picto FIP
   empreinte.html           ← outil pour générer la ligne d'un compte
 robots.txt                 ← demande aux moteurs de recherche de ne pas indexer
 ```
