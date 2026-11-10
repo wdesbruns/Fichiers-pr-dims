@@ -4,22 +4,30 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Calculettes — Connexion</title>
+<title>FIP Calculettes — Connexion</title>
+<link rel="icon" href="commun/img/picto-fip.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="commun/style.css">
 <script src="commun/utilisateurs.js"></script>
 <script src="commun/auth.js"></script>
 <style>
-  body{min-height:100vh;display:grid;place-items:center;padding:16px}
-  .carte{width:100%;max-width:380px}
-  h1{font-size:22px;margin:10px 0 2px}
+  body{min-height:100vh;display:grid;place-items:center;padding:16px;
+       background:linear-gradient(160deg,#f4f6f9 0%,#f4f6f9 55%,#e3ebf6 100%)}
+  .carte{width:100%;max-width:400px;border-top:4px solid var(--fip-bleu);box-shadow:0 8px 30px rgba(17,64,136,.08)}
+  .logo{display:block;width:180px;max-width:70%;margin:4px auto 12px}
+  .titre{text-align:center;font-size:20px;margin:0}
+  .sous{text-align:center;margin:2px 0 10px}
   button[type=submit]{width:100%;margin-top:18px}
+  footer{text-align:center;margin-top:14px}
 </style>
 </head>
 <body>
+<div>
 <form class="carte" id="f" autocomplete="on">
-  <span class="logo">Σ</span>
-  <h1>Calculettes</h1>
-  <div class="note">Outils de calcul — accès réservé</div>
+  <img class="logo" src="commun/img/logo-fip.png" alt="FIP — France Ingénierie Process">
+  <p class="titre marque">FIP <em>Calculettes</em></p>
+  <p class="sous note">Outils de calcul du bureau d'études · accès réservé</p>
   <label for="u">Identifiant</label>
   <input id="u" name="username" autocomplete="username" required autofocus>
   <label for="p">Mot de passe</label>
@@ -28,6 +36,8 @@
   <button type="submit">Se connecter</button>
   <div id="e" class="msg err" hidden></div>
 </form>
+<footer class="note">Usage interne</footer>
+</div>
 <script>
   // URL de retour : uniquement un chemin du même site (pas de redirection externe)
   function cible(){

@@ -6,36 +6,43 @@
 <meta name="robots" content="noindex, nofollow">
 <script src="../commun/auth.js"></script>
 <script>calcProteger("../");</script>
-<title>Portées de tuyauterie</title>
+<title>FIP Calculettes — T1 Portée de tuyauterie</title>
+<link rel="icon" href="../commun/img/picto-fip.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f5f6f8; --card:#ffffff; --ink:#1d2330; --muted:#5d6675; --line:#d6dae1;
-  --accent:#1f5fa8; --accent-soft:#e6eef8; --ok:#1d7a3a; --ok-soft:#e5f4ea;
-  --warn:#9a6200; --warn-soft:#fdf2dc; --bad:#b3261e; --bad-soft:#fbe7e5;
-  --gov:#fff3c4;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#14171c; --card:#1d2128; --ink:#e7eaf0; --muted:#9aa3b2; --line:#343a45;
-    --accent:#7fb0ee; --accent-soft:#1f2c3d; --ok:#6fcf8a; --ok-soft:#18301f;
-    --warn:#f0bf5a; --warn-soft:#352a12; --bad:#f08a80; --bad-soft:#3a1c1a; --gov:#3d3512;
-  }
+  /* Charte FIP : bleu #114088 · rouge #e30009 · ciel #0098db */
+  --fip-bleu:#114088; --fip-rouge:#e30009; --fip-ciel:#0098db;
+  --bg:#f4f6f9; --card:#ffffff; --ink:#171a1e; --muted:#5f6670; --line:#dfe3ea;
+  --accent:#114088; --accent-soft:#eaf1fa; --ok:#1d8a3a; --ok-soft:#e6f4ea;
+  --warn:#9a6200; --warn-soft:#fdf2dc; --bad:#e30009; --bad-soft:#fde8e8;
+  --gov:#fdecec; --panel:#f7f8fa;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{padding:14px 16px;border-bottom:1px solid var(--line);background:var(--card);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-header h1{font-size:18px;margin:0;flex:1 1 auto}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "Lato",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+header{padding:12px 16px;border-bottom:3px solid var(--fip-bleu);background:var(--card);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+header h1{font-size:19px;margin:0;flex:1 1 auto;color:var(--ink)}
+header h1 .code{font-family:var(--mono);font-size:12px;color:var(--muted);font-weight:400;margin-right:6px}
+header .brand{display:flex;align-items:center;gap:10px;text-decoration:none;padding-right:12px;border-right:1px solid var(--line)}
+header .brand img{height:30px}
+header .brand span{font-weight:900;color:var(--fip-bleu);font-size:14px;line-height:1.1}
+header .brand em{font-style:normal;color:var(--fip-rouge);display:block}
 header .sub{color:var(--muted);font-size:12px}
-button{font:inherit;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:6px;padding:7px 14px;cursor:pointer}
+button{font:inherit;font-weight:700;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:6px;padding:7px 14px;cursor:pointer}
 header a.back{color:var(--accent);text-decoration:none;font-weight:600;white-space:nowrap}
 button.secondary{background:transparent;color:var(--accent)}
 main{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:16px;padding:16px;max-width:1500px;margin:0 auto}
 @media (max-width:900px){main{grid-template-columns:1fr}}
-.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:16px}
-.card h2{font-size:15px;margin:0 0 10px;color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:16px}
+.card h2{font-size:15px;margin:0 0 10px;color:var(--fip-bleu);text-transform:uppercase;letter-spacing:.05em;font-size:13px;border-left:3px solid var(--fip-rouge);padding-left:8px}
 .card h3{font-size:13px;margin:14px 0 6px}
 label{display:block;font-size:12px;color:var(--muted);margin-top:8px}
-input,select{width:100%;font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+input,select{width:100%;font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:var(--accent-soft);color:var(--fip-bleu);font-weight:700}
+input:focus,select:focus{outline:2px solid var(--fip-ciel);outline-offset:0;background:#fff}
+#form .card h2::after{content:"champs bleus à renseigner";float:right;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted);font-weight:400;display:none}
+#form .card:first-child h2::after{display:inline}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .chk{display:flex;gap:6px;align-items:center;color:var(--ink);font-size:13px}
@@ -48,17 +55,18 @@ table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}
 th{color:var(--muted);font-weight:600;font-size:12px}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-tr.gov td{background:var(--gov);font-weight:600}
+tr.gov td{background:var(--gov);font-weight:700}
+tr.gov td:first-child{box-shadow:inset 3px 0 0 var(--fip-rouge)}
 .badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600}
 .b-ok{background:var(--ok-soft);color:var(--ok)}
 .b-warn{background:var(--warn-soft);color:var(--warn)}
 .b-bad{background:var(--bad-soft);color:var(--bad)}
-.b-gov{background:var(--gov);color:var(--ink)}
+.b-gov{background:var(--fip-rouge);color:#fff}
 .hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:6px}
 .kpi{border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg)}
-.kpi .v{font-size:22px;font-weight:700}
+.kpi .v{font-size:22px;font-weight:900;color:var(--fip-bleu)}
 .kpi .l{font-size:12px;color:var(--muted)}
-.kpi.main{border-color:var(--accent);background:var(--accent-soft)}
+.kpi.main{border-color:var(--fip-bleu);background:var(--accent-soft);border-left:4px solid var(--fip-bleu)}
 .msg{padding:8px 10px;border-radius:6px;margin:6px 0;font-size:13px}
 .msg.warn{background:var(--warn-soft);color:var(--warn)}
 .msg.bad{background:var(--bad-soft);color:var(--bad)}
@@ -68,13 +76,16 @@ tr.gov td{background:var(--gov);font-weight:600}
 svg text{fill:var(--ink);font-family:inherit}
 .small{font-size:12px}
 .printhead{display:none}
+.printhead img{height:38px;float:right}
 @media print{
   @page{size:A4;margin:12mm}
   body{background:#fff;color:#000;font-size:11px}
   header,#form,.noprint{display:none!important}
   main{display:block;padding:0}
   .card{border:1px solid #999;break-inside:avoid;margin-bottom:8px;padding:8px}
-  .printhead{display:block;border-bottom:2px solid #000;margin-bottom:8px;padding-bottom:4px}
+  .printhead{display:block;border-bottom:3px solid var(--fip-bleu);margin-bottom:8px;padding-bottom:6px;overflow:hidden}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  input,select{background:#fff}
   .kpi{background:#fff}
   svg text{fill:#000}
 }
@@ -82,9 +93,10 @@ svg text{fill:var(--ink);font-family:inherit}
 </head>
 <body>
 <header>
+  <a href="../accueil.html" class="brand" title="Retour à l'accueil"><img src="../commun/img/picto-fip.png" alt="FIP"><span>FIP<em>Calculettes</em></span></a>
   <a href="../accueil.html" class="back" title="Retour à l'accueil">← Accueil</a>
   <div style="flex:1 1 auto">
-    <h1>Portée maximale entre supports de tuyauterie</h1>
+    <h1><span class="code">T1</span>Portée maximale entre supports de tuyauterie</h1>
     <div class="sub">CODETI Div.1 / EN 13480-3 — ASME B31.3 · Contrainte soutenue · Flèche · Fréquence · Descente de charges</div>
   </div>
   <button onclick="window.print()">🖨️ Imprimer / PDF</button>
@@ -170,6 +182,7 @@ svg text{fill:var(--ink);font-family:inherit}
 <!-- ======================= RÉSULTATS ======================= -->
 <section id="results">
   <div class="printhead">
+    <img src="../commun/img/logo-fip.png" alt="FIP">
     <strong>Note de calcul — portée entre supports de tuyauterie</strong><br>
     <span id="phInfo"></span>
   </div>
@@ -435,7 +448,7 @@ function render(o){
     h+=`<div class="kpi"><div class="l">Portée maxi admissible</div><div class="v">${fmt(o.Lmax,2)} m</div></div>`;
   }else{
     h+=`<div class="kpi main"><div class="l">Portée maximale L<sub>max</sub></div><div class="v">${fmt(o.Lmax,2)} m</div><div class="l">retenue (arrondie) : <b>${fmt(o.Lret,1)} m</b></div></div>`;
-    h+=`<div class="kpi"><div class="l">Critère dimensionnant</div><div class="v" style="font-size:16px">${o.gov.n}</div><span class="badge b-gov">${o.gov.cas.n}</span></div>`;
+    h+=`<div class="kpi"><div class="l">Critère dimensionnant</div><div class="v" style="font-size:16px;color:var(--fip-rouge)">▲ ${o.gov.n}</div><span class="badge b-gov">${o.gov.cas.n}</span></div>`;
   }
   h+=`<div class="kpi"><div class="l">Descente de charge maxi sur appui intermédiaire (L = ${fmt(o.Lret,2)} m)</div><div class="v">${fmt(o.Rint.vide+Math.max(o.Rint.fl,o.doHydro?o.Rint.wat:0)+o.Ppt,2)} kN</div></div>`;
   h+=`</div>`;
@@ -473,7 +486,7 @@ function render(o){
   let t=`<h2>Critères de portée</h2><table><tr><th>Cas</th><th>Critère</th><th class="n">Limite</th><th class="n">L<sub>max</sub> (m)</th><th class="n">Valeur à L = ${fmt(o.Lret,2)} m</th><th class="n">Taux</th><th></th></tr>`;
   o.res.forEach(r=>r.crit.forEach(c=>{
     const isGov=c===o.gov;
-    t+=`<tr class="${isGov?'gov':''}"><td>${c.cas.n}</td><td>${c.n}${isGov?' <span class="badge b-gov">DIMENSIONNANT</span>':''}<div class="note">${c.ref}</div></td>
+    t+=`<tr class="${isGov?'gov':''}"><td>${c.cas.n}</td><td>${c.n}${isGov?' <span class="badge b-gov">▲ DIMENSIONNANT</span>':''}<div class="note">${c.ref}</div></td>
     <td class="n">${c.inverse?'≥ ':'≤ '}${fmt(c.limAt,2)} ${c.unit}</td><td class="n">${fmt(c.L,2)}</td><td class="n">${fmt(c.valAt,2)} ${c.unit}</td><td class="n">${fmt(c.ratio*100,0)} %</td><td>${badge(c.ratio)}</td></tr>`;}));
   t+=`</table>`;
   const r0=o.res[0];
