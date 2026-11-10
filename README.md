@@ -51,3 +51,6 @@ Settings → Pages → Deploy from a branch → `main` / `(root)`. Adresse : `ht
   recherche d'adresse, altitude RGE ALTI) ; secours : api-adresse.data.gouv.fr. Sans connexion : saisie
   département / commune / INSEE.
 - Mise à jour des bases : `python3 outils/extraire_excel.py classeur.xlsx`, puis commit de `climat/data/`.
+
+## Nouvelle version
+À chaque mise à jour, incrémenter `CALC_VERSION` dans `commun/apps.js` et le paramètre `?v=` des liens vers `commun/*.js|css` et `climat/data/*.js` (oblige les navigateurs à recharger les fichiers).
