@@ -9,7 +9,7 @@
    vignette : petit schéma SVG affiché sur la carte (facultatif)
    marqueur de catégorie : ● ▬ → ■ ◆ … (couleur d'accent FIP)
    ===================================================================== */
-const CALC_VERSION = "v1.7";
+const CALC_VERSION = "v1.8";
 
 const CALC_CATEGORIES = [
   { id: "tuy", nom: "Tuyauterie", sousTitre: "Supportage, portées et descentes de charges · CODETI / EN 13480-3, ASME B31.3", couleur: "#e30009", marqueur: "●" },
@@ -45,6 +45,26 @@ const CALC_APPS = [
   <line x1="70" y1="84" x2="70" y2="118" stroke="#171a1e" stroke-width=".5"/><line x1="334" y1="84" x2="334" y2="118" stroke="#171a1e" stroke-width=".5"/>
   <text x="202" y="126" font-size="10" text-anchor="middle" fill="#171a1e">L = portée entre supports</text>
   <text x="202" y="142" font-size="9" text-anchor="middle" fill="#5f6670">σ = P·D/4e + M/Z ≤ f  ·  δ  ·  f₁</text>
+</svg>`,
+  },
+  {
+    code: "S1",
+    titre: "Supports standards de tuyauterie",
+    description: "Montant au sol, console murale, suspente : plusieurs tuyaux (base T1), entraxes, G/T/S/W/E, combinaisons ELU et sismiques, vérifications EN 1993-1-1, descente de charges cas simples + enveloppe, vues 2D/3D, optimisation.",
+    url: "supports/",
+    categorie: "tuy",
+    normes: ["NF EN 1990", "NF EN 1993-1-1", "NF EN 1991-1-4", "NF EN 1998-1"],
+    statut: "ok",
+    vignette: `
+<svg viewBox="0 0 400 195" xmlns="http://www.w3.org/2000/svg" font-family="Inter,Arial,sans-serif">
+  <defs><marker id="s1g" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7z" fill="#e30009"/></marker></defs>
+  <line x1="20" y1="170" x2="130" y2="170" stroke="#171a1e"/><rect x="55" y="166" width="40" height="4" fill="#171a1e"/><rect x="72" y="40" width="7" height="126" fill="#8a929c"/>
+  <circle cx="98" cy="70" r="15" fill="#0b5d73"/><circle cx="98" cy="120" r="11" fill="#0b5d73"/>
+  <line x1="98" y1="88" x2="98" y2="104" stroke="#e30009" stroke-width="2" marker-end="url(#s1g)"/>
+  <line x1="160" y1="20" x2="160" y2="175" stroke="#171a1e" stroke-width="2"/><rect x="161" y="96" width="90" height="7" fill="#8a929c"/>
+  <circle cx="190" cy="83" r="12" fill="#0b5d73"/><circle cx="228" cy="86" r="9" fill="#0b5d73"/>
+  <line x1="275" y1="22" x2="380" y2="22" stroke="#171a1e" stroke-width="2"/><rect x="322" y="23" width="7" height="110" fill="#8a929c"/><circle cx="346" cy="118" r="14" fill="#0b5d73"/>
+  <text x="20" y="190" font-size="10" fill="#5f6670">sol · mur · plafond — DDC cas simples + enveloppe ELU</text>
 </svg>`,
   },
   {

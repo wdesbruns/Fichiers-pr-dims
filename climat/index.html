@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=1.7"></script>
+<script src="../commun/auth.js?v=1.8"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — C1 Hypothèses climatiques et sismiques</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
@@ -12,9 +12,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../commun/lib/leaflet/leaflet.css">
 <script src="../commun/lib/leaflet/leaflet.js"></script>
-<script src="data/zonage.js?v=1.7"></script>
-<script src="data/communes.js?v=1.7"></script>
-<script src="data/departements.js?v=1.7"></script>
+<script src="data/zonage.js?v=1.8"></script>
+<script src="data/communes.js?v=1.8"></script>
+<script src="data/departements.js?v=1.8"></script>
 <style>
 :root{
   --fip-bleu:#114088; --fip-bleu-fonce:#0b2d63; --fip-rouge:#e30009; --fip-ciel:#0098db;
@@ -147,6 +147,7 @@ svg text{font-family:inherit}
     <h1><span class="code">C1</span>Hypothèses climatiques, sismiques et complexes</h1>
     <div class="sub">NF EN 1991-1-3 / 1-4 + AN · arrêté du 22/10/2010 + NF EN 1998-1 + AN · NF EN 1991-1-1</div>
   </div>
+  <button class="sec" id="versS1" title="Transmettre vent, neige et séisme à la calculette supports S1">➜ Supports S1</button>
   <button onclick="imprimer()">🖨️ Imprimer / PDF</button>
 </header>
 
@@ -777,8 +778,18 @@ function init(){
   render();
 }
 init();
+/* ---------- transmission des hypothèses à la calculette supports S1 ---------- */
+$('versS1').onclick=()=>{
+  render(); const {Z,V,N,E}=window.__R, c=S.commune;
+  const o={lieu:(c?c.n+' ('+c.d+')':'')+' – alt. '+f(num('alt'),0)+' m', date:new Date().toISOString(),
+    vent:V?{zone:Z.zv,vb:V.vb,rho:V.rho,z0:V.t.z0,zmin:V.t.zmin,kr:V.kr,kI:V.t.kI,co:V.co,cat:V.t.id}:null,
+    neige:N?{zone:Z.zn,sk:N.sk,sAd:N.sAd,alt:N.A}:null,
+    seisme:E?{zone:E.zs,ag:E.ag,alpha:E.alpha,S:E.S,cat:E.cat,sol:E.sol}:null};
+  try{localStorage.setItem('fip.climat',JSON.stringify(o));$('versS1').textContent='✓ Envoyé vers S1';setTimeout(()=>$('versS1').textContent='➜ Supports S1',2500);}
+  catch(e){alert('Stockage indisponible sur ce navigateur.');}
+};
 </script>
-<script src="../commun/export.js?v=1.7"></script>
+<script src="../commun/export.js?v=1.8"></script>
 <script>EXPORT.init({code:'C1',titre:'Hypothèses climatiques, sismiques et complexes',
   zones:()=>[...document.querySelectorAll('#syn > .card')].concat(['ventRes','neigeRes','neigeToit','seismeRes','seismeGraph','seismeFa','cpxCouv','cpxBard'].map(id=>document.getElementById(id).closest('.card'))),
   donnees:()=>[document.querySelector('.panneau'),...document.querySelectorAll('main .card')],

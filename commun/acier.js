@@ -33,7 +33,8 @@ const LOCAUX_FREQ = [{ n: "Habitation / bureau", f: 2.6 }, { n: "Gymnase / salle
 const fmtN = (x, d = 2) => (typeof x === "number" && isFinite(x)) ? x.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d }) : "—";
 const escH = (t) => String(t ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const profil = (n) => PROFILS.find((p) => p.n === n);
-const familles = () => [...new Set(PROFILS.map((p) => p.f))];
+const FAM_CLASSIQUES = ["IPE", "HEA", "HEB", "HEM", "IPN", "UPN", "UPE"];
+const familles = (toutes) => [...new Set(PROFILS.map((p) => p.f))].filter((f) => toutes || FAM_CLASSIQUES.includes(f));
 function fyDe(nuance, p) { const t = Math.max(p.tf || 0, p.tw || 0); return t > 40 ? NUANCES[nuance][1] : NUANCES[nuance][0]; }
 const epsilon = (fy) => Math.sqrt(235 / fy);
 
@@ -83,6 +84,20 @@ function genererCombinaisons(vars) {
 function classeSection(p, fy, sollic) {          // sollic : 'flexion' | 'compression'
   if (!(p.tw && p.tf && p.b)) return { cl: null, txt: "non vérifiée (dimensions absentes de la base)" };
   const e = epsilon(fy), U = /^U/.test(p.f);
+  if (/^LI?$/.test(p.f)) {                                   // cornières – Tab. 5.2 feuille 3 : classe 3 ou 4
+    const r1 = p.h / p.t, r2 = (p.b + p.h) / (2 * p.t), cl = (r1 <= 15 * e && r2 <= 11.5 * e) ? 3 : 4;
+    return { cl, txt: `classe ${cl} (cornière : h/t = ${fmtN(r1, 1)} ≤ 15ε = ${fmtN(15 * e, 1)} ; (b+h)/2t = ${fmtN(r2, 1)} ≤ 11,5ε = ${fmtN(11.5 * e, 1)})` };
+  }
+  if (p.f === "CHS") {                                        // tubes ronds – Tab. 5.2 feuille 3 : d/t
+    const r = p.h / p.t, cl = r <= 50 * e * e ? 1 : r <= 70 * e * e ? 2 : r <= 90 * e * e ? 3 : 4;
+    return { cl, txt: `classe ${cl} (tube rond : d/t = ${fmtN(r, 1)} ; 50ε² = ${fmtN(50 * e * e, 1)})` };
+  }
+  if (p.f === "SHS" || p.f === "RHS") {                       // tubes rectangulaires – parois internes, c = h − 3t
+    const cfl = (p.b - 3 * p.t) / p.t, cw = (p.h - 3 * p.t) / p.t, lim = sollic === "flexion" ? [72, 83, 124] : [33, 38, 42];
+    const cF = cfl <= 33 * e ? 1 : cfl <= 38 * e ? 2 : cfl <= 42 * e ? 3 : 4, cW = cw <= lim[0] * e ? 1 : cw <= lim[1] * e ? 2 : cw <= lim[2] * e ? 3 : 4;
+    const cl = Math.max(cF, cW);
+    return { cl, clF: cF, clW: cW, txt: `classe ${cl} (paroi comprimée c/t = ${fmtN(cfl, 1)} → cl. ${cF} ; âme c/t = ${fmtN(cw, 1)} → cl. ${cW}, ε = ${fmtN(e, 3)})` };
+  }
   const cf = (U ? p.b - p.tw - p.r : (p.b - p.tw - 2 * p.r) / 2) / p.tf;   // semelle comprimée (console) ; tf moyen pour ailes inclinées
   const cw = (p.h - 2 * p.tf - 2 * p.r) / p.tw;            // âme
   const clF = cf <= 9 * e ? 1 : cf <= 10 * e ? 2 : cf <= 14 * e ? 3 : 4;
