@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=1.5"></script>
+<script src="../commun/auth.js?v=1.8"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — P2 Poteau acier</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=1.5">
-<script src="../commun/data/profils.js?v=1.5"></script>
-<script src="../commun/acier.js?v=1.5"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=1.8">
+<script src="../commun/data/profils.js?v=1.8"></script>
+<script src="../commun/acier.js?v=1.8"></script>
 </head>
 <body>
 <header>
@@ -72,8 +72,14 @@
 
   <div class="card">
     <h2>Critère ELS</h2>
-    <label>Déplacement horizontal sous vent ≤ H / …</label><input id="dlim" type="number" step="10" value="150">
-    <div class="note">NF EN 1993-1-1/NA §7.2.2 : valeur usuelle H/150 pour les poteaux de bâtiments industriels sans pont roulant (à adapter au projet).</div>
+    <label>Type de construction (déplacements horizontaux, NF EN 1993-1-1 §7.2.2 + AN)</label>
+    <select id="typeEls">
+      <option value="ind" selected>Bâtiment industriel à niveau unique sans pont roulant, parois non fragiles</option>
+      <option value="autre">Autre bâtiment à niveau unique sans pont roulant</option>
+      <option value="perso">Limite personnalisée</option>
+    </select>
+    <label>Limite retenue : H / …</label><input id="dlim" type="number" step="10" value="150">
+    <div class="note" id="elsNote"></div>
   </div>
 </section>
 
@@ -156,9 +162,16 @@ function verifier(p,D){
     r.rM=MEd/(MRk/ACIER.gM0); r.rV=VEd/(p.Avz*1e-4*fy*1e3/(Math.sqrt(3)*ACIER.gM0));
     out.push(r);
   }
-  // ELS : déplacement sous vent caractéristique
-  const EI=ACIER.E*1e6*p.Iy*1e-8, qk=Math.max(Math.abs(D.w.W1||0),Math.abs(D.w.W2||0))*1e3;
-  const d=(cant?qk*D.H**4/(8*EI):5*qk*D.H**4/(384*EI))*1000, dlim=D.H*1000/num('dlim',150);
+  // ELS : vent seul, caractéristique (valeurs limites recommandées, NF EN 1993-1-1 §7.2.2 + AN)
+  //  - poteau en console (encastré-libre) : déplacement en tête u = q·H⁴/(8·E·Iy) ≤ H/150 (industriel) ou H/250 (autres)
+  //  - autres liaisons : flèche propre du montant f = 5·q·Hi⁴/(384·E·Iy) ≤ Hi/150 (élément support de bardage)
+  const EI=ACIER.E*1e6*p.Iy*1e-8, qwk=Math.max(Math.abs(D.w.W1||0),Math.abs(D.w.W2||0)), qk=qwk*1e3;
+  const typ=$('typeEls').value, nEls=typ==='perso'?num('dlim',150):(cant&&typ==='autre'?250:150);
+  if(typ!=='perso') $('dlim').value=nEls; $('dlim').disabled=typ!=='perso';
+  $('elsNote').innerHTML=cant
+    ? `Poteau en console : <b>déplacement en tête</b> u ≤ H/${nEls} (H/150 bâtiment industriel à parois non fragiles, H/250 autres bâtiments à niveau unique).`
+    : `Poteau tenu en tête : la tête ne se déplace pas, on vérifie la <b>flèche propre</b> du montant f ≤ H<sub>i</sub>/${nEls} (élément support de bardage). Le déplacement en tête relève du contreventement ou du portique.`;
+  const d=(cant?qk*D.H**4/(8*EI):5*qk*D.H**4/(384*EI))*1000, dlim=D.H*1000/nEls;
   const mx=k=>out.reduce((a,b)=>(b[k]||0)>(a[k]||0)?b:a);
   const eN=mx('rN'),eFy=mx('rFy'),eFz=mx('rFz'),e1=mx('r661'),e2=mx('r662'),eV=mx('rV');
   const L=[{n:'Résistance de section N<sub>Ed</sub> ≤ N<sub>c,Rd</sub> = A·f<sub>y</sub>/γ<sub>M0</sub>',ref:'§6.2.4',val:f(eN.NEd,1)+' kN',lim:f(NRk,1)+' kN',r:eN.rN,comb:eN.c.nom},
@@ -168,7 +181,9 @@ function verifier(p,D){
     L.push({n:'Interaction N–M (6.61) – plan y',ref:'§6.3.3 + Annexe B (méthode 2)',val:`N = ${f(e1.NEd,1)} kN · M = ${f(e1.MEd,2)} kNm`,lim:'1,00',r:e1.r661,comb:e1.c.nom});
     L.push({n:'Interaction N–M (6.62) – plan z / déversement',ref:'§6.3.3 + Annexe B (méthode 2)',val:`N = ${f(e2.NEd,1)} kN · M = ${f(e2.MEd,2)} kNm`,lim:'1,00',r:e2.r662,comb:e2.c.nom});
     L.push({n:'Cisaillement V<sub>Ed</sub> ≤ V<sub>pl,Rd</sub>',ref:'§6.2.6',val:f(eV.VEd,2)+' kN',lim:f(p.Avz*1e-4*fy*1e3/Math.sqrt(3),1)+' kN',r:eV.rV,comb:eV.c.nom});
-    L.push({n:`Déplacement sous vent ≤ H/${num('dlim',150)}`,ref:'§7.2.2 – ELS caractéristique (vent seul)',val:f(d,1)+' mm',lim:f(dlim,1)+' mm',r:d/dlim});
+    L.push(cant
+      ? {n:`Déplacement en tête de poteau u ≤ H/${nEls}`,ref:`§7.2.2 + AN – vent seul caractéristique q<sub>w,k</sub> = ${f(qwk,2)} kN/m · u = q·H⁴/(8·E·I<sub>y</sub>)`,val:f(d,1)+' mm',lim:f(dlim,1)+' mm',r:d/dlim}
+      : {n:`Flèche propre du poteau (montant) f ≤ H<sub>i</sub>/${nEls}`,ref:`§7.2.2 + AN – vent seul caractéristique q<sub>w,k</sub> = ${f(qwk,2)} kN/m · f = 5·q·H<sub>i</sub>⁴/(384·E·I<sub>y</sub>) à mi-hauteur`,val:f(d,1)+' mm',lim:f(dlim,1)+' mm',r:d/dlim});
   }
   const gov=L.reduce((a,b)=>b.r>a.r?b:a); gov.gov=true;
   return {fy,clN,clM,cl,NRk,MRk,Wy,cb,l1,lamy,lamz,chy,chz,out,combos,lignes:L,gov,e1,e2,d,dlim,tension:out.some(r=>r.trac)};
@@ -204,6 +219,7 @@ function calc(){
    <li>Moments : articulé en tête et en pied → M = qH²/8 (vent) et N·e en tête ; encastré en pied et libre en tête → M = qH²/2 + N·e en pied. Autres liaisons : moments pris comme articulé-articulé (prudent).</li>
    <li>Interaction : NF EN 1993-1-1 §6.3.3, éq. (6.61) et (6.62), facteurs k<sub>yy</sub>, k<sub>zy</sub> de l'Annexe B (barres sensibles aux déformations de torsion). C<sub>m</sub> selon le Tab. B.3 : 0,95 (charge répartie), 0,6 (N·e en tête seul, ψ = 0), 1,0 (prudent si combiné ou console).</li>
    <li>Déversement : M<sub>cr</sub> avec charge au centre de cisaillement (z<sub>g</sub> = 0), méthode générale §6.3.2.2.</li>
+   <li>ELS horizontal (valeurs limites recommandées, NF EN 1993-1-1 §7.2.2 + AN) : poteau en console → déplacement en tête u = q·H⁴/(8EI<sub>y</sub>) ≤ H/150 (bâtiment industriel à parois non fragiles) ou H/250 ; poteau tenu en tête → flèche propre du montant f = 5qH<sub>i</sub>⁴/(384EI<sub>y</sub>) ≤ H<sub>i</sub>/150 (formule de l'appui simple, prudente pour les pieds encastrés). Sous vent seul, sans effet P-δ ni moment N·e.</li>
    <li>Imperfections globales (défaut d'aplomb φ, §5.3.2) et effets du 2<sup>nd</sup> ordre du portique non pris en compte : à traiter dans le calcul d'ensemble (structure contreventée supposée).</li>
    <li>Non traités : flambement par torsion / flexion-torsion (UPN, UPE), pied de poteau, assemblages, sections de classe 4.</li></ul>`;
 }
@@ -231,5 +247,9 @@ function optimiser(){
 }
 init();
 </script>
+<script src="../commun/export.js?v=1.8"></script>
+<script>EXPORT.init({code:'P2',titre:'Poteau acier – compression et flexion',
+  zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
+  avant:()=>calc(), nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
 </body>
 </html>

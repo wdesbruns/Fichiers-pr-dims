@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>FIP Calculettes — Accueil</title>
-<script src="commun/auth.js?v=1.5"></script>
+<script src="commun/auth.js?v=1.8"></script>
 <script>calcProteger("");</script>
 <link rel="icon" href="commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="commun/style.css?v=1.5">
-<script src="commun/apps.js?v=1.5"></script>
+<link rel="stylesheet" href="commun/style.css?v=1.8">
+<script src="commun/apps.js?v=1.8"></script>
 <style>
   body{background:#fff}
   .app{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
@@ -92,7 +92,7 @@
   document.getElementById('ver').textContent='moteur '+CALC_VERSION;
   document.getElementById('ver2').textContent='FIP Calculettes '+CALC_VERSION;
   const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  const lien=a=>a.statut==='ok'?esc(a.url):'#';
+  const lien=a=>a.statut==='ok'?esc(a.url)+'?v='+encodeURIComponent(CALC_VERSION):'#';  // version : force le rechargement de la page après une mise à jour
   const cats=CALC_CATEGORIES.map(c=>({...c,apps:CALC_APPS.filter(a=>a.categorie===c.id)})).filter(c=>c.apps.length);
   // barre latérale
   document.getElementById('nav').innerHTML=cats.map(c=>
