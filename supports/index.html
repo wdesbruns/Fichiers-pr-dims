@@ -4,18 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.2"></script>
+<script src="../commun/auth.js?v=2.3"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.2">
+<link rel="stylesheet" href="../commun/calc.css?v=2.3">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.2"></script>
-<script src="../commun/data/tuyauterie.js?v=2.2"></script>
-<script src="../commun/acier.js?v=2.2"></script>
-<script src="../commun/barres3d.js?v=2.2"></script>
+<script src="../commun/data/profils.js?v=2.3"></script>
+<script src="../commun/data/tuyauterie.js?v=2.3"></script>
+<script src="../commun/acier.js?v=2.3"></script>
+<script src="../commun/barres3d.js?v=2.3"></script>
+<script src="../commun/cahier.js?v=2.3"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -41,6 +42,7 @@
     <h1><span class="code">S1</span>Supports standards de tuyauterie</h1>
     <div class="sub">Prédimensionnement APS/APD · NF EN 1990 + AN · NF EN 1993-1-1 + AN · NF EN 1991-1-3 / 1-4 · NF EN 1998-1 §4.3.5</div>
   </div>
+  <button class="sec" id="versCahier" title="Enregistrer ce support (données et résultats) dans le cahier de supportage">➕ Ajouter au cahier</button>
   <button onclick="imprimerS1()">🖨️ Imprimer / PDF</button>
 </header>
 
@@ -48,8 +50,10 @@
 <section id="form">
   <div class="card">
     <h2>Projet</h2>
-    <div class="row"><div><label>Affaire</label><input id="affaire"></div><div><label>Repère du support</label><input id="repere" value="SUP-01"></div></div>
-    <div class="row"><div><label>Ligne(s) / zone</label><input id="zone"></div><div><label>Rédacteur</label><input id="auteur"></div></div>
+    <div id="bandeauCahier" class="msg info noprint" hidden></div>
+    <div class="row"><div><label>Affaire</label><input id="affaire"></div><div><label>Repère du support type</label><input id="repere" value="SUP-01"></div></div>
+    <div class="row"><div><label>Quantité</label><input id="qte" type="number" step="1" min="1" value="1"></div><div><label>Repères concernés</label><input id="reperes" placeholder="ex. S-101 à S-110"></div></div>
+    <div class="row"><div><label>Ligne(s) / isométrique</label><input id="zone"></div><div><label>Rédacteur</label><input id="auteur"></div></div>
   </div>
 
   <div class="card">
@@ -807,11 +811,63 @@ function init(){
   $('b2d').onclick=()=>{vue3dActive=false;$('p2d').style.display='';$('p3d').style.display='none';$('b2d').classList.add('on');$('b3d').classList.remove('on');};
   $('b3d').onclick=()=>{vue3dActive=true;$('p2d').style.display='none';$('p3d').style.display='';$('b3d').classList.add('on');$('b2d').classList.remove('on');majVue3D().catch(e=>{$('v3d').insertAdjacentHTML('beforeend',`<div class="msg warn" style="margin:10px">Vue 3D indisponible : ${escH(e.message)}</div>`);});};
   majFormulaire(); cartesTuyaux(); calc();
+  initCahier();
+}
+/* =====================================================================
+   LIEN AVEC LE CAHIER DE SUPPORTAGE
+   ===================================================================== */
+const IDS_PARAMS=CAHIER.PARAMS.map(p=>p[0]);
+function etatS1(){                                       // données d'entrée du support (pour le cahier)
+  const champs={}; document.querySelectorAll('#form input:not([data-k]):not([type=radio]), #form select:not([data-k])').forEach(el=>{ if(el.id) champs[el.id]=el.type==='checkbox'?el.checked:el.value; });
+  return {type:typeSup(),champs,tuyaux:JSON.parse(JSON.stringify(tuyaux))};
+}
+function chargerEtat(E){
+  const r=document.querySelector(`input[name=type][value="${E.type}"]`); if(r) r.checked=true; majFormulaire();
+  const C=E.champs||{};
+  if(C.fam){$('fam').value=C.fam; remplirProfils(C.prof);} if(C.fam2){$('fam2').value=C.fam2; remplirProfils(C.prof2,'2');}
+  Object.entries(C).forEach(([id,v])=>{ const el=$(id); if(!el||['fam','fam2','prof','prof2'].includes(id)) return; if(el.type==='checkbox') el.checked=!!v; else el.value=v; });
+  if(Array.isArray(E.tuyaux)&&E.tuyaux.length) tuyaux=JSON.parse(JSON.stringify(E.tuyaux));
+  cartesTuyaux(); calc();
+}
+function appliquerParamsAffaire(){                        // paramètres communs de l'affaire (taux cible, règles, coefficients, C1)
+  if(!CAHIER.existe()) return false; const K=CAHIER.lire();
+  IDS_PARAMS.forEach(id=>{ const el=$(id); if(el&&K.params[id]!==undefined&&K.params[id]!=='') el.value=K.params[id]; });
+  if(K.climat){ try{localStorage.setItem('fip.climat',JSON.stringify(K.climat));}catch(e){} importerC1(); } else calc();
+  return true;
+}
+function resumeS1(){                                     // résultats synthétiques pour le cahier
+  const {D,V}=dernier, A=alertes(D,V), env=enveloppe(V), nb=A.filter(a=>a.niv==='bloq').length, nw=A.filter(a=>a.niv==='warn').length;
+  const statut=(V.gov.r>1||nb)?'ko':(V.gov.r>D.cible||nw)?'jaune':'ok';
+  return {type:D.typ,typeNom:TYPES[D.typ].n,nuance:$('nuance').value,profils:[...new Set(V.Gm.B.map(b=>b.p.n))],
+    barres:V.Gm.B.map(b=>({lib:b.lib,profil:b.p.n,f:b.p.f,L:b.L,m:b.p.m})),masse:V.Gm.B.reduce((s,b)=>s+b.p.m*b.L,0),
+    taux:V.gov.r,critere:V.gov.n.replace(/<[^>]+>/g,''),statut,bloq:nb,warn:nw,alertes:A.filter(a=>a.niv!=='info').map(a=>(a.niv==='bloq'?'⛔ ':'⚠ ')+a.titre.replace(/<[^>]+>/g,'')),
+    tuyaux:V.Gm.T.map(t=>({nom:t.nom,desc:t.P.desc,G:V.CC.detail[V.Gm.T.indexOf(t)].G,barre:V.Gm.B[t.bi].lib})),
+    appuis:env.map(E=>({lib:E.a.lib,ELU:E.ELU.map(e=>e.v),SIS:V.res.some(r=>r.c.type==='Sismique')?E.SIS.map(e=>e.v):null,
+      cas:Object.fromEntries(['G','T','S','WY','WX','EP','EX','EY'].filter(c=>V.R[c]).map(c=>[c,V.R[c].reactions[E.a.n].map(x=>-x)]))})),
+    lignes:V.lignes.map(l=>({n:l.n.replace(/<[^>]+>/g,''),r:l.r})),date:new Date().toISOString()};
+}
+window.S1API={etat:etatS1,charger:E=>{chargerEtat(E);appliquerParamsAffaire();calc();return true;},resume:resumeS1,
+  perspective:async()=>{await perspective();return $('persp').hidden?'':$('imgPersp').src;}};
+const ID_CAHIER=new URLSearchParams(location.search).get('cahier');
+function initCahier(){
+  CAHIER.remplir({affaire:'affaire',auteur:'realise'});
+  if(ID_CAHIER){ const K=CAHIER.lire(), sup=K.supports.find(x=>x.id===ID_CAHIER);
+    if(sup){ chargerEtat(sup.etat); $('versCahier').textContent='💾 Enregistrer dans le cahier';
+      $('bandeauCahier').hidden=false; $('bandeauCahier').innerHTML=`Édition du support <b>${escH(sup.nom)}</b> du cahier de supportage · <a href="../cahier/">← retour au cahier</a>`; } }
+  appliquerParamsAffaire();
+  $('versCahier').onclick=()=>{
+    calc(); const K=CAHIER.lire(), nom=$('repere').value.trim()||'SUP', E=etatS1(), R=resumeS1();
+    let sup=ID_CAHIER?K.supports.find(x=>x.id===ID_CAHIER):K.supports.find(x=>x.nom===nom);
+    if(sup&&!ID_CAHIER&&!confirm(`Le support type « ${nom} » existe déjà dans le cahier : le remplacer ?`)) return;
+    const o={id:sup?sup.id:CAHIER.uid(),nom,qte:Math.max(1,Math.round(num('qte',1))),reperes:$('reperes').value,lignes:$('zone').value,etat:E,resume:R};
+    if(sup) Object.assign(sup,o); else K.supports.push(o);
+    if(CAHIER.ecrire(K)){ $('versCahier').textContent='✓ Enregistré dans le cahier'; setTimeout(()=>$('versCahier').textContent=ID_CAHIER?'💾 Enregistrer dans le cahier':'➕ Ajouter au cahier',2500); }
+  };
 }
 
 init();
 </script>
-<script src="../commun/export.js?v=2.2"></script>
+<script src="../commun/export.js?v=2.3"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
