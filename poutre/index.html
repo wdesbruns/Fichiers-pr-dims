@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=1.8"></script>
+<script src="../commun/auth.js?v=2.3"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — P1 Poutre sur deux appuis</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=1.8">
-<script src="../commun/data/profils.js?v=1.8"></script>
-<script src="../commun/acier.js?v=1.8"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.3">
+<script src="../commun/data/profils.js?v=2.3"></script>
+<script src="../commun/acier.js?v=2.3"></script>
 </head>
 <body>
 <header>
@@ -217,6 +217,7 @@ function calc(){
     <div class="kpi"><div class="l">Taux maximal</div><div class="v">${f(Rz.gov.r*100,0)} %</div></div>
     <div class="kpi"><div class="l">Critère dimensionnant</div><div class="v" style="font-size:15px;color:var(--fip-rouge)">▲ ${Rz.gov.n}</div></div>
     <div class="kpi"><div class="l">Réaction max ELU</div><div class="v">${f(Math.max(...Rz.ELU.map(e=>Math.max(Math.abs(e.A.RA),Math.abs(e.A.RB)))),2)} kN</div></div></div>
+    ${alerteTaux(Rz.lignes)}
     ${Rz.R.cl.cl===4?'<div class="msg bad">Section de classe 4 en flexion : calcul non couvert par cet outil (EN 1993-1-5).</div>':''}
     ${D.vars.length===0?'<div class="msg info">Aucune charge variable : seule la combinaison 1,35·G est étudiée.</div>':''}`;
   $('rSchema').innerHTML=schema(D);
@@ -290,7 +291,9 @@ function optimiser(){
 }
 init();
 </script>
-<script src="../commun/export.js?v=1.8"></script>
+<script src="../commun/cahier.js?v=2.3"></script>
+<script>CAHIER.remplir({affaire:'affaire',ndc:'doc',auteur:'realise'});</script>
+<script src="../commun/export.js?v=2.3"></script>
 <script>EXPORT.init({code:'P1',titre:'Poutre acier sur deux appuis',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:()=>calc(), nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>

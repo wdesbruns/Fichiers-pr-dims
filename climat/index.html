@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=1.8"></script>
+<script src="../commun/auth.js?v=2.3"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — C1 Hypothèses climatiques et sismiques</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
@@ -12,9 +12,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../commun/lib/leaflet/leaflet.css">
 <script src="../commun/lib/leaflet/leaflet.js"></script>
-<script src="data/zonage.js?v=1.8"></script>
-<script src="data/communes.js?v=1.8"></script>
-<script src="data/departements.js?v=1.8"></script>
+<script src="data/zonage.js?v=2.3"></script>
+<script src="data/communes.js?v=2.3"></script>
+<script src="data/departements.js?v=2.3"></script>
 <style>
 :root{
   --fip-bleu:#114088; --fip-bleu-fonce:#0b2d63; --fip-rouge:#e30009; --fip-ciel:#0098db;
@@ -84,7 +84,8 @@ button.sec{background:#fff;color:var(--fip-bleu)}
 .mapwrap{position:relative;display:flex;flex-direction:column}
 /* ---------- contenu ---------- */
 main{max-width:1500px;margin:0 auto;padding:16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:16px;overflow-x:auto}
+main>*,.cols>*{min-width:0}
 .card h2{font-size:13px;margin:0 0 10px;color:var(--fip-bleu);text-transform:uppercase;letter-spacing:.05em;border-left:3px solid var(--fip-rouge);padding-left:8px}
 .card h3{font-size:13px;margin:14px 0 6px}
 label{display:block;font-size:12px;color:var(--muted);margin-top:8px}
@@ -131,7 +132,7 @@ svg text{font-family:inherit}
   main{padding:0}
   .panel{display:block!important}
   .panel:not(#p-syn){display:none!important}
-  .card{border:1px solid #bbb;break-inside:auto;padding:8px;margin-bottom:8px}
+  .card{border:1px solid #bbb;break-inside:auto;padding:8px;margin-bottom:8px;overflow:visible}
   tr,h2,svg{break-inside:avoid}
   th,td{padding:3px 5px}
   .printhead{display:block;border-bottom:3px solid var(--fip-bleu);padding-bottom:6px;margin-bottom:8px;overflow:hidden}
@@ -789,7 +790,9 @@ $('versS1').onclick=()=>{
   catch(e){alert('Stockage indisponible sur ce navigateur.');}
 };
 </script>
-<script src="../commun/export.js?v=1.8"></script>
+<script src="../commun/cahier.js?v=2.3"></script>
+<script>CAHIER.remplir({affaire:'affaire',auteur:'realise'});</script>
+<script src="../commun/export.js?v=2.3"></script>
 <script>EXPORT.init({code:'C1',titre:'Hypothèses climatiques, sismiques et complexes',
   zones:()=>[...document.querySelectorAll('#syn > .card')].concat(['ventRes','neigeRes','neigeToit','seismeRes','seismeGraph','seismeFa','cpxCouv','cpxBard'].map(id=>document.getElementById(id).closest('.card'))),
   donnees:()=>[document.querySelector('.panneau'),...document.querySelectorAll('main .card')],

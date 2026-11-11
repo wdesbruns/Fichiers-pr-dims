@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<script src="../commun/auth.js?v=2.3"></script>
+<script>calcProteger("../");</script>
+<title>FIP Calculettes — CS Cahier de supportage</title>
+<link rel="icon" href="../commun/img/picto-fip.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../commun/calc.css?v=2.3">
+<script src="../commun/acier.js?v=2.3"></script>
+<script src="../commun/cahier.js?v=2.3"></script>
+<style>
+  .logoAff{max-height:48px;max-width:160px;border:1px solid var(--line);border-radius:4px;padding:2px;background:#fff}
+  .actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.actions button{padding:5px 10px;font-size:12px}
+  table.sup td input{padding:3px 5px;font-size:12px}
+  table.sup td.act{white-space:nowrap}table.sup td.act button{padding:2px 7px;font-size:11px;margin:1px}
+  .fiche{break-before:page}
+  .fiche .ent{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+  .fiche img{width:100%;border:1px solid var(--line);border-radius:6px}
+  @media (max-width:950px){.fiche .ent{grid-template-columns:1fr}}
+  #iframeS1{position:absolute;left:-10000px;top:0;width:1200px;height:900px;border:0}
+  .cartouche td{font-size:12px}.cartouche td:nth-child(odd){color:var(--muted);width:16%}
+  @media print{.fiche:first-of-type{break-before:auto}}
+</style>
+</head>
+<body>
+<header>
+  <a href="../accueil.html" class="brand" title="Retour à l'accueil"><img src="../commun/img/picto-fip.png" alt="FIP"><span>FIP<em>Calculettes</em></span></a>
+  <a href="../accueil.html" class="back">← Accueil</a>
+  <div style="flex:1 1 auto">
+    <h1><span class="code">CS</span>Cahier de supportage</h1>
+    <div class="sub">Affaire · supports types (S1) · nomenclature acier · descentes de charges · fiches par support</div>
+  </div>
+  <a href="../supports/" class="noprint"><button class="sec" type="button">➕ Nouveau support (S1)</button></a>
+  <button onclick="imprimer()">🖨️ Imprimer / PDF</button>
+</header>
+
+<main>
+<section id="form">
+  <div class="card">
+    <h2>Affaire</h2>
+    <div class="row"><div><label>N° d'affaire</label><input id="a_num" data-a="num"></div><div><label>Intitulé</label><input id="a_intitule" data-a="intitule"></div></div>
+    <div class="row"><div><label>Client</label><input id="a_client" data-a="client"></div><div><label>Site / localisation</label><input id="a_site" data-a="site"></div></div>
+    <div class="row3"><div><label>N° de document</label><input id="a_doc" data-a="doc"></div><div><label>Indice</label><input id="a_indice" data-a="indice"></div><div><label>Date</label><input id="a_date" type="date" data-a="date"></div></div>
+    <div class="row"><div><label>Phase</label><select id="a_phase" data-a="phase"><option>APS</option><option>APD</option><option>PRO</option><option>EXE</option></select></div><div><label>Réalisé par</label><input id="a_realise" data-a="realise"></div></div>
+    <div class="row"><div><label>Contrôlé par</label><input id="a_controle" data-a="controle"></div><div><label>Approuvé par</label><input id="a_approuve" data-a="approuve"></div></div>
+    <label>Logo du client (PNG / JPG, repris dans les exports Word)</label>
+    <div class="row noprint" style="align-items:center"><input type="file" id="logoFic" accept="image/png,image/jpeg"><div><img id="logoImg" class="logoAff" alt="" hidden> <button class="sec" id="logoSup" type="button" hidden>✕</button></div></div>
+    <div class="note">Ces informations remplissent automatiquement les champs « Affaire », « Rédacteur », « N° de note » des calculettes et le cartouche des exports Word.</div>
+  </div>
+
+  <div class="card">
+    <h2>Paramètres communs de l'affaire</h2>
+    <div class="note">Appliqués à tous les supports S1 du cahier (à l'ouverture d'un support et au recalcul).</div>
+    <div id="params"></div>
+    <h3>Climat et séisme (C1)</h3>
+    <div class="actions noprint"><button class="sec" id="impC1" type="button">⤓ Importer les données de C1</button><button class="sec" id="supC1" type="button">✕ Retirer</button></div>
+    <div id="infoC1" class="note"></div>
+    <div class="actions noprint"><button id="recalc" type="button">⟳ Appliquer et recalculer tous les supports</button></div>
+    <div id="etatRecalc"></div>
+  </div>
+
+  <div class="card noprint">
+    <h2>Fichier du cahier</h2>
+    <div class="note">Le cahier est enregistré dans ce navigateur. Pour l'archiver, le transmettre ou le reprendre sur un autre poste : exporter / importer le fichier .json.</div>
+    <div class="actions">
+      <button class="sec" id="expJson" type="button">⤓ Exporter (.json)</button>
+      <label class="sec" style="margin:0"><button class="sec" type="button" onclick="this.nextElementSibling.click()">⤒ Importer (.json)</button><input type="file" id="impJson" accept=".json,application/json" hidden></label>
+      <button class="sec" id="nouveau" type="button" style="color:var(--bad);border-color:var(--bad)">🗑 Nouvelle affaire</button>
+    </div>
+  </div>
+</section>
+
+<section id="res">
+  <div class="printhead"><img src="../commun/img/logo-fip.png" alt="FIP"><strong>Cahier de supportage</strong><br><span id="phInfo"></span></div>
+  <div class="card" id="cCartouche"><h2>Identification</h2><div id="rCartouche"></div></div>
+  <div class="card" id="cSynth"><h2>Synthèse</h2><div id="rSynth"></div></div>
+  <div class="card" id="cSupports"><h2>Supports types</h2><div id="rSupports"></div></div>
+  <div class="card" id="cNomenc"><h2>Nomenclature acier</h2><div id="rNomenc"></div></div>
+  <div class="card" id="cDDC"><h2>Descentes de charges sur appuis</h2><div id="rDDC"></div></div>
+  <div class="card noprint" id="cFichesBtn"><h2>Fiches par support</h2>
+    <div class="note">Les fiches (avec perspective) sont générées par S1 à partir des données enregistrées ; elles sont aussi régénérées automatiquement avant impression et export.</div>
+    <div class="actions"><button id="genFiches" type="button">🖼 Générer les fiches</button></div><div id="etatFiches"></div></div>
+  <div id="rFiches"></div>
+</section>
+</main>
+<iframe id="iframeS1" title="moteur S1" aria-hidden="true" tabindex="-1"></iframe>
+
+<script>
+const $=id=>document.getElementById(id), f=(x,d=2)=>fmtN(typeof x==="number"&&Math.abs(x)<0.5*10**-d?0:x,d);
+let K=CAHIER.lire();
+const enr=()=>{ CAHIER.ecrire(K); };
+const STATUT={ok:'<span class="badge b-ok">✅ conforme</span>',jaune:'<span class="badge b-jaune">⚠ à surveiller</span>',ko:'<span class="badge b-bad">⛔ non vérifié</span>'};
+const COMP=['F<sub>x</sub>','F<sub>y</sub>','F<sub>z</sub>','M<sub>x</sub>','M<sub>y</sub>','M<sub>z</sub>'];
+const CAS={G:'G (poids propre + tuyaux)',T:'T (frottement / dilatation)',S:'S (neige)',WY:'W<sub>Y</sub> (vent ⊥ tuyaux)',WX:'W<sub>X</sub> (vent ∥ tuyaux)',EP:'E<sub>P</sub> (épreuve)',EX:'E<sub>X</sub> (séisme)',EY:'E<sub>Y</sub> (séisme)'};
+
+/* ---------------- affaire ---------------- */
+function lireAffaire(){ document.querySelectorAll('[data-a]').forEach(el=>{ K.affaire[el.dataset.a]=el.value; }); enr(); cartouche(); }
+function afficherAffaire(){
+  document.querySelectorAll('[data-a]').forEach(el=>{ el.value=K.affaire[el.dataset.a]||''; });
+  $('logoImg').hidden=$('logoSup').hidden=!K.affaire.logo; if(K.affaire.logo) $('logoImg').src=K.affaire.logo;
+}
+$('logoFic').onchange=e=>{ const fi=e.target.files[0]; if(!fi) return; const r=new FileReader();
+  r.onload=()=>{ const img=new Image(); img.onload=()=>{ const k=Math.min(1,300/img.width,120/img.height), c=document.createElement('canvas');
+      c.width=Math.round(img.width*k); c.height=Math.round(img.height*k); const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(img,0,0,c.width,c.height);
+      K.affaire.logo=c.toDataURL('image/png'); enr(); afficherAffaire(); cartouche(); }; img.src=r.result; };
+  r.readAsDataURL(fi); };
+$('logoSup').onclick=()=>{ K.affaire.logo=''; $('logoFic').value=''; enr(); afficherAffaire(); cartouche(); };
+function cartouche(){
+  const a=K.affaire, L=[['Affaire',CAHIER.libAffaire(a)||'—','Client',a.client||'—'],['Site',a.site||'—','Phase',a.phase||'—'],['N° de document',a.doc||'—','Indice / date',`${a.indice||'—'} du ${a.date?new Date(a.date).toLocaleDateString('fr-FR'):'—'}`],['Réalisé',a.realise||'—','Contrôlé',a.controle||'—'],['Approuvé',a.approuve||'—','Supports types',String(K.supports.length)]];
+  $('rCartouche').innerHTML=(a.logo?`<img src="${a.logo}" class="logoAff" style="float:right;margin:0 0 6px 10px" alt="logo client">`:'')+`<table class="cartouche">${L.map(r=>`<tr>${r.map((x,i)=>i%2?`<td><b>${escH(x)}</b></td>`:`<td>${escH(x)}</td>`).join('')}</tr>`).join('')}</table>`;
+  $('phInfo').textContent=`${CAHIER.libAffaire(a)||'—'} · ${a.client||''} · Doc. ${a.doc||'—'} ind. ${a.indice||'—'} · ${a.phase||''} · ${new Date().toLocaleDateString('fr-FR')}`;
+}
+
+/* ---------------- paramètres communs ---------------- */
+function afficherParams(){
+  $('params').innerHTML='<table class="saisie">'+CAHIER.PARAMS.map(([k,lib])=>{
+    const v=K.params[k];
+    const champ=k==='platine'?`<select data-p="${k}">${[['rigide','Rigides (encastrement)'],['semi','Semi-rigides S_j = 10·EI/L'],['saisie','S_j saisie']].map(([o,t])=>`<option value="${o}" ${v===o?'selected':''}>${t}</option>`).join('')}</select>`
+      :k==='altN'?`<select data-p="${k}"><option value="0" ${v!=='1'?'selected':''}>non</option><option value="1" ${v==='1'?'selected':''}>oui</option></select>`
+      :`<input data-p="${k}" type="number" step="any" value="${escH(v)}">`;
+    return `<tr><td>${escH(lib)}</td><td style="width:42%">${champ}</td></tr>`; }).join('')+'</table>';
+  document.querySelectorAll('[data-p]').forEach(el=>el.onchange=()=>{ K.params[el.dataset.p]=el.value; K.aRecalc=true; enr(); etatRecalc(); });
+  infoC1(); etatRecalc();
+}
+function infoC1(){ const c=K.climat;
+  $('infoC1').innerHTML=c?`✓ ${escH(c.lieu||'')} : vent zone ${escH(c.vent?.zone??'—')} (v<sub>b</sub> = ${c.vent?f(c.vent.vb,1):'—'} m/s, cat. ${escH(c.vent?.cat??'—')}) ; neige s<sub>k</sub> = ${c.neige?f(c.neige.sk,2):'—'} kN/m² ; séisme zone ${escH(c.seisme?.zone??'—')} (α·S = ${c.seisme?f(c.seisme.alpha*c.seisme.S,3):'—'}). q<sub>p</sub>(z) est recalculé par S1 pour la hauteur de chaque support.`
+    :'Aucune donnée climatique commune : chaque support garde ses propres valeurs de q<sub>p</sub>, s<sub>k</sub>, α·S.'; }
+$('impC1').onclick=()=>{ let o=null; try{o=JSON.parse(localStorage.getItem('fip.climat'));}catch(e){}
+  if(!o){ alert('Aucune donnée C1 : dans C1 (Climat et séisme), cliquer « ➜ Supports S1 ».'); return; }
+  K.climat=o; K.aRecalc=true; enr(); infoC1(); etatRecalc(); };
+$('supC1').onclick=()=>{ K.climat=null; enr(); infoC1(); };
+function etatRecalc(){ $('etatRecalc').innerHTML=K.aRecalc&&K.supports.length?'<div class="msg jaune">Paramètres modifiés : les résultats affichés ne sont pas à jour. Cliquer « Appliquer et recalculer tous les supports ».</div>':''; }
+
+/* ---------------- moteur S1 (iframe même origine) ---------------- */
+let api=null;
+function moteur(){
+  if(api) return Promise.resolve(api);
+  return new Promise((ok,ko)=>{ const fr=$('iframeS1'), t0=Date.now();
+    fr.src='../supports/?moteur=1&v=2.3';
+    const att=()=>{ try{ const w=fr.contentWindow; if(w&&w.S1API&&w.document.readyState==='complete'){ api=w.S1API; return ok(api);} }catch(e){ return ko(e); }
+      if(Date.now()-t0>20000) return ko(new Error('S1 ne répond pas')); setTimeout(att,150); };
+    setTimeout(att,300); });
+}
+async function recalculer(avecImages){
+  if(!K.supports.length) return {};
+  const A=await moteur(), img={};
+  for(const [i,s] of K.supports.entries()){
+    $('etatFiches').innerHTML=$('etatRecalc').innerHTML=`<div class="msg info">⏳ Calcul ${i+1} / ${K.supports.length} : ${escH(s.nom)}…</div>`;
+    A.charger(s.etat); s.etat=A.etat(); s.etat.champs.qte=String(s.qte); s.etat.champs.reperes=s.reperes;
+    s.resume=A.resume(); if(avecImages) img[s.id]=await A.perspective();
+  }
+  K.aRecalc=false; enr(); $('etatFiches').innerHTML=''; etatRecalc(); tout(); return img;
+}
+$('recalc').onclick=async()=>{ const b=$('recalc'); b.disabled=true; try{ await recalculer(false); }catch(e){ alert('Recalcul impossible : '+e.message); } finally{ b.disabled=false; } };
+let IMG={};
+async function fiches(){ IMG=await recalculer(true); afficherFiches(); }
+$('genFiches').onclick=async()=>{ const b=$('genFiches'); b.disabled=true; try{ await fiches(); }catch(e){ alert('Génération impossible : '+e.message); } finally{ b.disabled=false; } };
+async function imprimer(){ try{ await fiches(); }catch(e){} setTimeout(()=>window.print(),100); }
+
+/* ---------------- tableaux ---------------- */
+const tauxTxt=r=>r?`${f(r.taux*100,0)} %`:'—';
+function tout(){ cartouche(); synthese(); tableSupports(); nomenclature(); ddc(); if(Object.keys(IMG).length) afficherFiches(); }
+function synthese(){
+  const S=K.supports, n=S.reduce((s,x)=>s+(+x.qte||0),0), nb={ok:0,jaune:0,ko:0}; S.forEach(s=>nb[s.resume?.statut||'ko']++);
+  const m=S.reduce((s,x)=>s+(+x.qte||0)*(x.resume?.masse||0),0), maj=+K.majo||0;
+  $('rSynth').innerHTML=S.length?`<div class="hero">
+    <div class="kpi"><div class="l">Supports types / quantité totale</div><div class="v">${S.length} / ${n}</div></div>
+    <div class="kpi ${nb.ko?'ko':'ok'}"><div class="l">Statut des supports types</div><div class="v" style="font-size:16px">✅ ${nb.ok} · ⚠ ${nb.jaune} · ⛔ ${nb.ko}</div></div>
+    <div class="kpi"><div class="l">Masse acier (profilés${maj?` + ${maj} % accessoires`:''})</div><div class="v">${f(m*(1+maj/100),0)} kg</div></div></div>
+    ${nb.ko?`<div class="msg bad">⛔ ${nb.ko} support(s) type(s) non vérifié(s) ou avec alerte bloquante : à reprendre dans S1.</div>`:''}
+    ${nb.jaune?`<div class="msg jaune">⚠ ${nb.jaune} support(s) type(s) au-delà du taux cible (${f(+K.params.rCible,0)} %) ou avec avertissement de conception.</div>`:''}`
+    :'<div class="msg info">Cahier vide. Créer un support dans S1 (bouton « ➕ Nouveau support ») puis cliquer « ➕ Ajouter au cahier ».</div>';
+}
+function tableSupports(){
+  if(!K.supports.length){ $('rSupports').innerHTML='<div class="note">—</div>'; return; }
+  $('rSupports').innerHTML=`<table class="sup"><tr><th>Repère type</th><th>Type</th><th>Profilé(s)</th><th class="n">Qté</th><th>Repères</th><th>Lignes / iso</th><th class="n">Taux max</th><th>Critère</th><th>Alertes</th><th>Statut</th><th class="noprint"></th></tr>`+
+    K.supports.map((s,i)=>{ const r=s.resume||{};
+      return `<tr><td><b>${escH(s.nom)}</b></td><td>${escH(r.typeNom||'—')}</td><td>${escH((r.profils||[]).join(' + '))} ${escH(r.nuance||'')}</td>
+      <td class="n"><input data-q="${i}" type="number" min="1" step="1" value="${+s.qte||1}" style="width:58px"></td>
+      <td><input data-r="${i}" value="${escH(s.reperes||'')}" style="min-width:110px"></td><td>${escH(s.lignes||'')}</td>
+      <td class="n">${tauxTxt(r)}</td><td style="font-size:12px">${escH(r.critere||'')}</td>
+      <td style="font-size:12px">${r.bloq?`⛔ ${r.bloq} `:''}${r.warn?`⚠ ${r.warn}`:''}${!r.bloq&&!r.warn?'—':''}</td><td>${STATUT[r.statut]||'—'}</td>
+      <td class="act noprint"><a href="../supports/?cahier=${encodeURIComponent(s.id)}&v=2.3"><button type="button" title="Ouvrir dans S1">✎ S1</button></a><button class="sec" type="button" data-dup="${i}" title="Dupliquer">⧉</button><button class="sec" type="button" data-up="${i}" title="Monter">↑</button><button class="sec" type="button" data-del="${i}" title="Supprimer" style="color:var(--bad)">✕</button></td></tr>`; }).join('')+'</table>';
+  document.querySelectorAll('[data-q]').forEach(el=>el.onchange=()=>{ const s=K.supports[+el.dataset.q]; s.qte=Math.max(1,Math.round(+el.value||1)); s.etat.champs.qte=String(s.qte); enr(); synthese(); nomenclature(); ddc(); });
+  document.querySelectorAll('[data-r]').forEach(el=>el.onchange=()=>{ const s=K.supports[+el.dataset.r]; s.reperes=el.value; s.etat.champs.reperes=el.value; enr(); });
+  document.querySelectorAll('[data-del]').forEach(el=>el.onclick=()=>{ const s=K.supports[+el.dataset.del]; if(!confirm(`Supprimer le support type « ${s.nom} » du cahier ?`)) return; K.supports.splice(+el.dataset.del,1); delete IMG[s.id]; enr(); tout(); });
+  document.querySelectorAll('[data-up]').forEach(el=>el.onclick=()=>{ const i=+el.dataset.up; if(!i) return; [K.supports[i-1],K.supports[i]]=[K.supports[i],K.supports[i-1]]; enr(); tout(); });
+  document.querySelectorAll('[data-dup]').forEach(el=>el.onclick=()=>{ const s=K.supports[+el.dataset.dup], c=JSON.parse(JSON.stringify(s)); c.id=CAHIER.uid();
+    let n=2; while(K.supports.some(x=>x.nom===`${s.nom}-${n}`)) n++; c.nom=`${s.nom}-${n}`; c.etat.champs.repere=c.nom; c.reperes='';
+    K.supports.splice(+el.dataset.dup+1,0,c); enr(); tout(); });
+}
+function nomenclature(){
+  const P={}; K.supports.forEach(s=>(s.resume?.barres||[]).forEach(b=>{ const k=b.profil+' '+(s.resume.nuance||''); const o=P[k]||(P[k]={profil:b.profil,nuance:s.resume.nuance,m:b.m,L:0,n:0,det:[]});
+    o.L+=(+s.qte||0)*b.L; o.n+=(+s.qte||0); o.det.push(`${s.nom} : ${s.qte} × ${f(b.L,2)} m`); }));
+  const L=Object.values(P).sort((a,b)=>a.profil.localeCompare(b.profil,'fr',{numeric:true}));
+  if(!L.length){ $('rNomenc').innerHTML='<div class="note">—</div>'; return; }
+  const tot=L.reduce((s,o)=>s+o.L*o.m,0), maj=+K.majo||0;
+  $('rNomenc').innerHTML=`<table><tr><th>Profilé</th><th>Nuance</th><th>Détail (support type : qté × longueur)</th><th class="n">Longueur totale (m)</th><th class="n">Masse linéique (kg/m)</th><th class="n">Masse (kg)</th></tr>`+
+    L.map(o=>`<tr><td><b>${escH(o.profil)}</b></td><td>${escH(o.nuance||'')}</td><td style="font-size:12px">${o.det.map(escH).join(' ; ')}</td><td class="n">${f(o.L,2)}</td><td class="n">${f(o.m,2)}</td><td class="n">${f(o.L*o.m,1)}</td></tr>`).join('')+
+    `<tr><td colspan="5"><b>Total profilés</b></td><td class="n"><b>${f(tot,1)} kg</b></td></tr>
+     <tr><td colspan="5">Majoration platines, goussets, boulonnerie, soudures : <input id="majo" type="number" min="0" step="1" value="${maj}" style="width:60px;display:inline-block"> %</td><td class="n">${f(tot*maj/100,1)} kg</td></tr>
+     <tr><td colspan="5"><b>Total estimé</b></td><td class="n"><b>${f(tot*(1+maj/100),1)} kg</b></td></tr></table>
+    <div class="note">Longueurs d'axe des barres du modèle S1 (hors coupes, chutes et recouvrements). Masses linéiques des catalogues (profils.js).</div>`;
+  $('majo').onchange=()=>{ K.majo=Math.max(0,+$('majo').value||0); enr(); nomenclature(); synthese(); };
+}
+const ligneDDC=(lib,v,cls='')=>`<tr${cls?` class="${cls}"`:''}><td>${lib}</td>${v.map(x=>`<td class="n">${f(x,2)}</td>`).join('')}</tr>`;
+function ddc(){
+  const S=K.supports.filter(s=>s.resume?.appuis);
+  if(!S.length){ $('rDDC').innerHTML='<div class="note">—</div>'; return; }
+  $('rDDC').innerHTML=`<table class="ddc"><tr><th>Support type (qté) – appui</th><th>Valeur</th>${COMP.map((c,i)=>`<th class="n">${c} (${i<3?'kN':'kNm'})</th>`).join('')}</tr>`+
+    S.map(s=>s.resume.appuis.map(a=>{ const t=`<b>${escH(s.nom)}</b> (×${s.qte}) – ${escH(a.lib)}`;
+      return `<tr><td rowspan="${2+(a.SIS?1:0)}">${t}</td><td>ELU (enveloppe)</td>${a.ELU.map(x=>`<td class="n">${f(x,2)}</td>`).join('')}</tr>`+
+        (a.SIS?`<tr><td>Sismique (enveloppe)</td>${a.SIS.map(x=>`<td class="n">${f(x,2)}</td>`).join('')}</tr>`:'')+
+        `<tr><td>G caractéristique</td>${(a.cas?.G||[0,0,0,0,0,0]).map(x=>`<td class="n">${f(x,2)}</td>`).join('')}</tr>`; }).join('')).join('')+
+    `</table><div class="note">Efforts exercés par le support sur la structure porteuse (repère global : X ∥ tuyaux, Y transversal, Z vertical ascendant ; F<sub>z</sub> &lt; 0 = charge descendante). Enveloppes : pour chaque composante, valeur de plus grande valeur absolue sur l'ensemble des combinaisons (composantes non concomitantes, sécuritaire). ELU : NF EN 1990 éq. 6.10 + AN ; sismique : NF EN 1990 éq. 6.12b + NF EN 1998-1 §4.3.5 (100 % / 30 %). Valeurs par support unitaire.</div>`;
+}
+function afficherFiches(){
+  $('rFiches').innerHTML=K.supports.map(s=>{ const r=s.resume||{};
+    const cas=r.appuis?.[0]?.cas?Object.keys(r.appuis[0].cas):[];
+    return `<div class="card fiche"><h2>Fiche support type ${escH(s.nom)} — ${escH(r.typeNom||'')}</h2>
+      <div class="ent"><div><table>
+        <tr><td>Quantité / repères</td><td><b>${s.qte}</b> ${escH(s.reperes||'')}</td></tr>
+        <tr><td>Lignes / isométrique</td><td>${escH(s.lignes||'—')}</td></tr>
+        <tr><td>Profilés</td><td>${(r.barres||[]).map(b=>`${escH(b.lib)} : <b>${escH(b.profil)}</b> L = ${f(b.L,2)} m`).join('<br>')} — ${escH(r.nuance||'')}</td></tr>
+        <tr><td>Masse acier unitaire</td><td>${f(r.masse,1)} kg</td></tr>
+        <tr><td>Tuyauteries</td><td>${(r.tuyaux||[]).map(t=>`${escH(t.nom)} : ${escH(t.desc)} sur ${escH((t.barre||'').toLowerCase())} — G = ${f(t.G,2)} kN`).join('<br>')}</td></tr>
+        <tr><td>Taux maximal</td><td><b>${tauxTxt(r)}</b> — ${escH(r.critere||'')} ${STATUT[r.statut]||''}</td></tr>
+        ${(r.lignes||[]).map(l=>`<tr><td style="padding-left:16px;font-size:12px">${escH(l.n)}</td><td>${f(l.r*100,0)} %</td></tr>`).join('')}
+        <tr><td>Alertes de conception</td><td style="font-size:12px">${(r.alertes||[]).length?r.alertes.map(escH).join('<br>'):'aucune'}</td></tr>
+      </table></div><div>${IMG[s.id]?`<img src="${IMG[s.id]}" alt="Perspective ${escH(s.nom)}">`:'<div class="note">Perspective non générée.</div>'}</div></div>
+      <h3>Descente de charges (par support unitaire)</h3>
+      <table class="ddc"><tr><th>Appui</th><th>Cas / combinaison</th>${COMP.map((c,i)=>`<th class="n">${c} (${i<3?'kN':'kNm'})</th>`).join('')}</tr>
+      ${(r.appuis||[]).map(a=>{ const n=1+(a.SIS?1:0)+cas.length;
+        return `<tr><td rowspan="${n}">${escH(a.lib)}</td><td><b>ELU (enveloppe)</b></td>${a.ELU.map(x=>`<td class="n"><b>${f(x,2)}</b></td>`).join('')}</tr>`+
+          (a.SIS?`<tr><td><b>Sismique (enveloppe)</b></td>${a.SIS.map(x=>`<td class="n"><b>${f(x,2)}</b></td>`).join('')}</tr>`:'')+
+          cas.map(c=>`<tr><td>${CAS[c]||c} – caract.</td>${a.cas[c].map(x=>`<td class="n">${f(x,2)}</td>`).join('')}</tr>`).join(''); }).join('')}
+      </table><div class="note">Calculé le ${r.date?new Date(r.date).toLocaleString('fr-FR'):'—'} (S1). Note de calcul détaillée : ouvrir le support dans S1.</div></div>`; }).join('');
+}
+
+/* ---------------- fichier ---------------- */
+$('expJson').onclick=()=>{ const a=document.createElement('a'), nom=`CS_${(K.affaire.num||'affaire').replace(/[^A-Za-z0-9_-]+/g,'_')}_${new Date().toISOString().slice(0,10)}.json`;
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(K,null,1)],{type:'application/json'})); a.download=nom; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500); };
+$('impJson').onchange=e=>{ const fi=e.target.files[0]; if(!fi) return; const r=new FileReader();
+  r.onload=()=>{ try{ const o=JSON.parse(r.result); if(!o.version||!Array.isArray(o.supports)||!o.affaire) throw new Error('fichier non reconnu');
+      if(K.supports.length&&!confirm('Remplacer le cahier actuel par le fichier importé ?')) return;
+      CAHIER.ecrire(o); K=CAHIER.lire(); IMG={}; demarrer(); }catch(err){ alert('Import impossible : '+err.message); } finally{ e.target.value=''; } };
+  r.readAsText(fi); };
+$('nouveau').onclick=()=>{ if(!confirm('Effacer le cahier actuel (affaire, paramètres et supports) ? Pensez à l\'exporter en .json avant.')) return; K=CAHIER.vide(); enr(); IMG={}; demarrer(); };
+
+function demarrer(){ if(K.majo===undefined) K.majo=10; afficherAffaire(); afficherParams(); tout(); $('rFiches').innerHTML=''; }
+document.querySelectorAll('[data-a]').forEach(el=>el.addEventListener('input',lireAffaire));
+if(!CAHIER.existe()) enr();
+window.addEventListener('storage',e=>{ if(e.key===CAHIER.CLE){ K=CAHIER.lire(); IMG={}; demarrer(); } });
+demarrer();
+</script>
+<script src="../commun/export.js?v=2.3"></script>
+<script>EXPORT.init({code:'CS',titre:'Cahier de supportage',
+  zones:()=>[...document.querySelectorAll('#res > .card:not(.noprint), #rFiches > .card')], donnees:()=>[],
+  avant:async()=>{ await fiches(); }, nom:()=>K.affaire.num||K.affaire.intitule});</script>
+</body>
+</html>

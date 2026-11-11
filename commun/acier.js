@@ -132,15 +132,23 @@ function Mcr(p, L, C1, C2, zg) {
 /* =====================================================================
    AFFICHAGE COMMUN
    ===================================================================== */
-function barresRatios(lignes) {                            // [{n, ref, val, lim, r, unit, comb, gov}]
+/* Code couleur des taux : vert ≤ seuil, JAUNE entre le seuil (90 % par défaut) et 100 % (avertissement non bloquant), rouge > 100 % */
+const SEUIL_TAUX = 0.9, JAUNE = "#d4a300";
+function barresRatios(lignes, seuil = SEUIL_TAUX) {          // [{n, ref, val, lim, r, unit, comb, gov}]
   return `<table class="ratios"><tr><th>Vérification</th><th class="n">Sollicitation</th><th class="n">Résistance / limite</th><th>Taux</th><th></th></tr>` +
     lignes.map((l) => {
-      const w = Math.min(100, l.r * 100), col = l.r > 1 ? "var(--bad)" : l.r > 0.9 ? "var(--warn)" : "var(--ok)";
+      const w = Math.min(100, l.r * 100), col = l.r > 1 ? "var(--bad)" : l.r > seuil ? JAUNE : "var(--ok)";
       return `<tr class="${l.gov ? "gov" : ""}"><td>${l.n}${l.gov ? ' <span class="badge b-gov">▲ DIMENSIONNANT</span>' : ""}<div class="note">${l.ref || ""}${l.comb ? " · " + escH(l.comb) : ""}</div></td>
       <td class="n">${l.val}</td><td class="n">${l.lim}</td>
       <td style="min-width:120px"><div class="bar"><i style="width:${w}%;background:${col}"></i></div><b style="color:${col}">${fmtN(l.r * 100, 0)} %</b></td>
-      <td>${l.r > 1 ? '<span class="badge b-bad">▲ NON VÉRIFIÉ</span>' : l.r > 0.9 ? '<span class="badge b-warn">OK limite</span>' : '<span class="badge b-ok">● OK</span>'}</td></tr>`;
+      <td>${l.r > 1 ? '<span class="badge b-bad">▲ NON VÉRIFIÉ</span>' : l.r > seuil ? '<span class="badge b-jaune">⚠ OK – taux élevé</span>' : '<span class="badge b-ok">● OK</span>'}</td></tr>`;
     }).join("") + "</table>";
+}
+const badgeTaux = (r, seuil = SEUIL_TAUX) => r > 1 ? '<span class="badge b-bad">▲ NON VÉRIFIÉ</span>' : r > seuil ? '<span class="badge b-jaune">⚠ taux élevé</span>' : '<span class="badge b-ok">● OK</span>';
+function alerteTaux(lignes, seuil = SEUIL_TAUX) {          // message non bloquant pour les taux entre le seuil et 100 %
+  const L = lignes.filter((l) => l.r > seuil && l.r <= 1);
+  if (!L.length) return "";
+  return `<div class="msg jaune">⚠ <b>Taux de travail élevé</b> (&gt; ${fmtN(seuil * 100, 0)} %, non bloquant) : ${L.map((l) => `${String(l.n).replace(/<(?!\/?su[bp]>)[^>]+>/g, "")} – ${fmtN(l.r * 100, 0)} %`).join(" ; ")}. Marge faible en phase APS/APD : à confirmer en exécution (Robot…).</div>`;
 }
 function svgSection(p, larg = 170) {                        // coupe du profilé à l'échelle
   const h = p.h, b = p.b || p.h * 0.45, tw = p.tw || Math.max(5, h / 30), tf = p.tf || Math.max(7, h / 18);
