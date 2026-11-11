@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.1"></script>
+<script src="../commun/auth.js?v=2.2"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — P2 Poteau acier</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.1">
-<script src="../commun/data/profils.js?v=2.1"></script>
-<script src="../commun/acier.js?v=2.1"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.2">
+<script src="../commun/data/profils.js?v=2.2"></script>
+<script src="../commun/acier.js?v=2.2"></script>
 </head>
 <body>
 <header>
@@ -199,6 +199,7 @@ function calc(){
     <div class="kpi"><div class="l">Taux maximal</div><div class="v">${f(R.gov.r*100,0)} %</div></div>
     <div class="kpi"><div class="l">Critère dimensionnant</div><div class="v" style="font-size:15px;color:var(--fip-rouge)">▲ ${R.gov.n}</div></div>
     <div class="kpi"><div class="l">N<sub>Ed</sub> max / min (ELU)</div><div class="v">${f(Nmax,1)} / ${f(Nmin,1)} kN</div></div></div>
+    ${alerteTaux(R.lignes)}
     ${R.cl===4?'<div class="msg bad">Section de classe 4 : calcul non couvert (aire efficace, EN 1993-1-5). Choisir un profilé plus compact.</div>':''}
     ${Nmin<0?'<div class="msg warn">Traction possible (soulèvement au vent) : vérifier aussi les ancrages en pied et l\'assemblage en tête.</div>':''}
     ${Math.max(R.lamy,R.lamz)>2?'<div class="msg warn">Élancement réduit > 2 : poteau très élancé, sensibilité accrue aux imperfections.</div>':''}`;
@@ -247,7 +248,7 @@ function optimiser(){
 }
 init();
 </script>
-<script src="../commun/export.js?v=2.1"></script>
+<script src="../commun/export.js?v=2.2"></script>
 <script>EXPORT.init({code:'P2',titre:'Poteau acier – compression et flexion',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:()=>calc(), nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>

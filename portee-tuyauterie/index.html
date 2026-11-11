@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.1"></script>
-<script src="../commun/data/tuyauterie.js?v=2.1"></script>
+<script src="../commun/auth.js?v=2.2"></script>
+<script src="../commun/data/tuyauterie.js?v=2.2"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — T1 Portée de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
@@ -62,6 +62,7 @@ tr.gov td:first-child{box-shadow:inset 3px 0 0 var(--fip-rouge)}
 .badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600}
 .b-ok{background:var(--ok-soft);color:var(--ok)}
 .b-warn{background:var(--warn-soft);color:var(--warn)}
+.b-jaune{background:#fff3c4;color:#7a5d00}.msg.jaune{background:#fff6d1;color:#6b5200;border-left:3px solid #d4a300}
 .b-bad{background:var(--bad-soft);color:var(--bad)}
 .b-gov{background:var(--fip-rouge);color:#fff}
 .hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:6px}
@@ -372,7 +373,7 @@ function calc(){
 }
 
 /* ======================== AFFICHAGE ======================== */
-function badge(r){return r<=0.9?'<span class="badge b-ok">OK</span>':r<=1.0?'<span class="badge b-warn">OK (proche limite)</span>':'<span class="badge b-bad">NON CONFORME</span>';}
+function badge(r){return r<=0.9?'<span class="badge b-ok">OK</span>':r<=1.0?'<span class="badge b-jaune">⚠ OK – taux élevé</span>':'<span class="badge b-bad">NON CONFORME</span>';}
 
 function render(o){
   const check=mode()==='check';
@@ -396,7 +397,7 @@ function render(o){
   h+=`</div>`;
   if(check){
     o.res.forEach(r=>r.crit.forEach(c=>{if(c.ratio>1)h+=`<div class="msg bad">⚠ ${c.n} (${c.cas.n}) : ${fmt(c.valAt,2)} ${c.unit} pour une limite de ${fmt(c.limAt,2)} ${c.unit}, soit un taux de ${fmt(c.ratio*100,0)} %. Réduire la portée à ${fmt(c.L,2)} m au plus.</div>`;
-      else if(c.ratio>0.9)h+=`<div class="msg warn">Attention : ${c.n} (${c.cas.n}) à ${fmt(c.ratio*100,0)} % de la limite, peu de marge.</div>`;}));
+      else if(c.ratio>0.9)h+=`<div class="msg jaune">⚠ Taux élevé (non bloquant) : ${c.n} (${c.cas.n}) à ${fmt(c.ratio*100,0)} % de la limite. Marge faible en APS/APD.</div>`;}));
   }
   o.msgs.forEach(([t,s])=>h+=`<div class="msg ${t}">${s}</div>`);
   const b=B311[$('dn').value!=='custom'?PIPES[$('dn').value].dn:0];
@@ -518,7 +519,7 @@ function schemaSVG(o){
 
 initUI();calc();
 </script>
-<script src="../commun/export.js?v=2.1"></script>
+<script src="../commun/export.js?v=2.2"></script>
 <script>EXPORT.init({code:'T1',titre:'Portée maximale entre supports de tuyauterie',
   zones:()=>[...document.querySelectorAll('#results > .card')], donnees:()=>[document.getElementById('form')],
   avant:()=>calc(), nom:()=>document.getElementById('ligne').value||document.getElementById('affaire').value});</script>
