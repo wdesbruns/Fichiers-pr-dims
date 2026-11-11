@@ -4,18 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=1.8"></script>
+<script src="../commun/auth.js?v=1.9"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=1.8">
+<link rel="stylesheet" href="../commun/calc.css?v=1.9">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=1.8"></script>
-<script src="../commun/data/tuyauterie.js?v=1.8"></script>
-<script src="../commun/acier.js?v=1.8"></script>
-<script src="../commun/barres3d.js?v=1.8"></script>
+<script src="../commun/data/profils.js?v=1.9"></script>
+<script src="../commun/data/tuyauterie.js?v=1.9"></script>
+<script src="../commun/acier.js?v=1.9"></script>
+<script src="../commun/barres3d.js?v=1.9"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -23,13 +23,13 @@
   .types input{display:none}.types svg{width:100%;height:64px}
   .tuyau{border:1px solid var(--line);border-left:4px solid var(--fip-ciel);border-radius:6px;padding:8px 10px;margin-top:10px;background:#fbfcfd}
   .tuyau .tete{display:flex;align-items:center;gap:8px}.tuyau .tete b{flex:1}.tuyau .tete button{padding:2px 8px;font-size:12px}
-  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .g4{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
   .tuyau label{margin-top:5px;font-size:11px}
   .vues{display:flex;gap:4px;margin-bottom:8px}.vues button{padding:5px 12px;background:#fff;color:var(--fip-bleu)}.vues button.on{background:var(--fip-bleu);color:#fff}
   #v3d{width:100%;height:420px;border:1px solid var(--line);border-radius:6px;background:linear-gradient(#f7f9fc,#e9eef5);position:relative;touch-action:none}
   #v3d .aide{position:absolute;left:8px;bottom:6px;font-size:11px;color:var(--muted)}
   .vue2d{display:grid;grid-template-columns:1.3fr 1fr;gap:10px}
-  @media (max-width:950px){.vue2d{grid-template-columns:1fr}.g4{grid-template-columns:1fr 1fr}}
+  @media (max-width:950px){.vue2d{grid-template-columns:1fr}}
   table.ddc td.n{min-width:62px}
 </style>
 </head>
@@ -41,7 +41,7 @@
     <h1><span class="code">S1</span>Supports standards de tuyauterie — montant, console, suspente</h1>
     <div class="sub">Prédimensionnement APS/APD · NF EN 1990 + AN · NF EN 1993-1-1 + AN · NF EN 1991-1-3 / 1-4 · NF EN 1998-1 §4.3.5</div>
   </div>
-  <button onclick="window.print()">🖨️ Imprimer / PDF</button>
+  <button onclick="imprimerS1()">🖨️ Imprimer / PDF</button>
 </header>
 
 <main>
@@ -131,6 +131,7 @@
     <div id="p2d"><div class="vue2d"><div id="vFace"></div><div id="vCote"></div></div></div>
     <div id="p3d" class="noprint" style="display:none"><div id="v3d"><span class="aide">Glisser pour tourner · molette / pincer pour zoomer · flèches : charges G (rouge), vent (bleu), frottement (orange)</span></div></div>
   </div>
+  <div class="card" id="persp" hidden><h2>Perspective</h2><img id="imgPersp" alt="Perspective du support" style="width:100%;max-width:760px;display:block;margin:auto;border:1px solid var(--line);border-radius:6px"><div class="note" style="text-align:center">Vue isométrique : charges G (rouge), vent (bleu), frottement / dilatation (orange) · X axe des tuyaux, Z vertical</div></div>
   <div class="card"><h2>Vérifications (taux = sollicitation / résistance)</h2><div id="rRatios"></div></div>
   <div class="card"><h2>Descente de charges sur l'ouvrage (platine / fixation)</h2><div id="rDDC"></div></div>
   <div class="card"><h2>Charges des tuyauteries par cas</h2><div id="rCharges"></div></div>
@@ -367,6 +368,7 @@ function calc(){
   $('rRatios').innerHTML=barresRatios(V.lignes)+`<div class="note">Section en pied (encastrement) en général dimensionnante. ${V.res.length} combinaisons ELU vérifiées (dont ${V.res.filter(r=>r.c.type==='Sismique').length} sismiques).</div>`;
   ddc(V,env); charges(V,D); $('rEntraxes').innerHTML=tableEntraxes(D,V); donneesCalc(p,D,V); combos(V); notes(D,V);
   if(vue3dActive) majVue3D();
+  planifierPerspective();
 }
 /* ---------- descente de charges ---------- */
 const COMP=['F<sub>x</sub> (kN)','F<sub>y</sub> (kN)','F<sub>z</sub> (kN)','M<sub>x</sub> (kNm)','M<sub>y</sub> (kNm)','M<sub>z</sub> (kNm)'];
@@ -480,16 +482,38 @@ function vueCote(p,D,V){                                   // plan X–Z
    VUE 3D (Three.js, chargée à la demande)
    ===================================================================== */
 let vue3dActive=false, V3=null;
-async function majVue3D(){
+async function chargerThree(){
   if(!V3){ const T=await import('three'), {OrbitControls}=await import('../commun/lib/three/OrbitControls.js'); V3={T,OrbitControls}; }
-  const {T,OrbitControls}=V3, box=$('v3d'), {p,D,V}=dernier, Gm=V.Gm;
+  return V3;
+}
+async function majVue3D(){
+  await chargerThree();
+  const {T,OrbitControls}=V3, box=$('v3d');
   if(!V3.renderer){
     V3.renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true}); V3.renderer.setPixelRatio(Math.min(devicePixelRatio,2)); box.appendChild(V3.renderer.domElement);
     V3.camera=new T.PerspectiveCamera(40,1,0.01,100); V3.controls=new OrbitControls(V3.camera,V3.renderer.domElement); V3.controls.enableDamping=true;
     const boucle=()=>{requestAnimationFrame(boucle);if(!V3.scene)return;V3.controls.update();V3.renderer.render(V3.scene,V3.camera);}; boucle();
     new ResizeObserver(()=>{const w=box.clientWidth,h=box.clientHeight;V3.renderer.setSize(w,h);V3.camera.aspect=w/h;V3.camera.updateProjectionMatrix();}).observe(box);
   }
-  const sc=new T.Scene(); V3.scene=sc; sc.background=new T.Color(0xf1f4f8);
+  const {sc,ctr,sz}=construireScene(T); V3.scene=sc;
+  V3.camera.up.set(0,0,1); V3.camera.position.copy(ctr.clone().add(new T.Vector3(sz*0.75,-sz*0.95,sz*0.5))); V3.controls.target.copy(ctr); V3.controls.update();
+  const w=box.clientWidth,hh=box.clientHeight; V3.renderer.setSize(w,hh); V3.camera.aspect=w/hh; V3.camera.updateProjectionMatrix();
+}
+/* Perspective fixe (image PNG) pour l'impression et les exports */
+async function perspective(){
+  try{
+    await chargerThree(); const T=V3.T, {sc,ctr,sz}=construireScene(T), W=1000, H=650;
+    if(!V3.rOff){ V3.rOff=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true}); V3.rOff.setPixelRatio(1); V3.rOff.setSize(W,H); }
+    const cam=new T.PerspectiveCamera(32,W/H,0.01,100); cam.up.set(0,0,1);
+    cam.position.copy(ctr.clone().add(new T.Vector3(sz*0.85,-sz*1.05,sz*0.6))); cam.lookAt(ctr);
+    V3.rOff.render(sc,cam); $('imgPersp').src=V3.rOff.domElement.toDataURL('image/png'); $('persp').hidden=false;
+  }catch(e){ console.warn('Perspective indisponible',e); $('persp').hidden=true; }
+}
+let tPersp=null; const planifierPerspective=()=>{clearTimeout(tPersp);tPersp=setTimeout(perspective,700);};
+async function imprimerS1(){ calc(); await perspective(); setTimeout(()=>window.print(),80); }
+function construireScene(T){
+  const {p,D,V}=dernier, Gm=V.Gm;
+  const sc=new T.Scene(); sc.background=new T.Color(0xf7f9fc);
   sc.add(new T.HemisphereLight(0xffffff,0x8899aa,1.1)); const dl=new T.DirectionalLight(0xffffff,1.4); dl.position.set(3,-4,6); sc.add(dl);
   const conv=(x,y,z)=>new T.Vector3(x,y,z);              // repère global Z vertical : on oriente la caméra en conséquence
   // section du profilé (dans le plan local y–z, en m)
@@ -521,10 +545,9 @@ async function majVue3D(){
     if(D.cT&&d.T[0]) sc.add(new T.ArrowHelper(conv(1,0,0),o.clone().add(conv(0.82,0,0)),0.25,0xd9822b,0.06,0.04));
   });
   const ax=new T.AxesHelper(0.25); sc.add(ax);
-  // caméra : cadrage sur le support et les tuyaux (hors plan de l'ouvrage)
-  ouv.visible=false; const bb=new T.Box3().setFromObject(sc); ouv.visible=true; const bbx=bb, ctr=bbx.getCenter(new T.Vector3()), sz=Math.max(bbx.getSize(new T.Vector3()).length(),0.5);
-  V3.camera.up.set(0,0,1); V3.camera.position.copy(ctr.clone().add(new T.Vector3(sz*0.75,-sz*0.95,sz*0.5))); V3.controls.target.copy(ctr); V3.controls.update();
-  const w=box.clientWidth,hh=box.clientHeight; V3.renderer.setSize(w,hh); V3.camera.aspect=w/hh; V3.camera.updateProjectionMatrix();
+  // cadrage sur le support et les tuyaux (hors plan de l'ouvrage)
+  ouv.visible=false; const bb=new T.Box3().setFromObject(sc); ouv.visible=true; const ctr=bb.getCenter(new T.Vector3()), sz=Math.max(bb.getSize(new T.Vector3()).length(),0.5);
+  return {sc,ctr,sz};
 }
 
 /* =====================================================================
@@ -560,9 +583,9 @@ function init(){
 }
 init();
 </script>
-<script src="../commun/export.js?v=1.8"></script>
+<script src="../commun/export.js?v=1.9"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie – montant, console, suspente',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
-  avant:()=>calc(), nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
+  avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
 </body>
 </html>

@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=1.8"></script>
-<script src="../commun/data/tuyauterie.js?v=1.8"></script>
+<script src="../commun/auth.js?v=1.9"></script>
+<script src="../commun/data/tuyauterie.js?v=1.9"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — T1 Portée de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
@@ -36,7 +36,8 @@ header a.back{color:var(--accent);text-decoration:none;font-weight:600;white-spa
 button.secondary{background:transparent;color:var(--accent)}
 main{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:16px;padding:16px;max-width:1500px;margin:0 auto}
 @media (max-width:900px){main{grid-template-columns:1fr}}
-.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:16px;overflow-x:auto}
+main>*{min-width:0}
 .card h2{font-size:15px;margin:0 0 10px;color:var(--fip-bleu);text-transform:uppercase;letter-spacing:.05em;font-size:13px;border-left:3px solid var(--fip-rouge);padding-left:8px}
 .card h3{font-size:13px;margin:14px 0 6px}
 label{display:block;font-size:12px;color:var(--muted);margin-top:8px}
@@ -83,7 +84,7 @@ svg text{fill:var(--ink);font-family:inherit}
   body{background:#fff;color:#000;font-size:11px}
   header,#form,.noprint{display:none!important}
   main{display:block;padding:0}
-  .card{border:1px solid #999;break-inside:avoid;margin-bottom:8px;padding:8px}
+  .card{border:1px solid #999;break-inside:avoid;margin-bottom:8px;padding:8px;overflow:visible}
   .printhead{display:block;border-bottom:3px solid var(--fip-bleu);margin-bottom:8px;padding-bottom:6px;overflow:hidden}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   input,select{background:#fff}
@@ -517,7 +518,7 @@ function schemaSVG(o){
 
 initUI();calc();
 </script>
-<script src="../commun/export.js?v=1.8"></script>
+<script src="../commun/export.js?v=1.9"></script>
 <script>EXPORT.init({code:'T1',titre:'Portée maximale entre supports de tuyauterie',
   zones:()=>[...document.querySelectorAll('#results > .card')], donnees:()=>[document.getElementById('form')],
   avant:()=>calc(), nom:()=>document.getElementById('ligne').value||document.getElementById('affaire').value});</script>

@@ -20,7 +20,7 @@ const EXPORT = (() => {
   };
   const propre = (t) => String(t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9_-]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 40);
   const nomFichier = (ext) => `${cfg.code}_${propre(cfg.nom ? cfg.nom() : "") || "note"}_${new Date().toISOString().slice(0, 10)}.${ext}`;
-  const ignorer = (el) => el.nodeType === 1 && (el.matches("script,style,button,.noprint,.bar,.printhead,.leaflet-container,.sugg") || el.closest(".noprint"));
+  const ignorer = (el) => el.nodeType === 1 && (el.matches("script,style,button,.noprint,.bar,.printhead,.leaflet-container,.sugg,[hidden]") || !!el.closest(".noprint,[hidden]"));
   const hex = (rgb) => { const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(rgb || ""); return m ? [m[1], m[2], m[3]].map((x) => (+x).toString(16).padStart(2, "0")).join("").toUpperCase() : null; };
   const valeurChamp = (el) => {
     if (el.tagName === "SELECT") return el.selectedIndex >= 0 ? el.options[el.selectedIndex].text : "";
@@ -80,7 +80,7 @@ const EXPORT = (() => {
       if (node.classList.contains("badge")) return [new TextRun({ text: " [" + net(texte(node)) + "] ", bold: true, color: f.color, size: 16 })];
       return [...node.childNodes].flatMap((n) => runs(n, f));
     };
-    const BLOC = /^(DIV|SECTION|P|UL|OL|LI|TABLE|H1|H2|H3|H4|DETAILS|SUMMARY|FORM|MAIN|HEADER|FOOTER|LABEL)$/;
+    const BLOC = /^(DIV|SECTION|P|UL|OL|LI|TABLE|H1|H2|H3|H4|DETAILS|SUMMARY|FORM|MAIN|HEADER|FOOTER|LABEL|IMG)$/;
     const estBloc = (n) => n.nodeType === 1 && (BLOC.test(n.tagName) || n.tagName.toLowerCase() === "svg");
     async function blocs(el, opt = {}) {
       const out = []; let enCours = [];
@@ -91,6 +91,12 @@ const EXPORT = (() => {
         vider();
         const tag = n.tagName.toUpperCase();
         if (tag === "SVG") { try { const im = await svgEnPng(n), w = Math.min(600, im.w * (opt.echelle || 1)), h = w * im.h / im.w; out.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new ImageRun({ type: "png", data: im.data, transformation: { width: w, height: h } })] })); } catch (e) { } }
+        else if (tag === "IMG") {                                   // image (ex. perspective 3D) en data:image/png
+          const src = n.getAttribute("src") || "";
+          if (src.startsWith("data:image/png")) { const bin = atob(src.split(",")[1]), u8 = new Uint8Array(bin.length); for (let k = 0; k < bin.length; k++) u8[k] = bin.charCodeAt(k);
+            const w = Math.min(600, n.naturalWidth || 600), h = w * ((n.naturalHeight || 400) / (n.naturalWidth || 600));
+            out.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new ImageRun({ type: "png", data: u8, transformation: { width: w, height: h } })] })); }
+        }
         else if (tag === "TABLE") { out.push(await tableau(n)); out.push(new Paragraph({ text: "", spacing: { after: 60 } })); }
         else if (/^H[1-4]$/.test(tag) || tag === "SUMMARY") {
           const niv = tag === "H1" || tag === "H2" ? 26 : 22;
