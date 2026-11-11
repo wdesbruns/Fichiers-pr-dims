@@ -6,7 +6,7 @@ Portail de calculettes du bureau d'études, aux couleurs FIP (bleu #114088, roug
 ```
 index.html                 ← page de connexion (l'adresse à communiquer)
 accueil.html               ← tableau de bord : une tuile par calculette
-supports/                  ← S1 supports de tuyauterie (montant, console, suspente) – calcul 3D, DDC, vues 2D/3D
+supports/                  ← S1 supports de tuyauterie (montant, console, suspente, T, L, U, L mural) – calcul 3D, DDC, vues 2D/3D
 portee-tuyauterie/         ← T1 portée entre supports (CODETI / EN 13480-3, ASME B31.3)
 poutre/                    ← P1 poutre acier sur deux appuis (EN 1990 combinaisons + EN 1993-1-1)
 poteau/                    ← P2 poteau acier (flambement, déversement, interaction N–M)

@@ -9,7 +9,7 @@
    vignette : petit schéma SVG affiché sur la carte (facultatif)
    marqueur de catégorie : ● ▬ → ■ ◆ … (couleur d'accent FIP)
    ===================================================================== */
-const CALC_VERSION = "v2.0";
+const CALC_VERSION = "v2.1";
 
 const CALC_CATEGORIES = [
   { id: "tuy", nom: "Tuyauterie", sousTitre: "Supportage, portées et descentes de charges · CODETI / EN 13480-3, ASME B31.3", couleur: "#e30009", marqueur: "●" },
@@ -50,7 +50,7 @@ const CALC_APPS = [
   {
     code: "S1",
     titre: "Supports standards de tuyauterie",
-    description: "Montant au sol, console murale, suspente : plusieurs tuyaux (base T1), entraxes, G/T/S/W/E, combinaisons ELU et sismiques, vérifications EN 1993-1-1, descente de charges cas simples + enveloppe, vues 2D/3D, optimisation.",
+    description: "7 modèles : montant au sol, console murale, suspente, supports en T, en L (consoles), en U et en L mural. Plusieurs tuyaux (base T1), entraxes, G/T/S/W/E, combinaisons ELU et sismiques, vérifications EN 1993-1-1 par barre, descente de charges par appui, alertes de conception, vues 2D/3D, optimisation.",
     url: "supports/",
     categorie: "tuy",
     normes: ["NF EN 1990", "NF EN 1993-1-1", "NF EN 1991-1-4", "NF EN 1998-1"],
