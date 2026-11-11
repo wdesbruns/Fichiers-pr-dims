@@ -4,18 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=1.9"></script>
+<script src="../commun/auth.js?v=2.0"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=1.9">
+<link rel="stylesheet" href="../commun/calc.css?v=2.0">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=1.9"></script>
-<script src="../commun/data/tuyauterie.js?v=1.9"></script>
-<script src="../commun/acier.js?v=1.9"></script>
-<script src="../commun/barres3d.js?v=1.9"></script>
+<script src="../commun/data/profils.js?v=2.0"></script>
+<script src="../commun/data/tuyauterie.js?v=2.0"></script>
+<script src="../commun/acier.js?v=2.0"></script>
+<script src="../commun/barres3d.js?v=2.0"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -121,11 +121,28 @@
     <div class="row"><div><label>Déplacement ≤ L / …</label><input id="dlim" type="number" step="10" value="150"></div><div><label>et ≤ (mm)</label><input id="dmax" type="number" step="1" value="5"></div></div>
     <div class="note">Déplacement des points d'appui des tuyaux et de l'extrémité libre, sous combinaisons caractéristiques.</div>
   </div>
+
+  <div class="card">
+    <h2>Règles de conception (bonnes pratiques, modifiables)</h2>
+    <div class="row3">
+      <div><label>Épaisseur mini profilé (mm)</label><input id="rTmin" type="number" step="0.5" value="4"></div>
+      <div><label>Garde au sol mini (mm)</label><input id="rGarde" type="number" step="10" value="150"></div>
+      <div><label>Élancement L<sub>cr</sub>/i maxi</label><input id="rElanc" type="number" step="10" value="200"></div>
+    </div>
+    <div class="row3">
+      <div><label>Console sans jambe de force ≤ (m)</label><input id="rConsole" type="number" step="0.1" value="1.2"></div>
+      <div><label>Montant / suspente simple ≤ (m)</label><input id="rMontant" type="number" step="0.1" value="2.5"></div>
+      <div><label>Étrier jusqu'au DN (au-delà : berceau)</label><input id="rBerceau" type="number" step="50" value="250"></div>
+    </div>
+    <div class="row"><div><label>Distance mini tuyau – mur / bout de console (mm)</label><input id="rBord" type="number" step="10" value="50"></div><div><label>Alerte torsion si τ<sub>t</sub> > … % de f<sub>y</sub>/√3</label><input id="rTors" type="number" step="5" value="30"></div></div>
+    <div class="note">Pince des trous d'étrier : e<sub>2</sub> ≥ 1,2·d<sub>0</sub> (NF EN 1993-1-8 Tab. 3.3), jeu des trous d<sub>0</sub> = d + 1 (≤ M14), + 2 (M16–M24), + 3 (≥ M27) (NF EN 1090-2). Diamètre d'étrier automatique indicatif (type DIN 3570) : DN ≤ 50 → M10 ; ≤ 100 → M12 ; ≤ 200 → M16 ; ≤ 350 → M20 ; au-delà M24 — à confirmer avec le catalogue fabricant.</div>
+  </div>
 </section>
 
 <section id="res">
   <div class="printhead"><img src="../commun/img/logo-fip.png" alt="FIP"><strong>Note de calcul — support de tuyauterie</strong><br><span id="phInfo"></span></div>
   <div class="card" id="rHero"></div>
+  <div class="card"><h2>Alertes de conception</h2><div id="rAlertes"></div></div>
   <div class="card"><h2>Vues du support</h2>
     <div class="vues noprint"><button id="b2d" class="on">Vues 2D</button><button id="b3d">Vue 3D</button></div>
     <div id="p2d"><div class="vue2d"><div id="vFace"></div><div id="vCote"></div></div></div>
@@ -189,6 +206,7 @@ function cartesTuyaux(){
         <div><label>F<sub>y</sub> therm. (kN)</label><input data-k="Fy" type="number" step="0.1" value="${t.Fy}"></div>
         ${t.fonc==='fixe'?`<div><label>F<sub>z</sub> therm. (kN)</label><input data-k="Fz" type="number" step="0.1" value="${t.Fz}"></div>`:''}`:''}
       <div><label>G suppl. (kN)</label><input data-k="Gsup" type="number" step="0.1" value="${t.Gsup}"></div>
+      <div><label>Ø étrier (mm)</label><input data-k="etrier" type="number" step="2" value="${t.etrier??''}" placeholder="auto"></div>
     </div><div class="note">${escH(propsTuyau(t).desc)} · q<sub>service</sub> = ${f(propsTuyau(t).qop,3)} kN/m</div></div>`;}).join('');
   $('tuyaux').querySelectorAll('[data-k]').forEach(el=>el.addEventListener('change',e=>{
     const i=+el.closest('.tuyau').dataset.i, k=el.dataset.k, t=tuyaux[i];
@@ -363,7 +381,9 @@ function calc(){
     <div class="kpi"><div class="l">|F<sub>z</sub>| max ELU sur l'ouvrage</div><div class="v">${f(Math.abs(env.ELU[2].v),2)} kN</div><div class="l">masse profilé ${f(masse,1)} kg</div></div></div>
     ${V.cl===4?'<div class="msg bad">Section de classe 4 : non couverte (aire efficace EN 1993-1-5). Choisir un profilé plus épais.</div>':''}
     ${V.isL?'<div class="msg info">Cornière : vérification élastique dans les axes principaux u (grand) et v (petit), classe 3 au mieux (Tab. 5.2). Déversement non vérifié (cornières courtes de support).</div>':''}
-    ${entraxes(D,V).some(x=>!x.ok)?'<div class="msg warn">⚠ Entraxe insuffisant entre certaines tuyauteries : voir le tableau des entraxes.</div>':''}`;
+    ${(()=>{const A=alertes(p,D,V),nb=A.filter(a=>a.niv==='bloq').length,nw=A.filter(a=>a.niv==='warn').length;
+      $('rAlertes').innerHTML=A.length?`<table>${A.map(a=>`<tr><td style="width:34px;font-size:16px">${a.niv==='bloq'?'⛔':a.niv==='warn'?'⚠️':'ℹ️'}</td><td><b>${a.titre}</b><div>${a.txt}</div><div class="note">${a.ref||''}</div></td></tr>`).join('')}</table>`:'<div class="msg ok">● Aucune alerte de conception avec les règles actuelles.</div>';
+      return nb||nw?`<div class="msg ${nb?'bad':'warn'}">${nb?`⛔ ${nb} alerte(s) bloquante(s)`:''}${nb&&nw?' · ':''}${nw?`⚠ ${nw} avertissement(s)`:''} de conception : voir « Alertes de conception ».</div>`:'';})()}`;
   $('vFace').innerHTML=vueFace(p,D,V); $('vCote').innerHTML=vueCote(p,D,V);
   $('rRatios').innerHTML=barresRatios(V.lignes)+`<div class="note">Section en pied (encastrement) en général dimensionnante. ${V.res.length} combinaisons ELU vérifiées (dont ${V.res.filter(r=>r.c.type==='Sismique').length} sismiques).</div>`;
   ddc(V,env); charges(V,D); $('rEntraxes').innerHTML=tableEntraxes(D,V); donneesCalc(p,D,V); combos(V); notes(D,V);
@@ -421,6 +441,56 @@ function donneesCalc(p,D,V){
 function combos(V){
   $('rComb').innerHTML=`<table><tr><th>Combinaison</th><th>Type</th><th class="n">Section</th><th class="n">Stabilité</th><th class="n">F<sub>z</sub> ouvrage (kN)</th></tr>`+
    V.res.slice().sort((a,b)=>b.rS-a.rS).map(r=>`<tr><td>${r.c.nom}</td><td>${r.c.type}</td><td class="n">${f(r.rS*100,0)} %</td><td class="n">${f(r.rB*100,0)} %</td><td class="n">${f(-r.Rb[2],2)}</td></tr>`).join('')+'</table>';
+}
+/* =====================================================================
+   ALERTES DE CONCEPTION (règles de bonne pratique, seuils modifiables)
+   ===================================================================== */
+function diamEtrier(t){
+  if(t.etrier!==''&&t.etrier!=null&&+t.etrier>0) return +t.etrier;
+  const dn=t.mode==='base'?+t.dn:(PIPES.reduce((a,b)=>Math.abs(b.od-t.P.De)<Math.abs(a.od-t.P.De)?b:a).dn);
+  return dn<=50?10:dn<=100?12:dn<=200?16:dn<=350?20:24;
+}
+function largeurUtile(p,D){                                   // largeur plate de la face qui reçoit l'étrier (mm)
+  const r=p.r||0, rot=$('orient').value!=='0';
+  if(/^LI?$/.test(p.f)) return {l:Math.max(p.b,p.h)-p.t-r,face:'aile de la cornière'};
+  if(/^U/.test(p.f)) return (D.typ==='mur'&&!rot)?{l:p.b-p.tw-r,face:'semelle du U'}:{l:p.h-2*p.tf-2*r,face:'âme du U'};
+  if(p.f==='CHS') return {l:0,face:'tube rond'};
+  if(/HS$/.test(p.f)) return {l:Math.min(p.b,p.h)-3*p.t,face:'paroi du tube'};
+  return {l:(p.b-p.tw)/2-r,face:'débord de semelle (de part et d\'autre de l\'âme)'};
+}
+function alertes(p,D,V){
+  const A=[], add=(niv,titre,txt,ref)=>A.push({niv,titre,txt,ref});
+  const tmin=num('rTmin',4), garde=num('rGarde',150), elanc=num('rElanc',200), lCons=num('rConsole',1.2), lMont=num('rMontant',2.5), dnB=num('rBerceau',250), bord=num('rBord',50), tors=num('rTors',30)/100;
+  const lu=largeurUtile(p,D), tp=/^LI?$|HS$/.test(p.f)?p.t:Math.min(p.tw||99,p.tf||99);
+  if(V.cl===4) add('bloq','Section de classe 4',`${escH(p.n)} : parois trop élancées, résistance non couverte par l'outil.`,'NF EN 1993-1-1 Tab. 5.2');
+  for(const t of V.Gm.T){
+    const d=diamEtrier(t), d0=d+(d<=14?1:d<=24?2:3), need=2.4*d0, dn=t.mode==='base'?+t.dn:null, nom=`${escH(t.nom)} (${t.mode==='base'?'DN'+t.dn:'Ø'+t.P.De})`;
+    // pince de l'étrier
+    if(p.f==='CHS') add('info',`Étrier sur tube rond – ${nom}`,'Pas de face plane pour l\'étrier : prévoir une patte ou une platine soudée sur le tube.');
+    else if(lu.l<need) add('bloq',`Pince insuffisante pour l'étrier M${d} – ${nom}`,`Largeur plate disponible (${lu.face}) = ${f(lu.l,0)} mm &lt; 2 × 1,2·d<sub>0</sub> = ${f(need,0)} mm (d<sub>0</sub> = ${d0} mm). Profilé trop petit pour cette tuyauterie : choisir un profilé plus large (ex. UPN, UPE) ou une patte rapportée.`,'Pince e<sub>2</sub> ≥ 1,2·d<sub>0</sub> – NF EN 1993-1-8 Tab. 3.3');
+    // gros diamètres
+    if((dn&&dn>dnB)||(!dn&&t.P.De>(PIPES.find(x=>x.dn>=dnB)||{od:9e9}).od)) add('warn',`Gros diamètre sur étrier – ${nom}`,`Au-delà du DN${dnB}, préférer un berceau ou un sabot soudé (répartition de la charge, ovalisation).`,'Règle de l\'art supportage');
+    // calorifuge et sabot
+    if(t.P.ecal>0&&D.sabot<=0) add('warn',`Tuyauterie calorifugée sans sabot – ${nom}`,`Calorifuge ${f(t.P.ecal,0)} mm : l'étrier écraserait l'isolant. Prévoir un sabot (cale) de hauteur ≥ ${f(t.P.ecal,0)} mm.`,'Règle de l\'art supportage');
+    else if(t.P.ecal>0&&D.sabot<t.P.ecal) add('warn',`Sabot plus bas que le calorifuge – ${nom}`,`Sabot ${f(D.sabot,0)} mm &lt; calorifuge ${f(t.P.ecal,0)} mm.`,'Règle de l\'art supportage');
+    // position sur le support
+    const rc=t.P.Dc/2000, re=t.P.De/2000+d/1000;
+    if(t.s>=D.Lm-1e-6&&D.typ!=='mur') add('warn',`Tuyauterie en bout de montant – ${nom}`,`L'étrier (± ${f(re*1000,0)} mm autour de l'axe) doit être entièrement repris : allonger le profilé d'au moins ${f(re*1000,0)} mm au-delà de l'axe.`);
+    else if(D.typ!=='mur'&&t.s+re>D.Lm) add('warn',`Étrier dépassant l'extrémité – ${nom}`,`Axe à ${f(t.s*1000,0)} mm, étrier jusqu'à ${f((t.s+re)*1000,0)} mm &gt; longueur ${f(D.Lm*1000,0)} mm.`);
+    if(D.typ==='mur'){ if(t.s+rc>D.Lm-bord/1000) add('warn',`Tuyauterie trop près du bout de console – ${nom}`,`Bord du tuyau à ${f((D.Lm-t.s-rc)*1000,0)} mm de l'extrémité (mini ${bord} mm).`);
+      if(t.s-rc<bord/1000) add('warn',`Tuyauterie trop près du mur – ${nom}`,`Bord du tuyau à ${f((t.s-rc)*1000,0)} mm du mur (mini ${bord} mm) : pose et entretien difficiles.`); }
+    if(D.typ==='sol'&&(t.s-rc)*1000<garde) add('warn',`Garde au sol insuffisante – ${nom}`,`Génératrice inférieure à ${f((t.s-rc)*1000,0)} mm du sol (mini ${garde} mm) : entretien, calorifuge, nettoyage.`);
+    if(t.fonc==='fixe'&&/^(LI?|U)/.test(p.f)) add('warn',`Point fixe sur profilé ouvert – ${nom}`,'Les efforts de point fixe génèrent flexion déviée et torsion : préférer un tube carré, un double profilé ou un support en U.');
+    if(t.fonc==='guide') add('info',`Guidage – ${nom}`,'Prévoir des butées latérales soudées (jeu de guidage à préciser) ; vérifier leur soudure en exécution.');
+  }
+  if(tp<tmin) add('warn','Épaisseur faible',`Épaisseur ${f(tp,1)} mm &lt; ${tmin} mm : sensibilité à la corrosion et aux chocs, perçage délicat.`,'Bonne pratique (durabilité)');
+  const iMin=/^LI?$/.test(p.f)?p.iv:Math.min(p.iy,p.iz), el=V.Lcr*100/iMin;
+  if(el>elanc) add('warn','Élancement excessif',`L<sub>cr</sub>/i = ${f(el,0)} &gt; ${elanc} : support souple, sensible aux vibrations et chocs.`,'Limite usuelle des barres comprimées');
+  if(D.typ==='mur'&&D.Lm>lCons) add('warn','Console longue',`L = ${f(D.Lm,2)} m &gt; ${f(lCons,2)} m : envisager une jambe de force ou un support en L mural (étape 2).`);
+  if(D.typ!=='mur'&&D.Lm>lMont) add('warn',D.typ==='sol'?'Montant haut':'Suspente longue',`H = ${f(D.Lm,2)} m &gt; ${f(lMont,2)} m : envisager un support en U, un contreventement ou un renfort.`);
+  const rT=Math.max(...V.res.map(r=>r.rT||0)); if(rT>tors) add('warn','Torsion importante',`τ<sub>t</sub> = ${f(rT*100,0)} % de f<sub>y</sub>/√3 : profilé ouvert peu adapté, préférer un tube (section fermée) ou réduire l'excentricité.`,'NF EN 1993-1-1 §6.2.7');
+  entraxes(D,V).filter(x=>!x.ok).forEach(x=>add('bloq',`Entraxe insuffisant ${escH(x.a)} – ${escH(x.b)}`,`${f(x.reel,0)} mm &lt; ${f(x.E,0)} mm requis.`,'E = (D₁+D₂)/2 + e<sub>cal1</sub> + e<sub>cal2</sub> + J'));
+  const o={bloq:0,warn:1,info:2}; return A.sort((a,b)=>o[a.niv]-o[b.niv]);
 }
 function notes(D,V){
   $('rNotes').innerHTML=`<ul class="note" style="font-size:12.5px">
@@ -555,8 +625,8 @@ function construireScene(T){
    ===================================================================== */
 function optimiser(){
   const fa=$('fam').value, D=donnees(), cands=PROFILS.filter(p=>p.f===fa).sort((a,b)=>a.m-b.m);
-  for(const p of cands){ try{ const V=verifier(p,D); if(V.gov.r<=1&&V.cl!==4){ $('prof').value=p.n; calc(); return; } }catch(e){} }
-  alert('Aucun profilé de la famille '+fa+' ne convient : changer de famille ou de nuance.');
+  for(const p of cands){ try{ const V=verifier(p,D); if(V.gov.r<=1&&V.cl!==4&&!alertes(p,D,V).some(x=>x.niv==='bloq'&&/^(Pince|Section)/.test(x.titre))){ $('prof').value=p.n; calc(); return; } }catch(e){} }
+  alert('Aucun profilé de la famille '+fa+' ne convient (résistance ou pince des étriers) : changer de famille ou de nuance.');
 }
 function importerC1(){
   let o=null; try{o=JSON.parse(localStorage.getItem('fip.climat'));}catch(e){}
@@ -583,7 +653,7 @@ function init(){
 }
 init();
 </script>
-<script src="../commun/export.js?v=1.9"></script>
+<script src="../commun/export.js?v=2.0"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie – montant, console, suspente',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
