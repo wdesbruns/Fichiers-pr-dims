@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.4"></script>
+<script src="../commun/auth.js?v=2.6"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — C1 Hypothèses climatiques et sismiques</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
@@ -12,9 +12,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../commun/lib/leaflet/leaflet.css">
 <script src="../commun/lib/leaflet/leaflet.js"></script>
-<script src="data/zonage.js?v=2.4"></script>
-<script src="data/communes.js?v=2.4"></script>
-<script src="data/departements.js?v=2.4"></script>
+<script src="data/zonage.js?v=2.6"></script>
+<script src="data/communes.js?v=2.6"></script>
+<script src="data/departements.js?v=2.6"></script>
 <style>
 :root{
   --fip-bleu:#114088; --fip-bleu-fonce:#0b2d63; --fip-rouge:#e30009; --fip-ciel:#0098db;
@@ -224,7 +224,10 @@ svg text{font-family:inherit}
         <div><label>c<sub>dir</sub></label><input id="cdir" type="number" step="0.05" value="1"></div>
         <div><label>c<sub>season</sub></label><input id="cseason" type="number" step="0.05" value="1"></div>
       </div>
-      <label>Coefficient d'orographie c<sub>o</sub></label><input id="co" type="number" step="0.05" value="1">
+      <label>Orographie c<sub>o</sub>(z) — §4.3.3 + AN</label>
+      <select id="coMode"><option value="1">c₀ = 1 : relief peu marqué (pente moyenne au vent &lt; 3°)</option><option value="p1">Procédure 1 de l'AN : relief général, altitudes IGN à 500 m et 1 000 m</option><option value="saisie">Valeur saisie (étude spécifique, ex. Orom CTICM)</option></select>
+      <div id="coSaisie" hidden><label>c<sub>o</sub> saisi</label><input id="co" type="number" step="0.01" value="1"></div>
+      <div id="coP1" hidden><div class="note" id="coInfo"></div><button type="button" class="sec" id="coCalc" style="margin-top:4px">↻ Relire les altitudes IGN</button></div>
       <label>Forçage de la zone de vent (facultatif)</label><select id="fVent"></select>
       <div class="msg info small">Sur le littoral méditerranéen (hors Corse, zones 2 et 3), les vents forts viennent de l'intérieur des terres : prendre la catégorie II et non 0 (Fiche CSTB n°45). DROM : c<sub>dir</sub> et c<sub>season</sub> spécifiques à relever dans l'AN.</div>
     </div>
@@ -391,13 +394,32 @@ function zones(){
    ===================================================================== */
 function calcVent(zv){
   const t=TERRAINS.find(x=>x.id===$('terrain').value), kr=.19*Math.pow(t.z0/.05,.07);
-  const vb0=VB0[zv], cdir=num('cdir',1), cse=num('cseason',1), co=num('co',1), rho=1.225, H=num('H'), ze=num('ze');
+  const vb0=VB0[zv], cdir=num('cdir',1), cse=num('cseason',1), rho=1.225, H=num('H'), ze=num('ze'), coZ=coOro, co=coZ(ze);
   const vb=cdir*cse*vb0, qb=.5*rho*vb*vb;
   const R=(RAYON.find(r=>H<=r[0])||[0,null])[1];
-  const prof=z=>{const zz=Math.max(z,t.zmin), cr=kr*Math.log(zz/t.z0), vm=cr*co*vb, Iv=t.kI/(co*Math.log(zz/t.z0)), qp=(1+7*Iv)*.5*rho*vm*vm;return{zz,cr,vm,Iv,qp,ce:qp/qb}};
+  const prof=z=>{const zz=Math.max(z,t.zmin), co=coZ(z), cr=kr*Math.log(zz/t.z0), vm=cr*co*vb, Iv=t.kI/(co*Math.log(zz/t.z0)), qp=(1+7*Iv)*.5*rho*vm*vm;return{zz,cr,vm,Iv,qp,ce:qp/qb}};
   const p=prof(ze);
   const ctrl=ze>200?'ze > zmax = 200 m : hors domaine':ze<=0?'ze invalide':'OK';
   return{t,kr,vb0,cdir,cse,co,rho,H,ze,vb,qb,R,p,prof,ctrl};
+}
+/* ---------- orographie : NF EN 1991-1-4 §4.3.3 + AN, procédure 1 (relief général) ----------
+   A_m = (2·A_C + A_N1 + A_N2 + A_E1 + A_E2 + A_S1 + A_S2 + A_O1 + A_O2)/10 (4.12-NA) ; ΔA_C = A_C − A_m (4.13-NA)
+   c_o(z) = 1 + 0,004·ΔA_C·exp[−0,014·(z − 10)] pour z ≥ 10 m ; c_o(z) = c_o(10) pour z < 10 m ; c_o ≥ 1 */
+const coP1=(dAc,z)=>Math.max(1,1+0.004*dAc*Math.exp(-0.014*(Math.max(z,10)-10)));
+function coOro(z){ const m=$('coMode').value; if(m==='saisie') return Math.max(num('co',1),0.5); if(m==='p1'&&S.oro&&S.oro.dAc!=null) return coP1(S.oro.dAc,z); return 1; }
+async function altitudes(pts){
+  try{ const r=await fetch(`https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json?lon=${pts.map(p=>p[1].toFixed(6)).join('|')}&lat=${pts.map(p=>p[0].toFixed(6)).join('|')}&resource=ign_rge_alti_wld&zonly=true&delimiter=|`);
+    const j=await r.json(); return (j.elevations||[]).map(z=>{const v=typeof z==='object'?z.z:z; return v>-1000?v:null;}); }catch(e){ return []; }
+}
+async function calcOro(){
+  if(S.lat==null){ S.oro={err:'Placer le site sur la carte (ou rechercher une adresse) : la procédure 1 utilise les altitudes autour du point exact.'}; render(); return; }
+  S.oro={enCours:true}; render();
+  const lat=S.lat, lon=S.lon, dLa=d=>d/111320, dLo=d=>d/(111320*Math.cos(lat*Math.PI/180));
+  const P=[['C',lat,lon]]; for(const d of [500,1000]){ const k=d===500?1:2; P.push(['N'+k,lat+dLa(d),lon],['E'+k,lat,lon+dLo(d)],['S'+k,lat-dLa(d),lon],['O'+k,lat,lon-dLo(d)]); }
+  const A=await altitudes(P.map(p=>[p[1],p[2]]));
+  if(A.length!==P.length||A.some(v=>v==null)){ S.oro={err:'Altitudes IGN indisponibles (réseau ou point hors France) : choisir « valeur saisie ».'}; render(); return; }
+  const al=Object.fromEntries(P.map((p,i)=>[p[0],A[i]])), Am=(2*al.C+['N','E','S','O'].reduce((s,k)=>s+al[k+'1']+al[k+'2'],0))/10;
+  S.oro={al,Am,dAc:al.C-Am,lat,lon}; render();
 }
 function calcNeige(zn){
   const A=num('alt'), [sk0,sAd]=NEIGE[zn], E=zn==='E';
@@ -487,7 +509,20 @@ function renderPanneau(Z,V,N,E){
   $('chips').innerHTML=L[1].map(k=>`<span class="chip ${k===L[2]?'cur':''}" style="background:${COUL[S.couche][k]};${S.couche==='seisme'&&+k>=4||S.couche==='vent'&&+k>=3?'color:#fff':''}">${k}</span>`).join('');
 }
 
+function renderOro(){
+  const m=$('coMode').value; $('coSaisie').hidden=m!=='saisie'; $('coP1').hidden=m!=='p1';
+  if(m!=='p1'){ $('coInfo').innerHTML=''; return; }
+  const O=S.oro; if(!O){ $('coInfo').innerHTML='—'; return; }
+  if(O.enCours){ $('coInfo').innerHTML='⏳ Lecture des altitudes IGN…'; return; }
+  if(O.err){ $('coInfo').innerHTML=`<span style="color:var(--bad)">${esc(O.err)}</span>`; return; }
+  const a=O.al, c10=coP1(O.dAc,10);
+  $('coInfo').innerHTML=`A<sub>C</sub> = ${f(a.C,0)} m · à 500 m : N ${f(a.N1,0)} / E ${f(a.E1,0)} / S ${f(a.S1,0)} / O ${f(a.O1,0)} · à 1 000 m : N ${f(a.N2,0)} / E ${f(a.E2,0)} / S ${f(a.S2,0)} / O ${f(a.O2,0)} m<br>
+    A<sub>m</sub> = ${f(O.Am,1)} m (4.12-NA) ; ΔA<sub>C</sub> = ${f(O.dAc,1)} m (4.13-NA) ; c<sub>o</sub>(z ≤ 10 m) = ${f(c10,3)}${O.dAc<=0?' (ΔA<sub>C</sub> ≤ 0 : c<sub>o</sub> = 1)':''}
+    ${c10>=1.15?'<div class="msg bad small">c<sub>o</sub> ≥ 1,15 : relief marqué, une étude spécifique (modélisation numérique ou soufflerie) est requise par l\'AN.</div>':''}
+    <div class="small">Site sur un obstacle bien individualisé (colline, falaise, crête) : procédure 2 de l'AN non programmée → utiliser une étude spécifique (Orom CTICM) en « valeur saisie ».</div>`;
+}
 function renderVent(Z,V){
+  renderOro();
   let h=msgStatut(Z.sv)+(Z.rv?`<div class="msg warn">${esc(Z.rv)}</div>`:'');
   if(!V){$('ventRes').innerHTML=h;$('ventGraph').innerHTML='';return;}
   $('terrainDesc').textContent=V.t.d;
@@ -502,6 +537,7 @@ function renderVent(Z,V){
    +ligne('Rayon R de qualification du terrain',V.R?f(V.R,0):'H > 100 m : étude spécifique','m','NF EN 1991-1-4/NA §4.3.2 (Fiche CSTB n°45)')
    +ligne('Hauteur de calcul max(z<sub>e</sub> ; z<sub>min</sub>)',f(V.p.zz,2),'m','§4.3.2')
    +ligne('c<sub>r</sub>(z) = k<sub>r</sub>·ln(z/z<sub>0</sub>)',f(V.p.cr,4),'','§4.3.2, éq. (4.4)')
+   +ligne('c<sub>o</sub>(z<sub>e</sub>) (orographie)',f(V.co,3),'',{1:'§4.3.3 + AN : relief peu marqué',p1:`§4.3.3 + AN, procédure 1 : ΔA<sub>C</sub> = ${S.oro&&S.oro.dAc!=null?f(S.oro.dAc,1):'—'} m`,saisie:'§4.3.3 + AN : étude spécifique (saisie)'}[$('coMode').value])
    +ligne('v<sub>m</sub>(z) = c<sub>r</sub>·c<sub>o</sub>·v<sub>b</sub>',f(V.p.vm,2),'m/s','§4.3.1, éq. (4.3)')
    +ligne('I<sub>v</sub>(z) = k<sub>I</sub>/(c<sub>o</sub>·ln(z/z<sub>0</sub>))',f(V.p.Iv,4),'','§4.4(1), éq. (4.7)')
    +ligne('q<sub>p</sub>(z<sub>e</sub>) = [1 + 7·I<sub>v</sub>]·½·ρ·v<sub>m</sub>²',`${f(V.p.qp,1)} Pa = ${f(V.p.qp/1000,3)}`,'kN/m²','§4.5(1), éq. (4.8)',1)
@@ -721,7 +757,7 @@ function choisirFeature(ft,garderAdr){
   const dep=p.citycode?.startsWith('97')?p.citycode.slice(0,3):p.citycode?.slice(0,2);
   const t=trouverCommune(p.citycode,p.city,dep)||(p.oldcitycode?trouverCommune(p.oldcitycode,p.oldcity,dep):null);
   S.adr=p.type==='municipality'?'':(p.name||'');
-  S.commune=t?.c||null; S.how=t?.how||''; S.lat=lat; S.lon=lon; S.grpV='';S.grpN='';
+  S.commune=t?.c||null; S.how=t?.how||''; S.lat=lat; S.lon=lon; S.grpV='';S.grpN=''; S.oro=null; if($('coMode').value==='p1') setTimeout(calcOro,0);
   S.alerte=t?'':`Commune « ${p.city} » (INSEE ${p.citycode}) absente de la base de zonage (commune nouvelle ?). Utiliser la saisie sans carte ou les forçages.`;
   $('q').value=p.label;
   placerMarqueur(lat,lon); majAltitude(lat,lon);
@@ -747,7 +783,7 @@ function initManu(){
   $('mInsee').oninput=()=>{const v=$('mInsee').value.trim(); if(v.length===5){const c=PAR_INSEE.get(v); if(c) choisirCommuneBase(c); }};
 }
 function remplirCommunes(){const d=$('mDep').value;$('mCom').innerHTML='<option value="">—</option>'+COMMUNES.filter(c=>c.d===d).map(c=>`<option value="${c.i}">${esc(c.n)}</option>`).join('');}
-function choisirCommuneBase(c){ S.alerte='';S.commune=c;S.how='INSEE';S.adr='';S.lat=null;S.lon=null;S.grpV='';S.grpN=''; if(marqueur){map.removeLayer(marqueur);marqueur=null;} synchroManu(); render(); }
+function choisirCommuneBase(c){ S.alerte=''; S.oro=null;S.commune=c;S.how='INSEE';S.adr='';S.lat=null;S.lon=null;S.grpV='';S.grpN=''; if(marqueur){map.removeLayer(marqueur);marqueur=null;} synchroManu(); render(); }
 function synchroManu(){ if(!S.commune) return; if($('mDep').value!==S.commune.d){$('mDep').value=S.commune.d;remplirCommunes();} $('mCom').value=S.commune.i; }
 
 /* ---------- impression ---------- */
@@ -766,6 +802,7 @@ function init(){
   document.querySelectorAll('.act').forEach(b=>b.onclick=()=>{document.querySelectorAll('.act').forEach(x=>x.classList.toggle('on',x===b));S.couche=b.dataset.l;render();});
   document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id===b.dataset.p));});
   document.querySelectorAll('main .card input, main .card select, #alt').forEach(el=>{ if(!el.closest('#p-cpx')) el.addEventListener('input',render); });
+  $('coMode').addEventListener('change',()=>{ if($('coMode').value==='p1'&&(!S.oro||S.oro.err)) calcOro(); render(); }); $('coCalc').onclick=calcOro;
   // recherche
   $('q').addEventListener('input',()=>{clearTimeout(tmr);const v=$('q').value.trim();if(v.length<3){res=[];afficherSugg();return}
     tmr=setTimeout(async()=>{try{res=await geocoder(v);idx=-1;afficherSugg();}catch(e){res=[];$('sugg').innerHTML='<div>Service de recherche indisponible : utiliser la saisie sans carte.</div>';$('sugg').hidden=false;}},250)});
@@ -783,17 +820,17 @@ init();
 $('versS1').onclick=()=>{
   render(); const {Z,V,N,E}=window.__R, c=S.commune;
   const o={lieu:(c?c.n+' ('+c.d+')':'')+' – alt. '+f(num('alt'),0)+' m', date:new Date().toISOString(),
-    vent:V?{zone:Z.zv,vb:V.vb,rho:V.rho,z0:V.t.z0,zmin:V.t.zmin,kr:V.kr,kI:V.t.kI,co:V.co,cat:V.t.id}:null,
+    vent:V?{zone:Z.zv,vb:V.vb,rho:V.rho,z0:V.t.z0,zmin:V.t.zmin,kr:V.kr,kI:V.t.kI,co:V.co,coMode:$('coMode').value,dAc:$('coMode').value==='p1'&&S.oro?S.oro.dAc??null:null,cat:V.t.id}:null,
     neige:N?{zone:Z.zn,sk:N.sk,sAd:N.sAd,alt:N.A}:null,
     seisme:E?{zone:E.zs,ag:E.ag,alpha:E.alpha,S:E.S,cat:E.cat,sol:E.sol}:null};
   try{localStorage.setItem('fip.climat',JSON.stringify(o));$('versS1').textContent='✓ Envoyé vers S1';setTimeout(()=>$('versS1').textContent='➜ Supports S1',2500);}
   catch(e){alert('Stockage indisponible sur ce navigateur.');}
 };
 </script>
-<script src="../commun/cahier.js?v=2.4"></script>
+<script src="../commun/cahier.js?v=2.6"></script>
 <script>CAHIER.remplir({affaire:'affaire',auteur:'realise'});</script>
-<script src="../commun/replier.js?v=2.4"></script>
-<script src="../commun/export.js?v=2.4"></script>
+<script src="../commun/replier.js?v=2.6"></script>
+<script src="../commun/export.js?v=2.6"></script>
 <script>EXPORT.init({code:'C1',titre:'Hypothèses climatiques, sismiques et complexes',
   zones:()=>[...document.querySelectorAll('#syn > .card')].concat(['ventRes','neigeRes','neigeToit','seismeRes','seismeGraph','seismeFa','cpxCouv','cpxBard'].map(id=>document.getElementById(id).closest('.card'))),
   donnees:()=>[document.querySelector('.panneau'),...document.querySelectorAll('main .card')],

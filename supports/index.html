@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.4"></script>
+<script src="../commun/auth.js?v=2.6"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.4">
+<link rel="stylesheet" href="../commun/calc.css?v=2.6">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.4"></script>
-<script src="../commun/data/tuyauterie.js?v=2.4"></script>
-<script src="../commun/acier.js?v=2.4"></script>
-<script src="../commun/barres3d.js?v=2.4"></script>
-<script src="../commun/cahier.js?v=2.4"></script>
+<script src="../commun/data/profils.js?v=2.6"></script>
+<script src="../commun/data/tuyauterie.js?v=2.6"></script>
+<script src="../commun/acier.js?v=2.6"></script>
+<script src="../commun/barres3d.js?v=2.6"></script>
+<script src="../commun/cahier.js?v=2.6"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -187,7 +187,7 @@ const typeSup=()=>document.querySelector('input[name=type]:checked').value;
 /* =====================================================================
    TUYAUTERIES (base commune T1 ou saisie directe)
    ===================================================================== */
-let tuyaux=[{nom:'L1',mode:'base',dn:100,sch:'40',mat:'P265GH',fluide:0,rho:1000,ecal:0,rhoCal:120,qd:0.3,Dd:114.3,portee:5,pos:0.8,e:'',fonc:'glissant',mu:0.3,Fx:0,Fy:0,Fz:0,Gsup:0}];
+let tuyaux=[{nom:'L1',mode:'base',dn:100,sch:'40',mat:'P265GH',fluide:0,rho:1000,ecal:0,rhoCal:120,qd:0.3,Dd:114.3,portee:5,pos:0.8,e:'',fonc:'guide',mu:0.3,Fx:0,Fy:0,Fz:0,Gsup:0}];
 function propsTuyau(t){
   let De,qop,qeau,ecal=+t.ecal||0;
   if(t.mode==='base'){
@@ -199,6 +199,40 @@ function propsTuyau(t){
   }
   De=+t.Dd||100; qop=+t.qd||0; qeau=qop;
   return {De,ecal,Dc:De+2*ecal,qop,qeau,desc:`Ø${De} mm – q = ${f(qop,3)} kN/m (saisie)`};
+}
+/* ---------- point fixe : estimation prudente de l'effort d'ancrage axial F_x (aide APS) ----------
+   Δ = α·ΔT·L_r ; frottement F_f = μ·q·L_r (supports glissants / guidés de la ligne, côté le plus long)
+   coude / lyre : console guidée F_e = 12·E·I·Δ/L_b³ (M = 6·E·I·Δ/L_b²) ; compensateur axial : F_e = c·Δ + P·A_eff (point fixe principal) */
+const ALPHA_DIL={F:[[20,11.5],[100,12.0],[200,12.6],[300,13.1],[400,13.6]],A:[[20,16.0],[100,16.5],[200,17.0],[300,17.5],[400,18.0]]};
+const ANC={Lr:20,dT:100,elt:'coude',Lb:3,Pb:10,Deff:'',cax:50,princ:true};
+function ancrage(t,P=propsTuyau(t)){
+  const g=k=>t[k]===undefined||t[k]===''?ANC[k]:t[k], fam=t.mode==='base'?(MATS.find(x=>x.id===t.mat)||MATS[0]).fam:'F';
+  const dT=Math.abs(+g('dT')), Lr=Math.max(+g('Lr'),0), Ts=20+dT, tab=ALPHA_DIL[fam]||ALPHA_DIL.F;
+  let a=tab[tab.length-1][1]; for(let i=1;i<tab.length;i++) if(Ts<=tab[i][0]){ const [x0,y0]=tab[i-1],[x1,y1]=tab[i]; a=y0+(y1-y0)*(Ts-x0)/(x1-x0); break; }
+  const alpha=a*1e-6, E=(fam==='A'?E_A[0]:E_F[0])*1000, delta=alpha*dT*Lr*1000;        // mm ; E (MPa) à 20 °C (prudent)
+  const Ff=(+t.mu||0)*P.qop*Lr, o={alpha,E,delta,Ff,Fe:0,elt:g('elt'),dT,Lr};
+  if(o.elt==='coude'){ const Lb=Math.max(+g('Lb'),0.1)*1000;
+    if(P.en){ o.I=Math.PI/64*(P.De**4-P.di**4); o.Fe=12*E*o.I*delta/Lb**3/1000; o.M=6*E*o.I*delta/Lb**2/1e6; o.Lb=Lb/1000; o.sig=o.M*1e6/(2*o.I/P.De); }
+    else { o.Fe=NaN; o.err='épaisseur inconnue (tube saisi) : choisir le tube dans la base ou saisir F_x'; } }
+  if(o.elt==='comp'){ const De=+g('Deff')||P.De; o.Fs=(+g('cax'))*delta/1000; o.Fp=g('princ')?(+g('Pb'))/10*Math.PI*De*De/4/1000:0; o.Fe=o.Fs+o.Fp; o.Deff=De; o.Pb=+g('Pb'); o.princ=!!g('princ'); }
+  o.F=o.Ff+(o.Fe||0); return o;
+}
+const txtAncrage=o=>`Δ = α·ΔT·L<sub>r</sub> = ${f(o.alpha*1e6,1)}·10⁻⁶ × ${f(o.dT,0)} × ${f(o.Lr,1)} m = ${f(o.delta,1)} mm ; frottement μ·q·L<sub>r</sub> = ${f(o.Ff,2)} kN`+
+  (o.elt==='coude'?(o.err?` ; coude : ${o.err}`:` ; coude / lyre (console guidée, L<sub>b</sub> = ${f(o.Lb,2)} m) 12·E·I·Δ/L<sub>b</sub>³ = ${f(o.Fe,2)} kN, effort axial transmis au point fixe ; moment dans la jambe 6·E·I·Δ/L<sub>b</sub>² = ${f(o.M,2)} kNm soit σ ≈ ${f(o.sig,0)} MPa dans la tuyauterie (à comparer à l'étendue de contrainte admissible, EN 13480-3 §12.3.4 / ASME B31.3 §302.3.5 : si elle est dépassée, L<sub>b</sub> est trop courte)`)
+   :o.elt==='comp'?` ; compensateur : ressort c·Δ = ${f(o.Fs,2)} kN${o.princ?` + poussée de pression P·A<sub>eff</sub> = ${f(o.Pb,1)} bar × π·${f(o.Deff,0)}²/4 = ${f(o.Fp,2)} kN`:' (point fixe intermédiaire : poussée équilibrée)'}`:' ; extrémité libre')+` → <b>F<sub>x</sub> ≈ ${f(o.F,2)} kN</b>`;
+function blocAncrage(t){
+  const v=k=>t[k]===undefined||t[k]===''?ANC[k]:t[k], o=t.est?ancrage(t):null;
+  return `<label class="chk"><input type="checkbox" data-k="est" ${t.est?'checked':''}> Estimer F<sub>x</sub> du point fixe (aide APS : frottement de la ligne + élément de dilatation)</label>`+
+   (t.est?`<div class="g4">
+      <div><label>L<sub>r</sub> ligne dilatant vers le point fixe (m)</label><input data-k="Lr" type="number" step="1" value="${v('Lr')}" title="Côté le plus long, jusqu'à l'élément de dilatation ou l'extrémité libre"></div>
+      <div><label>ΔT = T<sub>service</sub> − T<sub>pose</sub> (K)</label><input data-k="dT" type="number" step="10" value="${v('dT')}"></div>
+      <div><label>Élément de dilatation</label><select data-k="elt"><option value="coude" ${v('elt')==='coude'?'selected':''}>Coude / lyre</option><option value="comp" ${v('elt')==='comp'?'selected':''}>Compensateur axial</option><option value="libre" ${v('elt')==='libre'?'selected':''}>Extrémité libre (frottement seul)</option></select></div>
+      ${v('elt')==='coude'?`<div><label>L<sub>b</sub> jambe ⊥ du coude / lyre (m)</label><input data-k="Lb" type="number" step="0.5" value="${v('Lb')}"></div>`:''}
+      ${v('elt')==='comp'?`<div><label>Raideur axiale c (N/mm)</label><input data-k="cax" type="number" step="5" value="${v('cax')}"></div>
+        <div><label>Pression de calcul (bar)</label><input data-k="Pb" type="number" step="1" value="${v('Pb')}"></div>
+        <div><label>Ø effectif soufflet (mm)</label><input data-k="Deff" type="number" step="5" value="${t.Deff??''}" placeholder="auto = Ø ext."></div>
+        <div><label class="chk" style="margin-top:20px"><input type="checkbox" data-k="princ" ${v('princ')?'checked':''}> point fixe principal</label></div>`:''}
+    </div><div class="note">${txtAncrage(o)}. Ordre de grandeur prudent, à remplacer par les réactions de l'étude de flexibilité.</div>`:'');
 }
 function cartesTuyaux(){
   const opt=(l,v)=>l.map(([k,n])=>`<option value="${k}" ${String(k)===String(v)?'selected':''}>${n}</option>`).join('');
@@ -222,18 +256,18 @@ function cartesTuyaux(){
       <div><label>${['sol','plafond'].includes(typ)?'Excentr. e (m)':'Excentr. vert. (m)'}</label><input data-k="e" type="number" step="0.01" value="${t.e}" placeholder="auto"></div>
       <div><label>Fonction</label><select data-k="fonc">${opt([['glissant','Glissant'],['guide','Guidé'],['fixe','Point fixe']],t.fonc)}</select></div>
       <div><label>μ frottement</label><select data-k="mu">${opt([[0.3,'0,3 acier/acier'],[0.1,'0,1 PTFE'],[0,'0 (aucun)']],t.mu)}</select></div>
-      ${t.fonc!=='glissant'?`${t.fonc==='fixe'?`<div><label>F<sub>x</sub> therm. (kN)</label><input data-k="Fx" type="number" step="0.1" value="${t.Fx}"></div>`:''}
+      ${t.fonc!=='glissant'?`${t.fonc==='fixe'?`<div><label>F<sub>x</sub> therm. (kN)</label><input data-k="Fx" type="number" step="0.1" value="${t.est?ancrage(t).F.toFixed(2):t.Fx}" ${t.est?'disabled title="Estimé (voir ci-dessous)"':''}></div>`:''}
         <div><label>F<sub>y</sub> therm. (kN)</label><input data-k="Fy" type="number" step="0.1" value="${t.Fy}"></div>
         ${t.fonc==='fixe'?`<div><label>F<sub>z</sub> therm. (kN)</label><input data-k="Fz" type="number" step="0.1" value="${t.Fz}"></div>`:''}`:''}
       <div><label>G suppl. (kN)</label><input data-k="Gsup" type="number" step="0.1" value="${t.Gsup}"></div>
       <div><label>Ø étrier (mm)</label><input data-k="etrier" type="number" step="2" value="${t.etrier??''}" placeholder="auto"></div>
-    </div><div class="note">${escH(propsTuyau(t).desc)} · q<sub>service</sub> = ${f(propsTuyau(t).qop,3)} kN/m</div></div>`;}).join('');
+    </div>${t.fonc==='fixe'?blocAncrage(t):''}<div class="note">${escH(propsTuyau(t).desc)} · q<sub>service</sub> = ${f(propsTuyau(t).qop,3)} kN/m</div></div>`;}).join('');
   $('tuyaux').querySelectorAll('[data-k]').forEach(el=>el.addEventListener('change',e=>{
     const i=+el.closest('.tuyau').dataset.i, k=el.dataset.k, t=tuyaux[i];
-    t[k]=el.type==='number'?(el.value===''?'':+el.value):el.value;
+    t[k]=el.type==='checkbox'?el.checked:el.type==='number'?(el.value===''?'':+el.value):el.value;
     if(k==='fluide'){const fl=FLUIDS[+el.value];if(fl&&fl.r!==null)t.rho=fl.r;}
     if(k==='dn'){const P=PIPES.find(p=>p.dn==t.dn);if(P&&P.s[t.sch]===undefined)t.sch=P.s['40']!==undefined?'40':Object.keys(P.s)[0];}
-    if(['mode','dn','fluide','fonc'].includes(k)) cartesTuyaux(); else { const n=el.closest('.tuyau').querySelector('.note'); if(n) n.innerHTML=`${escH(propsTuyau(t).desc)} · q<sub>service</sub> = ${f(propsTuyau(t).qop,3)} kN/m`; }
+    if(['mode','dn','fluide','fonc','est','elt'].includes(k)||t.est) cartesTuyaux(); else { const n=el.closest('.tuyau').querySelector('.note'); if(n) n.innerHTML=`${escH(propsTuyau(t).desc)} · q<sub>service</sub> = ${f(propsTuyau(t).qop,3)} kN/m`; }
     calc();}));
   $('tuyaux').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{if(tuyaux.length>1){tuyaux.splice(+b.dataset.del,1);cartesTuyaux();calc();}});
 }
@@ -303,7 +337,12 @@ function geometrie(D){
     B.forEach((o,oi)=>{ if(oi!==bi) [o.A,o.B].forEach(P=>{const s=surBarre(b,P); if(s!==null) S.add(+s.toFixed(6));}); });
     appuis.forEach(a=>{const s=surBarre(b,a.pt); if(s!==null) S.add(+s.toFixed(6));});
     const ss=[...S].sort((x,y)=>x-y); b.ss=ss; b.noeuds=ss.map(s=>cle(add3(b.A,mul3(b.dir,s))));
-    const sec=sectionBarre(b.p);
+    const sec=sectionBarre(b.p), p=b.p;
+    // raideur de gauchissement (torsion non uniforme) : profilé ouvert I / U encastré (gauchissement bloqué par la platine soudée),
+    // extrémité opposée libre de gauchir (prudent) : φ = T/(G·I_t)·[L − a·tanh(L/a)] → I_t,eff = I_t·L/(L − a·tanh(L/a)), a = √(E·I_w/(G·I_t))
+    b.kw=1;
+    if(!/^LI?$/.test(p.f)&&!/HS$/.test(p.f)&&p.Iw>0&&p.tf&&p.It>0&&appuis.some(a=>a.c.every(v=>v===1)&&Math.hypot(...b.A.map((v,i)=>v-a.pt[i]))<1e-6)){
+      const a=Math.sqrt(ACIER.E*p.Iw*1e-12/(ACIER.G*p.It*1e-8)); b.kw=b.L/(b.L-a*Math.tanh(b.L/a)); b.aw=a; sec.J*=b.kw; }
     for(let k=0;k<ss.length-1;k++){ if(ss[k+1]-ss[k]<1e-6) continue; barres.push({i:b.noeuds[k],j:b.noeuds[k+1],...sec,vz:b.vz}); elemBarre.push({bi,s0:ss[k],L:ss[k+1]-ss[k]}); }
   });
   T.forEach(t=>t.n=cle(t.pt));
@@ -334,7 +373,7 @@ function casDeCharge(D,Gm){
   for(const t of Gm.T){
     const P=t.P, Lp=+t.portee||0, G=P.qop*Lp+(+t.Gsup||0), d={nom:t.nom,G,T:[0,0,0],S:0,W:0,EP:0,E:0};
     add('G',t.n,transfert(t,[0,0,-G]));
-    if(D.cT){ const fr=(+t.mu||0)*G; let Ft=[fr,0,0]; if(t.fonc==='guide') Ft=[fr,+t.Fy||0,0]; if(t.fonc==='fixe') Ft=[+t.Fx||0,+t.Fy||0,+t.Fz||0]; d.T=Ft; add('T',t.n,transfert(t,Ft)); }
+    if(D.cT){ const fr=(+t.mu||0)*G; let Ft=[fr,0,0]; if(t.fonc==='guide') Ft=[fr,+t.Fy||0,0]; if(t.fonc==='fixe') Ft=[t.est?(ancrage(t,P).F||0):(+t.Fx||0),+t.Fy||0,+t.Fz||0]; d.T=Ft; add('T',t.n,transfert(t,Ft)); }
     if(D.cS){ d.S=D.mus*D.sk*P.Dc/1000*Lp; add('S',t.n,transfert(t,[0,0,-d.S])); }
     if(D.cW){ d.W=D.qp*D.cft*P.Dc/1000*Lp; add('WY',t.n,transfert(t,[0,d.W,0])); }
     if(D.cEP){ d.EP=Math.max(0,(P.qeau-P.qop)*Lp); add('EP',t.n,transfert(t,[0,0,-d.EP])); }
@@ -364,8 +403,8 @@ function resistances(p){
 }
 function stabilite(p,R,Lcr){
   const l1=93.9*epsilon(R.fy); let lam,alpha,courbe;
-  if(R.isL){lam=Lcr/(p.iv/100)/l1;alpha=ALPHA.b;courbe='b (axe v)';}
-  else if(R.tube){lam=Lcr/(Math.min(p.iy,p.iz)/100)/l1;alpha=ALPHA.c;courbe='c (tube formé à froid, prudent)';}
+  if(R.isL){lam=Lcr/(p.iv/100)/l1;alpha=ALPHA_DIL.b;courbe='b (axe v)';}
+  else if(R.tube){lam=Lcr/(Math.min(p.iy,p.iz)/100)/l1;alpha=ALPHA_DIL.c;courbe='c (tube formé à froid, prudent)';}
   else{const cb=courbes(p),ly=Lcr/(p.iy/100)/l1,lz=Lcr/(p.iz/100)/l1,cy=chi(ly,cb.y).chi,cz=chi(lz,cb.z).chi;lam=cz<cy?lz:ly;alpha=cz<cy?cb.z:cb.y;courbe=cz<cy?cb.cz+' (axe z)':cb.cy+' (axe y)';}
   const chiN=chi(lam,alpha).chi; let chiLT=1,mcr=Infinity,lamLT=0;
   if(!R.isL&&!R.tube&&p.Iw){mcr=Mcr(p,Lcr,1,0,0);lamLT=Math.sqrt(R.MyRk/mcr);chiLT=lamLT<=0.2?1:chi(lamLT,courbes(p).lt).chi;}
@@ -385,7 +424,8 @@ function verifier(D){
   const vars=[];
   if(actif('T')){vars.push({id:'T+',psi:[0.6,0.5,0],grp:'T'});vars.push({id:'T−',psi:[0.6,0.5,0],grp:'T'});}
   if(actif('S')) vars.push({id:'S',psi:PSI_NEIGE(D.altN)});
-  if(actif('WY')) ['W+Y','W−Y'].forEach(id=>vars.push({id,psi:PSI_VENT,grp:'W'}));
+  // vent transversal : support mural → seul le vent dirigé vers le mur (côté ouvert) est retenu
+  if(actif('WY')) (D.typ==='mur'?['W−Y']:D.typ==='Lmur'?['W+Y']:['W+Y','W−Y']).forEach(id=>vars.push({id,psi:PSI_VENT,grp:'W'}));
   if(actif('WX')) ['W+X','W−X'].forEach(id=>vars.push({id,psi:PSI_VENT,grp:'W'}));
   if(actif('EP')) vars.push({id:'EP',psi:[0,0,0],exclut:['T+','T−','S','W+Y','W−Y','W+X','W−X']});
   const C=genererCombinaisons(vars);
@@ -531,8 +571,9 @@ function donneesCalc(D,V){
   const vus=new Set(); let h='<div class="grid2"><table>';
   V.PB.forEach(P=>{ const p=P.b.p, R=P.R; if(vus.has(p.n+P.b.role)) return; vus.add(p.n+P.b.role);
     h+=`<tr><td>${escH(P.b.role==='m'?(TYPES[D.typ].multi?'Montant(s)':P.b.lib):'Traverse / consoles')}</td><td>${escH(p.n)} – ${p.m} kg/m – A = ${f(p.A,2)} cm² – ${R.isL?`I<sub>u</sub> = ${f(p.Iu,1)} / I<sub>v</sub> = ${f(p.Iv,1)} cm⁴ – i<sub>v</sub> = ${f(p.iv,2)} cm`:`I<sub>y</sub> = ${f(p.Iy,1)} / I<sub>z</sub> = ${f(p.Iz,1)} cm⁴`} – I<sub>t</sub> = ${f(p.It,3)} cm⁴ · ${$('nuance').value} f<sub>y</sub> = ${R.fy} MPa, classe ${R.cl} · N<sub>Rk</sub> = ${f(R.NRk,1)} kN ; M<sub>${R.isL?'u':'y'},Rk</sub> = ${f(R.MyRk,2)} ; M<sub>${R.isL?'v':'z'},Rk</sub> = ${f(R.MzRk,2)} kNm ; W<sub>t</sub> = ${f(R.Wt/1000,2)} cm³</td></tr>`; });
+  V.Gm.T.filter(t=>t.fonc==='fixe'&&t.est).forEach(t=>{ h+=`<tr><td>${escH(t.nom)} : effort d'ancrage (point fixe)</td><td>${txtAncrage(ancrage(t,t.P))}</td></tr>`; });
   V.PB.forEach(P=>{ const e=P.eff; if(!e) return; h+=`<tr><td>${escH(P.b.lib)} : stabilité et efforts</td><td>L<sub>cr</sub> = ${f(P.St.Lcr,2)} m ; courbe ${escH(P.St.courbe)} ; λ̄ = ${f(P.St.lam,3)} ; χ = ${f(P.St.chiN,3)}${isFinite(P.St.mcr)?` ; M<sub>cr</sub> = ${f(P.St.mcr,2)} kNm ; χ<sub>LT</sub> = ${f(P.St.chiLT,3)}`:''} · section la plus sollicitée à ${f(e.x,2)} m de l'origine (${escH(P.cS.nom.replace(/<[^>]+>/g,''))}) : N = ${f(e.F[0],2)} kN ; V<sub>y</sub> = ${f(e.F[1],2)} ; V<sub>z</sub> = ${f(e.F[2],2)} kN ; T = ${f(e.F[3],3)} ; M<sub>${P.R.isL?'u':'y'}</sub> = ${f(e.F[4],3)} ; M<sub>${P.R.isL?'v':'z'}</sub> = ${f(e.F[5],3)} kNm</td></tr>`; });
-  V.PB.filter(P=>P.gw).forEach(P=>{h+=`<tr><td>${escH(P.b.lib)} : gauchissement</td><td>a = √(E·I<sub>w</sub>/G·I<sub>t</sub>) = ${f(P.gw.a,3)} m ; L<sub>e</sub> = ${f(P.gw.Le,2)} m ; B = T·a·tanh(L<sub>e</sub>/a) ; ω = (h − t<sub>f</sub>)·b/4 = ${f(P.gw.omega*1e4,1)} cm² ; σ<sub>w</sub>/f<sub>y</sub> max = ${f(P.rW*100,1)} %</td></tr>`;});
+  V.PB.filter(P=>P.gw).forEach(P=>{h+=`<tr><td>${escH(P.b.lib)} : gauchissement</td><td>a = √(E·I<sub>w</sub>/G·I<sub>t</sub>) = ${f(P.gw.a,3)} m ; L<sub>e</sub> = ${f(P.gw.Le,2)} m ; B = T·a·tanh(L<sub>e</sub>/a) ; ω = (h − t<sub>f</sub>)·b/4 = ${f(P.gw.omega*1e4,1)} cm² ; σ<sub>w</sub>/f<sub>y</sub> max = ${f(P.rW*100,1)} %${P.b.kw>1?` ; raideur de torsion du modèle I<sub>t,eff</sub> = ${f(P.b.kw,3)}·I<sub>t</sub>`:''}</td></tr>`;});
   h+=`<tr><td>Platines</td><td>${D.platine==='rigide'?'Encastrement parfait':D.platine==='saisie'?`Semi-rigides, S<sub>j</sub> = ${f(D.Sj,0)} kNm/rad`:'Semi-rigides, S<sub>j</sub> = 10·E·I/L (rotations de flexion), torsion bloquée'}</td></tr>`;
   h+=`<tr><td>Modèle</td><td>${V.Gm.B.length} barre(s), ${V.Gm.barres.length} tronçons, ${V.Gm.noeuds.length} nœuds ; appuis : ${V.Gm.appuis.map(a=>escH(a.lib)).join(', ')} ; tuyaux reliés par bras rigides (excentricités) ; calcul 3D élastique au 1<sup>er</sup> ordre</td></tr></table>${svgSection(D.pm)}</div>`;
   $('rData').innerHTML=h;
@@ -585,6 +626,11 @@ function alertes(D,V){
       if(dB<bord) add('warn',`Tuyauterie trop près ${extr('B')} – ${nom}`,`Bord du tuyau (calorifuge compris) à ${f(dB,0)} mm (mini ${bord} mm).`);
     }
     if(t.fonc==='fixe'&&/^(LI?|U)/.test(p.f)) add('warn',`Point fixe sur profilé ouvert – ${nom}`,'Les efforts de point fixe génèrent flexion déviée et torsion : préférer un tube carré, un double profilé ou un support en U.');
+    if(b.vert&&t.fonc==='glissant') add('bloq',`Tuyauterie « glissante » sur ${D.typ==='plafond'?'une suspente verticale':'un montant vertical'} – ${nom}`,`Sur un profilé vertical, la tuyauterie est tenue latéralement par l'étrier : elle ne peut pas être simplement posée (elle tomberait). Choisir « Guidé » ou « Point fixe ».`,'Règle de l\'art supportage',b.role);
+    if(t.fonc==='fixe'&&t.est){ const o=ancrage(t,t.P);
+      add(o.err?'warn':'info',`Point fixe – effort d'ancrage estimé – ${nom}`,`${txtAncrage(o)}. Estimation simplifiée (ligne droite, supports à frottement μ, console guidée pour le coude) : moments et efforts transversaux non estimés, à confirmer par l'étude de flexibilité.`,'Méthode de la console guidée (M.W. Kellogg) ; compensateurs : EJMA (poussée de pression sur points fixes principaux)'); }
+    else if(t.fonc==='fixe'){ const nul=!(+t.Fx)&&!(+t.Fy)&&!(+t.Fz);
+      add(nul?'warn':'info',`Point fixe – ${nom}`,nul?'Efforts de dilatation nuls : sur un point fixe, ce sont les réactions issues de l\'étude de flexibilité (CAESAR II, ROHR2…) qui gouvernent, souvent plus que le poids. Les saisir (F<sub>x</sub>, F<sub>y</sub>, F<sub>z</sub>) ou les estimer prudemment.':`Efforts F<sub>x</sub> = ${f(+t.Fx||0,2)}, F<sub>y</sub> = ${f(+t.Fy||0,2)}, F<sub>z</sub> = ${f(+t.Fz||0,2)} kN : à confirmer par l'étude de flexibilité de la ligne (hors prédimensionnement rapide).`,'Étude de flexibilité (EN 13480-3 §12 / ASME B31.3 §319)'); }
     if(t.fonc==='guide') add('info',`Guidage – ${nom}`,'Prévoir des butées latérales soudées (jeu de guidage à préciser) ; vérifier leur soudure en exécution.');
   }
   const vusP=new Set();
@@ -606,9 +652,9 @@ function notes(D,V){
    <li>Prédimensionnement (APS/APD) ; les études d'exécution restent à la charge des entreprises. Cas complexes : Robot, Nastran, Hilti PROFIS.</li>
    <li>Modèle de barres 3D élastique au 1<sup>er</sup> ordre : platines encastrées (pieds, plafond, mur), traverse du L mural articulée sur le mur (translations et torsion bloquées), assemblages montant/traverse/consoles rigides et lignes moyennes concourantes. Charges des tuyaux appliquées à leur axe et transmises par bras rigides. Excentricité automatique : demi-emprise du profilé + rayon calorifugé + sabot.</li>
    <li>Longueurs de flambement (prudentes) : montants, suspentes et porte-à-faux L<sub>cr</sub> = 2L (y compris montants du U, pieds encastrés supposés à nœuds déplaçables hors plan) ; traverses entre appuis (U, L mural) L<sub>cr</sub> = L. Déplacements limités à min(L<sub>réf</sub>/n ; d<sub>max</sub>) avec L<sub>réf</sub> = longueur de la barre portant le tuyau (demi-traverse pour le T).</li>
-   <li>Combinaisons NF EN 1990 + AN : 6.10 (γ<sub>G</sub> = 1,35/1,0 ; γ<sub>Q</sub> = 1,5), chaque action variable dominante ; T (ψ = 0,6/0,5/0), neige, vent (0,6/0,2/0), directions ±X ±Y exclusives ; épreuve non combinée aux autres variables. Situation sismique : G + A<sub>Ed</sub>, 100 % / 30 % (EN 1998-1 §4.3.3.5.2), composante verticale non prise en compte.</li>
+   <li>Combinaisons NF EN 1990 + AN : 6.10 (γ<sub>G</sub> = 1,35/1,0 ; γ<sub>Q</sub> = 1,5), chaque action variable dominante ; T (ψ = 0,6/0,5/0), neige, vent (0,6/0,2/0), directions ±X ±Y exclusives (supports muraux : vent transversal uniquement dirigé vers le mur, le mur masquant l'autre sens) ; épreuve non combinée aux autres variables. Situation sismique : G + A<sub>Ed</sub>, 100 % / 30 % (EN 1998-1 §4.3.3.5.2), composante verticale non prise en compte.</li>
    <li>Vérifications NF EN 1993-1-1 : section (critère linéaire §6.2.1(7)), cisaillement + torsion de Saint-Venant (gauchissement négligé), stabilité simplifiée (k = 1 + 0,6·λ̄·n). Cornières : axes principaux, élastique, sans déversement. Tubes : courbe c (formés à froid, prudent).</li>
-   <li>Gauchissement (profilés I et U) : bi-moment B = T·a·tanh(L<sub>e</sub>/a) avec gauchissement bloqué à l'encastrement (L<sub>e</sub> = L pour un porte-à-faux, L/2 entre appuis), σ<sub>w</sub> = B·ω/I<sub>w</sub>, ajouté aux taux de section et de stabilité (prudent, U traité comme un I).</li>
+   <li>Gauchissement (profilés I et U) : bi-moment B = T·a·tanh(L<sub>e</sub>/a) avec gauchissement bloqué à l'encastrement (L<sub>e</sub> = L pour un porte-à-faux, L/2 entre appuis), σ<sub>w</sub> = B·ω/I<sub>w</sub>, ajouté aux taux de section et de stabilité (prudent, U traité comme un I). Raideur : pour une barre I / U encastrée (platine soudée), le modèle prend I<sub>t,eff</sub> = I<sub>t</sub>·L/(L − a·tanh(L/a)) (gauchissement bloqué à l'encastrement, libre à l'autre extrémité : prudent) ; les autres barres gardent la seule raideur de Saint-Venant.</li>
    <li>Platines semi-rigides par défaut (S<sub>j</sub> = 10·EI/L) : hypothèse prudente pour les déplacements. Taux au-delà du taux cible signalés en jaune (non bloquant) ; l'optimisation vise le taux cible.</li>
    <li>Non traités : platine, chevilles (ETE fabricant), soudures, étriers, effets du 2<sup>nd</sup> ordre, séisme vertical, déversement des cornières.</li></ul>`;
 }
@@ -806,10 +852,10 @@ function importerC1(){
   let o=null; try{o=JSON.parse(localStorage.getItem('fip.climat'));}catch(e){}
   if(!o){$('infoC1').textContent='Aucune donnée : dans C1, cliquer « Envoyer vers les supports S1 ».';return;}
   const z=Math.max(num('zsol',2)+(typeSup()==='mur'?0:num('Lm',1)),0.1);
-  if(o.vent){const v=o.vent,zz=Math.max(z,v.zmin),cr=v.kr*Math.log(zz/v.z0),vm=cr*v.co*v.vb,Iv=v.kI/(v.co*Math.log(zz/v.z0));$('qp').value=((1+7*Iv)*0.5*v.rho*vm*vm/1000).toFixed(3);}
+  if(o.vent){const v=o.vent,co=v.coMode==='p1'&&v.dAc!=null?Math.max(1,1+0.004*v.dAc*Math.exp(-0.014*(Math.max(z,10)-10))):(v.co||1),zz=Math.max(z,v.zmin),cr=v.kr*Math.log(zz/v.z0),vm=cr*co*v.vb,Iv=v.kI/(co*Math.log(zz/v.z0));$('qp').value=((1+7*Iv)*0.5*v.rho*vm*vm/1000).toFixed(3);}
   if(o.neige){$('sk').value=o.neige.sk.toFixed(3);$('altN').value=o.neige.alt>1000?'1':'0';}
   if(o.seisme){$('aS').value=(o.seisme.alpha*o.seisme.S).toFixed(4);}
-  $('infoC1').innerHTML=`✓ C1 : ${escH(o.lieu||'')} – q<sub>p</sub> recalculé à z = ${f(z,1)} m (sol + support) ; s<sub>k</sub> = ${o.neige?f(o.neige.sk,2):'—'} kN/m² ; α·S = ${o.seisme?f(o.seisme.alpha*o.seisme.S,3):'—'}.`;
+  $('infoC1').innerHTML=`✓ C1 : ${escH(o.lieu||'')} – q<sub>p</sub> recalculé à z = ${f(z,1)} m (sol + support)${o.vent?`, c<sub>o</sub>(z) = ${f(o.vent.coMode==='p1'&&o.vent.dAc!=null?Math.max(1,1+0.004*o.vent.dAc*Math.exp(-0.014*(Math.max(z,10)-10))):(o.vent.co||1),3)}`:''} ; s<sub>k</sub> = ${o.neige?f(o.neige.sk,2):'—'} kN/m² ; α·S = ${o.seisme?f(o.seisme.alpha*o.seisme.S,3):'—'}.`;
   calc();
 }
 function remplirProfils(sel,i=''){const fa=$('fam'+i).value;$('prof'+i).innerHTML=PROFILS.filter(p=>p.f===fa).sort((a,b)=>a.m-b.m).map(p=>`<option ${p.n===sel?'selected':''}>${p.n}</option>`).join('');}
@@ -817,7 +863,7 @@ const DEFAUTS={sol:{Lm:1.0,pos:[0.8,0.45]},plafond:{Lm:1.0,pos:[0.8,0.45]},mur:{
   T:{Lm:1.5,Lt:0.8,pos:[-0.2,0.2]},L:{Lm:1.5,Lt:0.5,nc:2,hc:0.5,pos:[0.3,0.3],cons:[1,2]},U:{Lm:1.2,Lt:1.0,pos:[0.3,0.7]},Lmur:{Lm:1.2,Lt:1.0,pos:[0.3,0.7]}};
 function appliquerDefauts(typ){
   const d=DEFAUTS[typ]; $('Lm').value=d.Lm; if(d.Lt) $('Lt').value=d.Lt; if(d.nc){$('nc').value=d.nc;$('hc').value=d.hc;}
-  tuyaux.forEach((t,i)=>{ t.pos=i<d.pos.length?d.pos[i]:+(d.pos[d.pos.length-1]+0.25*(i-d.pos.length+1)).toFixed(2); t.cons=d.cons?(d.cons[i]||1):1; });
+  tuyaux.forEach((t,i)=>{ if(['sol','plafond'].includes(typ)&&t.fonc==='glissant') t.fonc='guide'; t.pos=i<d.pos.length?d.pos[i]:+(d.pos[d.pos.length-1]+0.25*(i-d.pos.length+1)).toFixed(2); t.cons=d.cons?(d.cons[i]||1):1; });
   if(TYPES[typ].multi&&!/^U/.test($('fam').value)&&$('fam').value==='L'){ $('fam').value='UPN'; remplirProfils('UPN 100'); }
 }
 function init(){
@@ -905,8 +951,8 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.4"></script>
-<script src="../commun/export.js?v=2.4"></script>
+<script src="../commun/replier.js?v=2.6"></script>
+<script src="../commun/export.js?v=2.6"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
