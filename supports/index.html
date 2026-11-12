@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.3"></script>
+<script src="../commun/auth.js?v=2.4"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.3">
+<link rel="stylesheet" href="../commun/calc.css?v=2.4">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.3"></script>
-<script src="../commun/data/tuyauterie.js?v=2.3"></script>
-<script src="../commun/acier.js?v=2.3"></script>
-<script src="../commun/barres3d.js?v=2.3"></script>
-<script src="../commun/cahier.js?v=2.3"></script>
+<script src="../commun/data/profils.js?v=2.4"></script>
+<script src="../commun/data/tuyauterie.js?v=2.4"></script>
+<script src="../commun/acier.js?v=2.4"></script>
+<script src="../commun/barres3d.js?v=2.4"></script>
+<script src="../commun/cahier.js?v=2.4"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -621,10 +621,23 @@ function cadre(pts,W,H,m=40){const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]),x0=Ma
 const fl=(id,c)=>`<marker id="${id}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8z" fill="${c}"/></marker>`;
 const flc=`<marker id="fk2" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto-start-reverse"><path d="M0,0 L7,3.5 L0,7z" fill="#171a1e"/></marker>`;
 const hachures=(x1,y1,x2,y2,dx,dy)=>{let s=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#171a1e" stroke-width="1.6"/>`;const n=Math.max(2,Math.round(Math.hypot(x2-x1,y2-y1)/18));for(let i=0;i<=n;i++){const x=x1+(x2-x1)*i/n,y=y1+(y2-y1)*i/n;s+=`<line x1="${x}" y1="${y}" x2="${x+dx}" y2="${y+dy}" stroke="#8a929c"/>`;}return s;};
-function vueFace(D,V){                                     // plan Y–Z (regard le long des tuyaux)
-  const W=480,H=390,Gm=V.Gm,T=Gm.T;
+/* Cotes principales nommées (plans types du cahier : lettre ; S1 : lettre = valeur) */
+function cotesDef(typ=typeSup()){
+  const L=[{id:'Lm',l:typ==='mur'?'L':'H',lib:typ==='mur'?'Longueur de la console':typ==='plafond'?'Longueur de la suspente':'Hauteur du montant'}];
+  if(TYPES[typ].multi) L.push({id:'Lt',l:'L',lib:typ==='L'?'Longueur des consoles':typ==='T'?'Largeur de la traverse':'Portée de la traverse'});
+  if(typ==='L'&&+$('nc').value>1) L.push({id:'hc',l:'h',lib:'Espacement des consoles'});
+  tuyaux.forEach((t,i)=>L.push({id:'pos'+i,l:'a'+(i+1),lib:'Position de '+(t.nom||'L'+(i+1))}));
+  L.push({id:'zsol',l:'Z',lib:'Hauteur de pose au-dessus du sol (vent)'});
+  return L;
+}
+const coteVal=id=>/^pos\d+$/.test(id)?(tuyaux[+id.slice(3)]?+tuyaux[+id.slice(3)].pos:null):num(id);
+function cotesValeurs(){ return Object.fromEntries(cotesDef().map(c=>[c.id,coteVal(c.id)])); }
+function appliquerCotes(C){ if(!C) return; Object.entries(C).forEach(([id,v])=>{ if(v===null||v===''||v===undefined) return; if(/^pos\d+$/.test(id)){ const t=tuyaux[+id.slice(3)]; if(t) t.pos=+v; } else if($(id)) $(id).value=v; }); }
+function vueFace(D,V,opt={}){                               // plan Y–Z (regard le long des tuyaux)
+  const W=480,H=opt.plan?420:430,Gm=V.Gm,T=Gm.T, plan=!!opt.plan;
+  const lc=(l,v)=>plan?l:`${l} = ${f(v*1000,0)}`;          // libellé de cote (mm)
   const pts=[]; Gm.B.forEach(b=>{pts.push([b.A[1],b.A[2]],[b.B[1],b.B[2]]);});
-  T.forEach(t=>{const r=t.P.Dc/2000;pts.push([t.c[1]+r+0.12,t.c[2]+r+0.06],[t.c[1]-r,t.c[2]-r]);});
+  T.forEach(t=>{const r=t.P.Dc/2000, hb=!Gm.B[t.bi].vert;pts.push([t.c[1]+r+0.12+(hb?0:0.18),t.c[2]+r+(hb?0.28:0.06)],[t.c[1]-r,t.c[2]-r]);});
   const ys=pts.map(p=>p[0]),zs=pts.map(p=>p[1]); pts.push([Math.min(...ys)-0.12,Math.min(...zs)-0.04],[Math.max(...ys)+0.06,Math.max(...zs)+0.04]);
   const c=cadre(pts,W,H,46),X=c.X,Y=c.Y,k=c.k;
   let s=`<svg viewBox="0 0 ${W} ${H}" style="width:100%"><defs>${fl('fg','#e30009')}${fl('fw','#0098db')}${flc}</defs><text x="6" y="16" font-size="12" font-weight="700" fill="#114088">Vue de face (regard le long des tuyaux)</text>`;
@@ -646,16 +659,26 @@ function vueFace(D,V){                                     // plan Y–Z (regard
   T.forEach((t,i)=>{const cx=X(t.c[1]),cy=Y(t.c[2]),r=t.P.De/2000*k,rc=t.P.Dc/2000*k, d=V.CC.detail[i];
     if(t.P.ecal) s+=`<circle cx="${cx}" cy="${cy}" r="${rc}" fill="#fdf2dc" stroke="#b26a00" stroke-dasharray="3 2"/>`;
     s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="#0b5d73" opacity=".85" stroke="#171a1e"/><text x="${cx}" y="${cy+4}" font-size="10" fill="#fff" text-anchor="middle" font-weight="700">${escH(t.nom)}</text>`;
-    s+=`<line x1="${cx}" y1="${cy-rc-38}" x2="${cx}" y2="${cy-rc-4}" stroke="#e30009" stroke-width="2" marker-end="url(#fg)"/><text x="${cx+5}" y="${cy-rc-26}" font-size="10" fill="#e30009">${f(d.G,2)} kN</text>`;
-    if(D.cW) s+=`<line x1="${cx-rc-30}" y1="${cy}" x2="${cx-rc-6}" y2="${cy}" stroke="#0098db" stroke-width="2" marker-end="url(#fw)"/>`;
-    if(Gm.B[t.bi].vert) s+=`<text x="${cx+rc+5}" y="${cy+4}" font-size="9.5" fill="#171a1e">h = ${f(t.s,2)}</text>`;});
-  // cotes principales
+    if(!plan){ s+=`<line x1="${cx}" y1="${cy-rc-38}" x2="${cx}" y2="${cy-rc-4}" stroke="#e30009" stroke-width="2" marker-end="url(#fg)"/><text x="${cx+5}" y="${cy-rc-26}" font-size="10" fill="#e30009">${f(d.G,2)} kN</text>`;
+      if(D.cW) s+=`<line x1="${cx-rc-30}" y1="${cy}" x2="${cx-rc-6}" y2="${cy}" stroke="#0098db" stroke-width="2" marker-end="url(#fw)"/>`; }});
+  // cotes principales (H, L, h, a_i)
+  const FS=plan?16:11, CT='#114088', rap=(x1,y1,x2,y2)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#8a929c" stroke-width=".6" stroke-dasharray="2 2"/>`;
+  const cV=(x,ya,yb,lib)=>`<line x1="${x}" y1="${ya}" x2="${x}" y2="${yb}" stroke="${CT}" marker-start="url(#fk2)" marker-end="url(#fk2)"/><text x="${x-4}" y="${(ya+yb)/2+4}" font-size="${FS}" text-anchor="end" font-weight="700" fill="${CT}">${lib}</text>`;
+  const cVd=(x,ya,yb,lib)=>`<line x1="${x}" y1="${ya}" x2="${x}" y2="${yb}" stroke="${CT}" marker-start="url(#fk2)" marker-end="url(#fk2)"/><text x="${x+4}" y="${(ya+yb)/2+4}" font-size="${FS}" font-weight="700" fill="${CT}">${lib}</text>`;
+  const cH=(xa,xb,y,lib,dessus)=>`<line x1="${xa}" y1="${y}" x2="${xb}" y2="${y}" stroke="${CT}" marker-start="url(#fk2)" marker-end="url(#fk2)"/><text x="${(xa+xb)/2}" y="${dessus?y-4:y+13}" font-size="${FS}" text-anchor="middle" font-weight="700" fill="${CT}">${lib}</text>`;
+  const yMin=Math.min(...Gm.B.map(b=>Math.min(b.A[1],b.B[1]))), yMax=Math.max(...Gm.B.map(b=>Math.max(b.A[1],b.B[1])),...T.map(t=>t.c[1]+t.P.Dc/2000));
   const v=Gm.B.find(b=>b.vert), hz=Gm.B.find(b=>!b.vert);
-  if(v){const z0=Math.min(v.A[2],v.B[2]),z1=Math.max(v.A[2],v.B[2]),xx=X(Math.min(...Gm.B.map(b=>Math.min(b.A[1],b.B[1]))))-26;s+=`<line x1="${xx}" y1="${Y(z0)}" x2="${xx}" y2="${Y(z1)}" stroke="#171a1e" marker-start="url(#fk2)" marker-end="url(#fk2)"/><text x="${xx-5}" y="${(Y(z0)+Y(z1))/2}" font-size="11" text-anchor="end" font-weight="700">${f(z1-z0,2)}</text>`;}
-  if(hz){const y0=Math.min(hz.A[1],hz.B[1]),y1=Math.max(hz.A[1],hz.B[1]),yy=Math.min(Y(Math.min(...Gm.B.map(b=>Math.min(b.A[2],b.B[2]))))+18,H-24);s+=`<line x1="${X(y0)}" y1="${yy}" x2="${X(y1)}" y2="${yy}" stroke="#171a1e" marker-start="url(#fk2)" marker-end="url(#fk2)"/><text x="${(X(y0)+X(y1))/2}" y="${yy+13}" font-size="11" text-anchor="middle" font-weight="700">${f(y1-y0,2)} m</text>`;}
-  return s+`<text x="6" y="${H-6}" font-size="10" fill="#5f6670">Y →  Z ↑ · G (rouge) · vent W<tspan font-size="7" dy="2">y</tspan><tspan dy="-2"> (bleu) · cotes en m</tspan></text></svg>`;
+  if(v){const z0=Math.min(v.A[2],v.B[2]),z1=Math.max(v.A[2],v.B[2]),xx=X(yMin)-26;s+=cV(xx,Y(z0),Y(z1),lc(D.typ==='mur'?'L':'H',z1-z0));}
+  if(hz){const y0=Math.min(hz.A[1],hz.B[1]),y1=Math.max(hz.A[1],hz.B[1]),yy=Math.min(Y(Math.min(...Gm.B.map(b=>Math.min(b.A[2],b.B[2]))))+18,H-24);s+=cH(X(y0),X(y1),yy,lc('L',y1-y0));}
+  if(D.typ==='L'&&D.nc>1){const b1=Gm.B[1],b2=Gm.B[2],xx=X(b1.B[1])+14;s+=rap(X(b1.B[1]),Y(b1.A[2]),xx+4,Y(b1.A[2]))+rap(X(b2.B[1]),Y(b2.A[2]),xx+4,Y(b2.A[2]))+cVd(xx,Y(b1.A[2]),Y(b2.A[2]),lc('h',b1.A[2]-b2.A[2]));}
+  let iv=0, ih={};
+  T.forEach((t,i)=>{ const b=Gm.B[t.bi], lib=lc('a'+(i+1),Math.abs(+t.pos||0)), cx=X(t.c[1]), cy=Y(t.c[2]);
+    if(b.vert){ const z0=D.typ==='plafond'?0:b.A[2], xx=X(yMax)+14+16*iv++; s+=rap(cx,cy,xx+4,cy)+rap(X(b.A[1]),Y(z0),xx+4,Y(z0))+cVd(xx,Y(z0),cy,lib); }
+    else { const y0=D.typ==='T'?0:b.A[1], n=ih[t.bi]=(ih[t.bi]||0)+1, top=Math.min(...T.filter(o=>o.bi===t.bi).map(o=>Y(o.c[2])-o.P.Dc/2000*k)), yy=top-(plan?14:46)-16*(n-1);
+      s+=rap(cx,cy,cx,yy-4)+rap(X(y0),Y(b.A[2]),X(y0),yy-4)+cH(X(y0),cx,yy,lib,true); } });
+  return s+`<text x="6" y="${H-6}" font-size="10" fill="#5f6670">${plan?'Cotes : voir tableau des configurations':`Y →  Z ↑ · G (rouge) · vent W<tspan font-size="7" dy="2">y</tspan><tspan dy="-2"> (bleu) · cotes en mm</tspan>`}</text></svg>`;
 }
-function vueCote(D,V){                                     // plan X–Z
+function vueCote(D,V,opt={}){                             // plan X–Z
   const W=320,H=390,Gm=V.Gm,T=Gm.T;
   const zs=[...Gm.B.flatMap(b=>[b.A[2],b.B[2]]),...T.flatMap(t=>[t.c[2]+t.P.Dc/2000,t.c[2]-t.P.Dc/2000])];
   const c=cadre([[-0.6,Math.min(...zs)],[0.6,Math.max(...zs)+0.05]],W,H,40),X=c.X,Y=c.Y,k=c.k;
@@ -667,7 +690,7 @@ function vueCote(D,V){                                     // plan X–Z
   const vus={};
   T.forEach((t,i)=>{const y=Y(t.c[2]),r=t.P.Dc/2000*k,key=t.bi,dy=-(vus[key]=(vus[key]??-1)+1)*14;
     s+=`<rect x="${X(-0.6)}" y="${y-r}" width="${1.2*k}" height="${2*r}" fill="#0b5d73" opacity=".18" stroke="#0b5d73"/><text x="${X(-0.56)}" y="${y+4+dy}" font-size="10" fill="#0b5d73" font-weight="700">${escH(t.nom)}</text>`;
-    if(D.cT) s+=`<line x1="${X(0)+10}" y1="${y+dy}" x2="${X(0)+46}" y2="${y+dy}" stroke="#d9822b" stroke-width="2" marker-end="url(#fo)"/><text x="${X(0)+50}" y="${y+4+dy}" font-size="9.5" fill="#d9822b">${escH(t.nom)} : F<tspan font-size="7" dy="2">x</tspan><tspan dy="-2"> = ${f(Math.abs(V.CC.detail[i].T[0]),2)} kN</tspan></text>`;});
+    if(D.cT&&!opt.plan) s+=`<line x1="${X(0)+10}" y1="${y+dy}" x2="${X(0)+46}" y2="${y+dy}" stroke="#d9822b" stroke-width="2" marker-end="url(#fo)"/><text x="${X(0)+50}" y="${y+4+dy}" font-size="9.5" fill="#d9822b">${escH(t.nom)} : F<tspan font-size="7" dy="2">x</tspan><tspan dy="-2"> = ${f(Math.abs(V.CC.detail[i].T[0]),2)} kN</tspan></text>`;});
   return s+`<text x="6" y="${H-6}" font-size="10" fill="#5f6670">X → (axe tuyaux) · F<tspan font-size="7" dy="2">x</tspan><tspan dy="-2"> : frottement / dilatation (±)</tspan></text></svg>`;
 }
 
@@ -841,33 +864,49 @@ function resumeS1(){                                     // résultats synthéti
   return {type:D.typ,typeNom:TYPES[D.typ].n,nuance:$('nuance').value,profils:[...new Set(V.Gm.B.map(b=>b.p.n))],
     barres:V.Gm.B.map(b=>({lib:b.lib,profil:b.p.n,f:b.p.f,L:b.L,m:b.p.m})),masse:V.Gm.B.reduce((s,b)=>s+b.p.m*b.L,0),
     taux:V.gov.r,critere:V.gov.n.replace(/<[^>]+>/g,''),statut,bloq:nb,warn:nw,alertes:A.filter(a=>a.niv!=='info').map(a=>(a.niv==='bloq'?'⛔ ':'⚠ ')+a.titre.replace(/<[^>]+>/g,'')),
-    tuyaux:V.Gm.T.map(t=>({nom:t.nom,desc:t.P.desc,G:V.CC.detail[V.Gm.T.indexOf(t)].G,barre:V.Gm.B[t.bi].lib})),
-    appuis:env.map(E=>({lib:E.a.lib,ELU:E.ELU.map(e=>e.v),SIS:V.res.some(r=>r.c.type==='Sismique')?E.SIS.map(e=>e.v):null,
+    tuyaux:V.Gm.T.map(t=>({nom:t.nom,desc:t.P.desc,G:V.CC.detail[V.Gm.T.indexOf(t)].G,barre:V.Gm.B[t.bi].lib,d:diamEtrier(t),dn:t.mode==='base'?+t.dn:null,De:t.P.De})),
+    appuis:env.map(E=>({lib:E.a.lib,k:E.a.k,profil:(V.Gm.B.find(b=>[b.A,b.B].some(P=>Math.hypot(...P.map((v,i)=>v-E.a.pt[i]))<1e-6))||V.Gm.B[0]).p.n,ELU:E.ELU.map(e=>e.v),SIS:V.res.some(r=>r.c.type==='Sismique')?E.SIS.map(e=>e.v):null,
       cas:Object.fromEntries(['G','T','S','WY','WX','EP','EX','EY'].filter(c=>V.R[c]).map(c=>[c,V.R[c].reactions[E.a.n].map(x=>-x)]))})),
     lignes:V.lignes.map(l=>({n:l.n.replace(/<[^>]+>/g,''),r:l.r})),date:new Date().toISOString()};
 }
-window.S1API={etat:etatS1,charger:E=>{chargerEtat(E);appliquerParamsAffaire();calc();return true;},resume:resumeS1,
+window.S1API={cotes:()=>cotesDef(),cotesValeurs,appliquerCotes:C=>{appliquerCotes(C);cartesTuyaux();calc();},vues:()=>({face:vueFace(dernier.D,dernier.V,{plan:true}),cote:vueCote(dernier.D,dernier.V,{plan:true})}),etat:etatS1,charger:E=>{chargerEtat(E);appliquerParamsAffaire();calc();return true;},resume:resumeS1,
   perspective:async()=>{await perspective();return $('persp').hidden?'':$('imgPersp').src;}};
-const ID_CAHIER=new URLSearchParams(location.search).get('cahier');
+const QS=new URLSearchParams(location.search), ID_CAHIER=QS.get('cahier'), ID_CONF=QS.get('conf');
 function initCahier(){
   CAHIER.remplir({affaire:'affaire',auteur:'realise'});
-  if(ID_CAHIER){ const K=CAHIER.lire(), sup=K.supports.find(x=>x.id===ID_CAHIER);
-    if(sup){ chargerEtat(sup.etat); $('versCahier').textContent='💾 Enregistrer dans le cahier';
-      $('bandeauCahier').hidden=false; $('bandeauCahier').innerHTML=`Édition du support <b>${escH(sup.nom)}</b> du cahier de supportage · <a href="../cahier/">← retour au cahier</a>`; } }
+  if(QS.get('moteur')) return;                                   // moteur de calcul du cahier (iframe)
+  const lib=()=>ID_CAHIER?'💾 Enregistrer dans le cahier':'➕ Ajouter au cahier';
+  if(ID_CAHIER){ const K=CAHIER.lire(), T=K.types.find(x=>x.id===ID_CAHIER), c=T&&(T.configs.find(x=>x.id===ID_CONF)||T.configs[0]);
+    if(T){ if(T.etat) chargerEtat(T.etat); if(c) appliquerCotes({...(T.cotes0||{}),...(c.cotes||{})});
+      $('repere').value=T.nom; if(c){ $('qte').value=c.qte; $('reperes').value=c.reperes||''; $('zone').value=c.lignes||''; }
+      cartesTuyaux(); $('versCahier').textContent=lib();
+      $('bandeauCahier').hidden=false; $('bandeauCahier').innerHTML=`Édition de <b>${escH(c?CAHIER.repere(T,c):T.nom)}</b> (type ${escH(T.nom)}${c&&c.n>1?`, configuration ${c.n} : seules les cotes H, L, h, a<sub>i</sub>, Z sont propres à la configuration, le reste est commun au type`:''}) · <a href="../cahier/">← retour au cahier</a>`; } }
+  else if(CAHIER.existe()){ const K=CAHIER.lire(), R=K.reglages; if($('repere').value==='SUP-01'){ let n=1; while(K.types.some(t=>t.nom===R.prefST+String(n).padStart(2,'0'))) n++; $('repere').value=R.prefST+String(n).padStart(2,'0'); } }
   appliquerParamsAffaire();
   $('versCahier').onclick=()=>{
-    calc(); const K=CAHIER.lire(), nom=$('repere').value.trim()||'SUP', E=etatS1(), R=resumeS1();
-    let sup=ID_CAHIER?K.supports.find(x=>x.id===ID_CAHIER):K.supports.find(x=>x.nom===nom);
-    if(sup&&!ID_CAHIER&&!confirm(`Le support type « ${nom} » existe déjà dans le cahier : le remplacer ?`)) return;
-    const o={id:sup?sup.id:CAHIER.uid(),nom,qte:Math.max(1,Math.round(num('qte',1))),reperes:$('reperes').value,lignes:$('zone').value,etat:E,resume:R};
-    if(sup) Object.assign(sup,o); else K.supports.push(o);
-    if(CAHIER.ecrire(K)){ $('versCahier').textContent='✓ Enregistré dans le cahier'; setTimeout(()=>$('versCahier').textContent=ID_CAHIER?'💾 Enregistrer dans le cahier':'➕ Ajouter au cahier',2500); }
+    calc(); const K=CAHIER.lire(), nom=$('repere').value.trim()||'ST', E=etatS1(), R=resumeS1(), C=cotesValeurs(), defs=cotesDef();
+    const conf={qte:Math.max(1,Math.round(num('qte',1))),reperes:$('reperes').value,lignes:$('zone').value,resume:R};
+    const ecart=(base)=>Object.fromEntries(Object.entries(C).filter(([k,v])=>base[k]===undefined||Math.abs(v-base[k])>1e-6));
+    const sansCotes=(base)=>{ const e=JSON.parse(JSON.stringify(E)); Object.entries(base).forEach(([k,v])=>{ if(/^pos\d+$/.test(k)){ const t=e.tuyaux[+k.slice(3)]; if(t) t.pos=v; } else if(k in e.champs) e.champs[k]=String(v); }); return e; };
+    let T=ID_CAHIER?K.types.find(x=>x.id===ID_CAHIER):K.types.find(x=>x.nom===nom), c=null;
+    if(T&&ID_CAHIER){ c=T.configs.find(x=>x.id===ID_CONF)||T.configs[0];
+      if(!T.etat||c.n===1){ T.etat=E; T.cotes0=C; T.cotesDef=defs; Object.assign(c,conf,{cotes:{}}); T.configs.forEach(x=>{ if(x!==c) x.resume=null; }); }
+      else { T.etat=sansCotes(T.cotes0||{}); T.cotesDef=defs; T.cotes0={...C,...(T.cotes0||{})}; Object.assign(c,conf,{cotes:ecart(T.cotes0)}); T.configs.forEach(x=>{ if(x!==c) x.resume=null; }); }
+      T.nom=nom; T.resume=T.configs[0].resume||R; }
+    else if(T){ if(T.kind!=='s1'||!T.etat){ alert(`« ${nom} » existe déjà dans le cahier (support spécial ou type non calculé) : changer le repère.`); return; }
+      const n=Math.max(...T.configs.map(x=>x.n))+1;
+      if(!confirm(`Le type « ${nom} » existe déjà : ajouter ce support comme configuration ${nom}.${n} ?\n\nSeules les cotes (H, L, h, aᵢ, Z) sont propres à une configuration ; profilés, tuyauteries et actions restent ceux du type.`)) return;
+      c={id:CAHIER.uid(),n,...conf,cotes:ecart(T.cotes0||{})}; c.resume=null; T.configs.push(c); K.aRecalc=true; }
+    else { T={id:CAHIER.uid(),nom,kind:'s1',designation:'',etat:E,cotes0:C,cotesDef:defs,resume:R,configs:[{id:CAHIER.uid(),n:1,...conf,cotes:{}}]}; K.types.push(T); }
+    K.aRecalc=K.types.some(t=>t.kind==='s1'&&t.etat&&t.configs.some(x=>!x.resume));
+    if(CAHIER.ecrire(K)){ $('versCahier').textContent='✓ Enregistré dans le cahier'; setTimeout(()=>$('versCahier').textContent=lib(),2500); }
   };
 }
 
 init();
 </script>
-<script src="../commun/export.js?v=2.3"></script>
+<script src="../commun/replier.js?v=2.4"></script>
+<script src="../commun/export.js?v=2.4"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
