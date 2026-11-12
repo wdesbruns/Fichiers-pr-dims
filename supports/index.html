@@ -187,7 +187,7 @@ const typeSup=()=>document.querySelector('input[name=type]:checked').value;
 /* =====================================================================
    TUYAUTERIES (base commune T1 ou saisie directe)
    ===================================================================== */
-let tuyaux=[{nom:'L1',mode:'base',dn:100,sch:'40',mat:'P265GH',fluide:0,rho:1000,ecal:0,rhoCal:120,qd:0.3,Dd:114.3,portee:5,pos:0.8,e:'',fonc:'glissant',mu:0.3,Fx:0,Fy:0,Fz:0,Gsup:0}];
+let tuyaux=[{nom:'L1',mode:'base',dn:100,sch:'40',mat:'P265GH',fluide:0,rho:1000,ecal:0,rhoCal:120,qd:0.3,Dd:114.3,portee:5,pos:0.8,e:'',fonc:'guide',mu:0.3,Fx:0,Fy:0,Fz:0,Gsup:0}];
 function propsTuyau(t){
   let De,qop,qeau,ecal=+t.ecal||0;
   if(t.mode==='base'){
@@ -390,7 +390,8 @@ function verifier(D){
   const vars=[];
   if(actif('T')){vars.push({id:'T+',psi:[0.6,0.5,0],grp:'T'});vars.push({id:'T−',psi:[0.6,0.5,0],grp:'T'});}
   if(actif('S')) vars.push({id:'S',psi:PSI_NEIGE(D.altN)});
-  if(actif('WY')) ['W+Y','W−Y'].forEach(id=>vars.push({id,psi:PSI_VENT,grp:'W'}));
+  // vent transversal : support mural → seul le vent dirigé vers le mur (côté ouvert) est retenu
+  if(actif('WY')) (D.typ==='mur'?['W−Y']:D.typ==='Lmur'?['W+Y']:['W+Y','W−Y']).forEach(id=>vars.push({id,psi:PSI_VENT,grp:'W'}));
   if(actif('WX')) ['W+X','W−X'].forEach(id=>vars.push({id,psi:PSI_VENT,grp:'W'}));
   if(actif('EP')) vars.push({id:'EP',psi:[0,0,0],exclut:['T+','T−','S','W+Y','W−Y','W+X','W−X']});
   const C=genererCombinaisons(vars);
@@ -590,6 +591,9 @@ function alertes(D,V){
       if(dB<bord) add('warn',`Tuyauterie trop près ${extr('B')} – ${nom}`,`Bord du tuyau (calorifuge compris) à ${f(dB,0)} mm (mini ${bord} mm).`);
     }
     if(t.fonc==='fixe'&&/^(LI?|U)/.test(p.f)) add('warn',`Point fixe sur profilé ouvert – ${nom}`,'Les efforts de point fixe génèrent flexion déviée et torsion : préférer un tube carré, un double profilé ou un support en U.');
+    if(b.vert&&t.fonc==='glissant') add('bloq',`Tuyauterie « glissante » sur ${D.typ==='plafond'?'une suspente verticale':'un montant vertical'} – ${nom}`,`Sur un profilé vertical, la tuyauterie est tenue latéralement par l'étrier : elle ne peut pas être simplement posée (elle tomberait). Choisir « Guidé » ou « Point fixe ».`,'Règle de l\'art supportage',b.role);
+    if(t.fonc==='fixe'){ const nul=!(+t.Fx)&&!(+t.Fy)&&!(+t.Fz);
+      add(nul?'warn':'info',`Point fixe – ${nom}`,nul?'Efforts de dilatation nuls : sur un point fixe, ce sont les réactions issues de l\'étude de flexibilité (CAESAR II, ROHR2…) qui gouvernent, souvent plus que le poids. Les saisir (F<sub>x</sub>, F<sub>y</sub>, F<sub>z</sub>) ou les estimer prudemment.':`Efforts F<sub>x</sub> = ${f(+t.Fx||0,2)}, F<sub>y</sub> = ${f(+t.Fy||0,2)}, F<sub>z</sub> = ${f(+t.Fz||0,2)} kN : à confirmer par l'étude de flexibilité de la ligne (hors prédimensionnement rapide).`,'Étude de flexibilité (EN 13480-3 §12 / ASME B31.3 §319)'); }
     if(t.fonc==='guide') add('info',`Guidage – ${nom}`,'Prévoir des butées latérales soudées (jeu de guidage à préciser) ; vérifier leur soudure en exécution.');
   }
   const vusP=new Set();
@@ -611,7 +615,7 @@ function notes(D,V){
    <li>Prédimensionnement (APS/APD) ; les études d'exécution restent à la charge des entreprises. Cas complexes : Robot, Nastran, Hilti PROFIS.</li>
    <li>Modèle de barres 3D élastique au 1<sup>er</sup> ordre : platines encastrées (pieds, plafond, mur), traverse du L mural articulée sur le mur (translations et torsion bloquées), assemblages montant/traverse/consoles rigides et lignes moyennes concourantes. Charges des tuyaux appliquées à leur axe et transmises par bras rigides. Excentricité automatique : demi-emprise du profilé + rayon calorifugé + sabot.</li>
    <li>Longueurs de flambement (prudentes) : montants, suspentes et porte-à-faux L<sub>cr</sub> = 2L (y compris montants du U, pieds encastrés supposés à nœuds déplaçables hors plan) ; traverses entre appuis (U, L mural) L<sub>cr</sub> = L. Déplacements limités à min(L<sub>réf</sub>/n ; d<sub>max</sub>) avec L<sub>réf</sub> = longueur de la barre portant le tuyau (demi-traverse pour le T).</li>
-   <li>Combinaisons NF EN 1990 + AN : 6.10 (γ<sub>G</sub> = 1,35/1,0 ; γ<sub>Q</sub> = 1,5), chaque action variable dominante ; T (ψ = 0,6/0,5/0), neige, vent (0,6/0,2/0), directions ±X ±Y exclusives ; épreuve non combinée aux autres variables. Situation sismique : G + A<sub>Ed</sub>, 100 % / 30 % (EN 1998-1 §4.3.3.5.2), composante verticale non prise en compte.</li>
+   <li>Combinaisons NF EN 1990 + AN : 6.10 (γ<sub>G</sub> = 1,35/1,0 ; γ<sub>Q</sub> = 1,5), chaque action variable dominante ; T (ψ = 0,6/0,5/0), neige, vent (0,6/0,2/0), directions ±X ±Y exclusives (supports muraux : vent transversal uniquement dirigé vers le mur, le mur masquant l'autre sens) ; épreuve non combinée aux autres variables. Situation sismique : G + A<sub>Ed</sub>, 100 % / 30 % (EN 1998-1 §4.3.3.5.2), composante verticale non prise en compte.</li>
    <li>Vérifications NF EN 1993-1-1 : section (critère linéaire §6.2.1(7)), cisaillement + torsion de Saint-Venant (gauchissement négligé), stabilité simplifiée (k = 1 + 0,6·λ̄·n). Cornières : axes principaux, élastique, sans déversement. Tubes : courbe c (formés à froid, prudent).</li>
    <li>Gauchissement (profilés I et U) : bi-moment B = T·a·tanh(L<sub>e</sub>/a) avec gauchissement bloqué à l'encastrement (L<sub>e</sub> = L pour un porte-à-faux, L/2 entre appuis), σ<sub>w</sub> = B·ω/I<sub>w</sub>, ajouté aux taux de section et de stabilité (prudent, U traité comme un I). Raideur : pour une barre I / U encastrée (platine soudée), le modèle prend I<sub>t,eff</sub> = I<sub>t</sub>·L/(L − a·tanh(L/a)) (gauchissement bloqué à l'encastrement, libre à l'autre extrémité : prudent) ; les autres barres gardent la seule raideur de Saint-Venant.</li>
    <li>Platines semi-rigides par défaut (S<sub>j</sub> = 10·EI/L) : hypothèse prudente pour les déplacements. Taux au-delà du taux cible signalés en jaune (non bloquant) ; l'optimisation vise le taux cible.</li>
@@ -822,7 +826,7 @@ const DEFAUTS={sol:{Lm:1.0,pos:[0.8,0.45]},plafond:{Lm:1.0,pos:[0.8,0.45]},mur:{
   T:{Lm:1.5,Lt:0.8,pos:[-0.2,0.2]},L:{Lm:1.5,Lt:0.5,nc:2,hc:0.5,pos:[0.3,0.3],cons:[1,2]},U:{Lm:1.2,Lt:1.0,pos:[0.3,0.7]},Lmur:{Lm:1.2,Lt:1.0,pos:[0.3,0.7]}};
 function appliquerDefauts(typ){
   const d=DEFAUTS[typ]; $('Lm').value=d.Lm; if(d.Lt) $('Lt').value=d.Lt; if(d.nc){$('nc').value=d.nc;$('hc').value=d.hc;}
-  tuyaux.forEach((t,i)=>{ t.pos=i<d.pos.length?d.pos[i]:+(d.pos[d.pos.length-1]+0.25*(i-d.pos.length+1)).toFixed(2); t.cons=d.cons?(d.cons[i]||1):1; });
+  tuyaux.forEach((t,i)=>{ if(['sol','plafond'].includes(typ)&&t.fonc==='glissant') t.fonc='guide'; t.pos=i<d.pos.length?d.pos[i]:+(d.pos[d.pos.length-1]+0.25*(i-d.pos.length+1)).toFixed(2); t.cons=d.cons?(d.cons[i]||1):1; });
   if(TYPES[typ].multi&&!/^U/.test($('fam').value)&&$('fam').value==='L'){ $('fam').value='UPN'; remplirProfils('UPN 100'); }
 }
 function init(){
