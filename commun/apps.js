@@ -9,7 +9,7 @@
    vignette : petit schéma SVG affiché sur la carte (facultatif)
    marqueur de catégorie : ● ▬ → ■ ◆ … (couleur d'accent FIP)
    ===================================================================== */
-const CALC_VERSION = "v2.3";
+const CALC_VERSION = "v2.4";
 
 const CALC_CATEGORIES = [
   { id: "tuy", nom: "Tuyauterie", sousTitre: "Supportage, portées et descentes de charges · CODETI / EN 13480-3, ASME B31.3", couleur: "#e30009", marqueur: "●" },
@@ -70,7 +70,7 @@ const CALC_APPS = [
   {
     code: "CS",
     titre: "Cahier de supportage",
-    description: "Regroupe les supports types S1 d'une affaire : quantités et repères, statut, nomenclature acier, descentes de charges, fiches avec perspective. Informations d'affaire reprises dans toutes les calculettes et le cartouche Word.",
+    description: "Supports types et configurations (ST-01.1), supports spéciaux (SPE-1.1), BOM, plans types cotés avec perspective, descentes de charges par type. Modèles BOM / simplifié / complet. Informations d'affaire reprises dans toutes les calculettes et le cartouche Word.",
     url: "cahier/",
     categorie: "tuy",
     normes: ["S1", "NF EN 1990", "NF EN 1993-1-1"],

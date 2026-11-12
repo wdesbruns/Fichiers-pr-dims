@@ -7,7 +7,7 @@ Portail de calculettes du bureau d'études, aux couleurs FIP (bleu #114088, roug
 index.html                 ← page de connexion (l'adresse à communiquer)
 accueil.html               ← tableau de bord : une tuile par calculette
 supports/                  ← S1 supports de tuyauterie (montant, console, suspente, T, L, U, L mural) – calcul 3D, DDC, vues 2D/3D
-cahier/                    ← CS cahier de supportage : affaire, supports types S1 × qté, nomenclature, DDC, fiches, export .json
+cahier/                    ← CS cahier de supportage : types / configurations (ST-01.1), spéciaux (SPE-1.1), BOM, plans types cotés, DDC ; modèles BOM / simplifié / complet ; export .json
 portee-tuyauterie/         ← T1 portée entre supports (CODETI / EN 13480-3, ASME B31.3)
 poutre/                    ← P1 poutre acier sur deux appuis (EN 1990 combinaisons + EN 1993-1-1)
 poteau/                    ← P2 poteau acier (flambement, déversement, interaction N–M)
@@ -24,6 +24,7 @@ commun/
   img/                     ← logo et picto FIP
   barres3d.js              ← calcul de barres 3D (méthode des déplacements), validé sur cas analytiques
   data/tuyauterie.js       ← base commune tubes / matériaux / fluides (T1, S1)
+  replier.js               ← cartes repliables (− / +) et « tout replier » sur toutes les pages
   cahier.js                ← stockage du cahier (localStorage « fip.cahier ») + remplissage auto des champs d'affaire + cartouche Word
   acier.js                 ← moteur commun P1/P2 : combinaisons, classes, χ, Mcr
   calc.css                 ← style commun des calculettes P1/P2
