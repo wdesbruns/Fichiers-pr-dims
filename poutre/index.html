@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.5"></script>
+<script src="../commun/auth.js?v=2.6"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — P1 Poutre sur deux appuis</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.5">
-<script src="../commun/data/profils.js?v=2.5"></script>
-<script src="../commun/acier.js?v=2.5"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.6">
+<script src="../commun/data/profils.js?v=2.6"></script>
+<script src="../commun/acier.js?v=2.6"></script>
 </head>
 <body>
 <header>
@@ -291,10 +291,10 @@ function optimiser(){
 }
 init();
 </script>
-<script src="../commun/cahier.js?v=2.5"></script>
+<script src="../commun/cahier.js?v=2.6"></script>
 <script>CAHIER.remplir({affaire:'affaire',ndc:'doc',auteur:'realise'});</script>
-<script src="../commun/replier.js?v=2.5"></script>
-<script src="../commun/export.js?v=2.5"></script>
+<script src="../commun/replier.js?v=2.6"></script>
+<script src="../commun/export.js?v=2.6"></script>
 <script>EXPORT.init({code:'P1',titre:'Poutre acier sur deux appuis',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:()=>calc(), nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
