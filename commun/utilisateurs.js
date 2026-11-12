@@ -16,5 +16,5 @@
    (Le mot de passe provisoire livré à l'origine a été remplacé.)
    ===================================================================== */
 const CALC_UTILISATEURS = [
-  { u: "admin", h: "bef20846588c9647c3a1c9ddc41bd662c7a38ec90abcdcff7c9a35cdf47ab114" },
+  { u: "admin", h: "690b28ccf65d50a0725673e516c890ae3f8652b41250e71c563cf50a6d68e6bb" },
 ];
