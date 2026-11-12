@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.9"></script>
+<script src="../commun/auth.js?v=2.10"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.9">
+<link rel="stylesheet" href="../commun/calc.css?v=2.10">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.9"></script>
-<script src="../commun/data/tuyauterie.js?v=2.9"></script>
-<script src="../commun/acier.js?v=2.9"></script>
-<script src="../commun/barres3d.js?v=2.9"></script>
-<script src="../commun/cahier.js?v=2.9"></script>
+<script src="../commun/data/profils.js?v=2.10"></script>
+<script src="../commun/data/tuyauterie.js?v=2.10"></script>
+<script src="../commun/acier.js?v=2.10"></script>
+<script src="../commun/barres3d.js?v=2.10"></script>
+<script src="../commun/cahier.js?v=2.10"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -84,7 +84,7 @@
     <button class="sec noprint" id="opti" style="margin-top:8px;width:100%">⚙ Proposer les profilés les plus légers (taux ≤ taux cible)</button>
     <div class="row">
       <div><label id="labL">Hauteur du montant H (m)</label><input id="Lm" type="number" step="0.05" value="1.0"></div>
-      <div><label>Orientation du montant</label><select id="orient"><option value="0">Grande inertie dans le plan des tuyaux</option><option value="90">Tournée de 90°</option></select></div>
+      <div><label id="labOr">Orientation du montant</label><select id="orient"><option value="0">Grande inertie dans le plan des tuyaux</option><option value="90">Tournée de 90°</option></select></div>
     </div>
     <div class="row" id="bloc3">
       <div><label id="labLt">Largeur de la traverse L<sub>b</sub> (m)</label><input id="Lt" type="number" step="0.05" value="0.8"></div>
@@ -318,7 +318,7 @@ function modele(D){
     case 'mur': barre('Console','m',pm,[0,0,0],[0,H,0],rot?[1,0,0]:[0,0,1],2*H,H,true); appuis.push({pt:[0,0,0],c:ENC,lib:'Platine murale',k:'mur'}); break;
     case 'murJ': { const bj=Math.min(Math.max(Lt,0.05),H), Ls=Math.hypot(bj,D.hj);
       barre('Console','m',pm,[0,0,0],[0,H,0],rot?[1,0,0]:[0,0,1],Math.max(bj,2*(H-bj)),H,false);
-      barre('Jambe de force','t',pt,[0,0,-D.hj],[0,bj,0],[1,0,0],Ls,Ls,false,true);      // bielle articulée aux deux extrémités
+      barre('Jambe de force','t',pt,[0,0,-D.hj],[0,bj,0],rot?[1,0,0]:[0,-D.hj/Ls,bj/Ls],Ls,Ls,false,true);   // bielle articulée ; même orientation d'inertie que la console
       appuis.push({pt:[0,0,0],c:ENC,lib:'Platine murale (console)',k:'mur'}); appuis.push({pt:[0,0,-D.hj],c:[1,1,1,0,0,0],lib:'Pied de jambe de force (articulé)',k:'murPied'}); break; }
     case 'T': barre('Montant','m',pm,[0,0,0],[0,0,H],vzM,2*H,H,true); barre('Traverse','t',pt,[0,-Lt/2,H],[0,Lt/2,H],vzT,Lt,Lt/2,true);
       appuis.push({pt:[0,0,0],c:ENC,lib:'Pied (platine au sol)',k:'sol'}); break;
@@ -517,6 +517,7 @@ function majFormulaire(){
   $('labL').textContent=typ==='murJ'?'Longueur de la console L (m)':typ==='mur'?'Longueur de la console L (m)':typ==='plafond'?'Longueur de la suspente H (m)':'Hauteur du montant H (m)';
   $('labP1').textContent=typ==='murJ'?'Profilé de la console':multi?'Profilé des montants':typ==='mur'?'Profilé de la console':typ==='plafond'?'Profilé de la suspente':'Profilé du montant';
   $('bloc2').style.display=multi?'':'none'; $('bloc3').style.display=multi?'':'none'; $('blocNc').style.display=typ==='L'?'':'none'; $('blocHj').style.display=typ==='murJ'?'':'none';
+  $('labOr').textContent=['mur','murJ'].includes(typ)?'Orientation de la console (et de la jambe)':typ==='plafond'?'Orientation de la suspente':'Orientation du montant';
   $('bloc2').querySelector('label').textContent=typ==='murJ'?'Profilé de la jambe de force':'Profilé de la traverse / des consoles';
   $('blocSj').style.display=$('platine').value==='saisie'?'':'none';
   $('labLt').innerHTML={T:'Largeur de la traverse L<sub>b</sub> (m)',L:'Longueur des consoles L<sub>c</sub> (m)',U:'Largeur entre montants W (m)',Lmur:'Distance montant – mur W (m)',murJ:'Attache de la jambe sur la console b (m)'}[typ]||'';
@@ -615,10 +616,21 @@ function diamEtrier(t){
   const dn=t.mode==='base'?+t.dn:(PIPES.reduce((a,b)=>Math.abs(b.od-t.P.De)<Math.abs(a.od-t.P.De)?b:a).dn);
   return dn<=50?10:dn<=100?12:dn<=200?16:dn<=350?20:24;
 }
-function largeurUtile(p,horiz){                              // largeur plate de la face qui reçoit l'étrier (mm)
-  const r=p.r||0, rot=$('orient').value!=='0';
+/* Orientation d'une barre vis-à-vis des tuyaux : n = direction du tuyau (+Y sur barre verticale, +Z sur barre horizontale),
+   ey = normale à l'âme (y local, β = 0). Âme face au tuyau si |ey·n| ≈ 1. */
+const nTuyau=b=>b.vert?[0,1,0]:[0,0,1];
+function ameFaceTuyau(b){ const R=Barres3D.repere([{x:b.A[0],y:b.A[1],z:b.A[2]},{x:b.B[0],y:b.B[1],z:b.B[2]}],{i:0,j:1,vz:b.vz,beta:0}).R, n=nTuyau(b);
+  return Math.abs(R[1][0]*n[0]+R[1][1]*n[1]+R[1][2]*n[2])>0.9; }
+function miroirU(b,porteTuyau){                              // U : âme du côté du tuyau (jamais l'ouverture), sinon âme vers −X ou vers le haut
+  const R=Barres3D.repere([{x:b.A[0],y:b.A[1],z:b.A[2]},{x:b.B[0],y:b.B[1],z:b.B[2]}],{i:0,j:1,vz:b.vz,beta:0}).R, ey=R[1], dot=(a,c)=>a[0]*c[0]+a[1]*c[1]+a[2]*c[2];
+  const n=nTuyau(b), voulu=porteTuyau&&Math.abs(dot(ey,n))>0.9?n:Math.abs(ey[0])>0.9?[-1,0,0]:Math.abs(ey[2])>0.1?[0,0,Math.sign(ey[2])]:[0,Math.sign(ey[1]||1),0];
+  return dot(ey,voulu)>0;                                    // âme dessinée en −ey : miroir si l'âme doit être en +ey
+}
+function largeurUtile(p,horiz,b){                            // largeur plate de la face qui reçoit l'étrier (mm)
+  const r=p.r||0, ame=b?ameFaceTuyau(b):false;
   if(/^LI?$/.test(p.f)) return {l:Math.max(p.b,p.h)-p.t-r,face:'aile de la cornière'};
-  if(/^U/.test(p.f)) return (horiz&&!(rot&&['mur','murJ'].includes(typeSup())))?{l:p.b-p.tw-r,face:'semelle du U'}:{l:p.h-2*p.tf-2*r,face:'âme du U'};
+  if(/^U/.test(p.f)) return ame?{l:p.h-2*p.tf-2*r,face:'âme du U'}:{l:p.b-p.tw-r,face:'semelle du U'};
+  if(ame&&!/HS$/.test(p.f)&&p.f!=='CHS') return {l:0,face:'âme entre les ailes (profilé en I tourné : pas de face plane)',ameI:true};
   if(p.f==='CHS') return {l:0,face:'tube rond'};
   if(/HS$/.test(p.f)) return {l:Math.min(p.b,p.h)-3*p.t,face:'paroi du tube'};
   return {l:(p.b-p.tw)/2-r,face:'débord de semelle (de part et d\'autre de l\'âme)'};
@@ -629,9 +641,10 @@ function alertes(D,V){
   const Gm=V.Gm;
   V.PB.forEach(P=>{ if(P.R.cl===4) add('bloq',`Section de classe 4 – ${escH(P.b.lib)}`,`${escH(P.b.p.n)} : parois trop élancées, résistance non couverte par l'outil.`,'NF EN 1993-1-1 Tab. 5.2',P.b.role); });
   for(const t of Gm.T){
-    const b=Gm.B[t.bi], p=b.p, horiz=!b.vert, lu=largeurUtile(p,horiz);
+    const b=Gm.B[t.bi], p=b.p, horiz=!b.vert, lu=largeurUtile(p,horiz,b);
     const d=diamEtrier(t), d0=d+(d<=14?1:d<=24?2:3), need=2.4*d0, dn=t.mode==='base'?+t.dn:null, nom=`${escH(t.nom)} (${t.mode==='base'?'DN'+t.dn:'Ø'+t.P.De}) sur ${escH(b.lib.toLowerCase())}`;
-    if(p.f==='CHS') add('info',`Étrier sur tube rond – ${nom}`,'Pas de face plane pour l\'étrier : prévoir une patte ou une platine soudée sur le tube.');
+    if(lu.ameI) add('bloq',`Profilé en I tourné : pas d'appui plan – ${nom}`,`Le tuyau ferait face à l'âme, entre les ailes du ${escH(p.n)} : il n'y a pas de face plane pour l'étrier. Garder l'orientation « grande inertie dans le plan des tuyaux », utiliser un U (âme face au tuyau) ou prévoir une platine soudée.`,'Règle de l\'art supportage',b.role);
+    else if(p.f==='CHS') add('info',`Étrier sur tube rond – ${nom}`,'Pas de face plane pour l\'étrier : prévoir une patte ou une platine soudée sur le tube.');
     else if(lu.l<need) add('bloq',`Pince insuffisante pour l'étrier M${d} – ${nom}`,`Largeur plate disponible (${lu.face} du ${escH(p.n)}) = ${f(lu.l,0)} mm &lt; 2 × 1,2·d<sub>0</sub> = ${f(need,0)} mm (d<sub>0</sub> = ${d0} mm). Profilé trop petit pour cette tuyauterie : choisir un profilé plus large (ex. UPN, UPE) ou une patte rapportée.`,'Pince e<sub>2</sub> ≥ 1,2·d<sub>0</sub> – NF EN 1993-1-8 Tab. 3.3',b.role);
     if((dn&&dn>dnB)||(!dn&&t.P.De>(PIPES.find(x=>x.dn>=dnB)||{od:9e9}).od)) add('warn',`Gros diamètre sur étrier – ${nom}`,`Au-delà du DN${dnB}, préférer un berceau ou un sabot soudé (répartition de la charge, ovalisation).`,'Règle de l\'art supportage');
     if(t.P.ecal>0&&D.sabot<=0) add('warn',`Tuyauterie calorifugée sans sabot – ${nom}`,`Calorifuge ${f(t.P.ecal,0)} mm : l'étrier écraserait l'isolant. Prévoir un sabot (cale) de hauteur ≥ ${f(t.P.ecal,0)} mm.`,'Règle de l\'art supportage');
@@ -657,6 +670,10 @@ function alertes(D,V){
       add(nul?'warn':'info',`Point fixe – ${nom}`,nul?'Efforts de dilatation nuls : sur un point fixe, ce sont les réactions issues de l\'étude de flexibilité (CAESAR II, ROHR2…) qui gouvernent, souvent plus que le poids. Les saisir (F<sub>x</sub>, F<sub>y</sub>, F<sub>z</sub>) ou les estimer prudemment.':`Efforts F<sub>x</sub> = ${f(+t.Fx||0,2)}, F<sub>y</sub> = ${f(+t.Fy||0,2)}, F<sub>z</sub> = ${f(+t.Fz||0,2)} kN : à confirmer par l'étude de flexibilité de la ligne (hors prédimensionnement rapide).`,'Étude de flexibilité (EN 13480-3 §12 / ASME B31.3 §319)'); }
     if(t.fonc==='guide') add('info',`Guidage – ${nom}`,'Prévoir des butées latérales soudées (jeu de guidage à préciser) ; vérifier leur soudure en exécution.');
   }
+  if(D.typ==='murJ'){ const bj=num('Lt',0.6), L=D.Lm, Js=Gm.B[1], ang=Math.atan2(D.hj,Math.min(bj,L))*180/Math.PI;
+    if(bj>L+1e-9) add('bloq','Jambe de force attachée au-delà du bout de la console',`b = ${f(bj,2)} m &gt; L = ${f(L,2)} m : géométrie impossible (calcul fait avec b = L). Prendre 0,5·L ≤ b ≤ L.`,'Règle de conception','t');
+    else if(bj<0.5*L-1e-9) add('warn','Jambe de force attachée trop près du mur',`b = ${f(bj,2)} m &lt; 0,5·L = ${f(0.5*L,2)} m : la jambe soulage peu la console (porte-à-faux de ${f(L-bj,2)} m au-delà). Prendre 0,5·L ≤ b ≤ L.`,'Règle de conception','t');
+    if(ang<30||ang>60) add('warn','Inclinaison de la jambe de force',`Angle avec la console ${f(ang,0)}° (usuel 30° à 60°, idéal ≈ 45°) : ${ang<30?'jambe très couchée, effort normal et poussée au mur élevés':'jambe très raide, faible reprise de la console'}.`,'Règle de conception','t'); }
   const vusP=new Set();
   V.PB.forEach(P=>{ const p=P.b.p, b=P.b;
     if(!vusP.has(p.n)){ vusP.add(p.n); const tp=/^LI?$|HS$/.test(p.f)?p.t:Math.min(p.tw||99,p.tf||99);
@@ -811,11 +828,11 @@ async function perspective(){
 }
 let tPersp=null; const planifierPerspective=()=>{clearTimeout(tPersp);tPersp=setTimeout(perspective,700);};
 async function imprimerS1(){ calc(); await perspective(); setTimeout(()=>window.print(),80); }
-function formeProfil(T,p){                                  // section dans le plan local y–z (m)
+function formeProfil(T,p,mir){                              // section dans le plan local y–z (m) ; mir : U retourné (âme en +y)
   const sh=new T.Shape(), h=(p.h||100)/1000, b=(p.b||p.h||100)/1000, tw=(p.tw||p.t||5)/1000, tf=(p.tf||p.t||8)/1000;
   if(/^LI?$/.test(p.f)){ const g=geoCorniere(p), P=[[0,0],[g.Lf,0],[g.Lf,-g.t],[g.t,-g.t],[g.t,-g.Lb],[0,-g.Lb]].map(([a,q])=>[a-g.sc,q-g.qc]);
     sh.moveTo(...P[0]); P.slice(1).forEach(v=>sh.lineTo(...v)); sh.lineTo(...P[0]); }
-  else if(/^U/.test(p.f)){ sh.moveTo(-b/2,-h/2);sh.lineTo(b/2,-h/2);sh.lineTo(b/2,-h/2+tf);sh.lineTo(-b/2+tw,-h/2+tf);sh.lineTo(-b/2+tw,h/2-tf);sh.lineTo(b/2,h/2-tf);sh.lineTo(b/2,h/2);sh.lineTo(-b/2,h/2);sh.lineTo(-b/2,-h/2); }
+  else if(/^U/.test(p.f)){ const k=mir?-1:1, P=[[-b/2,-h/2],[b/2,-h/2],[b/2,-h/2+tf],[-b/2+tw,-h/2+tf],[-b/2+tw,h/2-tf],[b/2,h/2-tf],[b/2,h/2],[-b/2,h/2]].map(([y,z])=>[k*y,z]); sh.moveTo(...P[0]); P.slice(1).forEach(v=>sh.lineTo(...v)); sh.lineTo(...P[0]); }
   else if(p.f==='CHS'){ sh.absarc(0,0,h/2,0,Math.PI*2,false); const ho=new T.Path(); ho.absarc(0,0,h/2-tw,0,Math.PI*2,true); sh.holes.push(ho); }
   else if(/HS$/.test(p.f)){ sh.moveTo(-b/2,-h/2);sh.lineTo(b/2,-h/2);sh.lineTo(b/2,h/2);sh.lineTo(-b/2,h/2);sh.lineTo(-b/2,-h/2); const ho=new T.Path(); ho.moveTo(-b/2+tw,-h/2+tw);ho.lineTo(-b/2+tw,h/2-tw);ho.lineTo(b/2-tw,h/2-tw);ho.lineTo(b/2-tw,-h/2+tw);ho.lineTo(-b/2+tw,-h/2+tw); sh.holes.push(ho); }
   else { sh.moveTo(-b/2,-h/2);sh.lineTo(b/2,-h/2);sh.lineTo(b/2,-h/2+tf);sh.lineTo(tw/2,-h/2+tf);sh.lineTo(tw/2,h/2-tf);sh.lineTo(b/2,h/2-tf);sh.lineTo(b/2,h/2);sh.lineTo(-b/2,h/2);sh.lineTo(-b/2,h/2-tf);sh.lineTo(-tw/2,h/2-tf);sh.lineTo(-tw/2,-h/2+tf);sh.lineTo(-b/2,-h/2+tf);sh.lineTo(-b/2,-h/2); }
@@ -827,8 +844,8 @@ function construireScene(T){
   sc.add(new T.HemisphereLight(0xffffff,0x8899aa,1.1)); const dl=new T.DirectionalLight(0xffffff,1.4); dl.position.set(3,-4,6); sc.add(dl);
   const matAcier=new T.MeshStandardMaterial({color:0x8a97a8,metalness:.5,roughness:.45}), matPl=new T.MeshStandardMaterial({color:0x333a44});
   // barres
-  Gm.B.forEach(b=>{
-    const mesh=new T.Mesh(new T.ExtrudeGeometry(formeProfil(T,b.p),{depth:b.L,bevelEnabled:false}),matAcier);
+  Gm.B.forEach((b,bi)=>{
+    const mesh=new T.Mesh(new T.ExtrudeGeometry(formeProfil(T,b.p,/^U/.test(b.p.f)&&miroirU(b,Gm.T.some(t=>t.bi===bi))),{depth:b.L,bevelEnabled:false}),matAcier);
     const R=Barres3D.repere([{x:b.A[0],y:b.A[1],z:b.A[2]},{x:b.B[0],y:b.B[1],z:b.B[2]}],{i:0,j:1,vz:b.vz,beta:0}).R;
     mesh.applyMatrix4(new T.Matrix4().makeBasis(v3(...R[1]),v3(...R[2]),v3(...R[0]))); mesh.position.set(...b.A); sc.add(mesh);
   });
@@ -995,8 +1012,8 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.9"></script>
-<script src="../commun/export.js?v=2.9"></script>
+<script src="../commun/replier.js?v=2.10"></script>
+<script src="../commun/export.js?v=2.10"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
