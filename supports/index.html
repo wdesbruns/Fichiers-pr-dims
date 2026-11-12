@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.6"></script>
+<script src="../commun/auth.js?v=2.7"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.6">
+<link rel="stylesheet" href="../commun/calc.css?v=2.7">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.6"></script>
-<script src="../commun/data/tuyauterie.js?v=2.6"></script>
-<script src="../commun/acier.js?v=2.6"></script>
-<script src="../commun/barres3d.js?v=2.6"></script>
-<script src="../commun/cahier.js?v=2.6"></script>
+<script src="../commun/data/profils.js?v=2.7"></script>
+<script src="../commun/data/tuyauterie.js?v=2.7"></script>
+<script src="../commun/acier.js?v=2.7"></script>
+<script src="../commun/barres3d.js?v=2.7"></script>
+<script src="../commun/cahier.js?v=2.7"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -679,6 +679,13 @@ function cotesDef(typ=typeSup()){
 const coteVal=id=>/^pos\d+$/.test(id)?(tuyaux[+id.slice(3)]?+tuyaux[+id.slice(3)].pos:null):num(id);
 function cotesValeurs(){ return Object.fromEntries(cotesDef().map(c=>[c.id,coteVal(c.id)])); }
 function appliquerCotes(C){ if(!C) return; Object.entries(C).forEach(([id,v])=>{ if(v===null||v===''||v===undefined) return; if(/^pos\d+$/.test(id)){ const t=tuyaux[+id.slice(3)]; if(t) t.pos=+v; } else if($(id)) $(id).value=v; }); }
+/* Repère SCU (global) : X rouge = axe des tuyaux, Y vert = transversal, Z bleu = vertical ↑ (trièdre direct) */
+const SCU_C={X:'#d62828',Y:'#2a9d3a',Z:'#1f5fbf'};
+function scu2D(ox,oy,hz,vt,sort,dans){            // hz → droite, vt ↑ haut, sort ⊙ (vers l'observateur) ou ⊗ (dans la feuille)
+  const L=26, ar=(x2,y2,c)=>`<line x1="${ox}" y1="${oy}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="2"/><path d="M${x2},${y2} l${x2>ox?-6:-3.5},${x2>ox?-3.5:6} l${x2>ox?0:7},${x2>ox?7:0}z" fill="${c}"/>`;
+  return `<g font-size="10.5" font-weight="700">${ar(ox+L,oy,SCU_C[hz])}<text x="${ox+L+3}" y="${oy+4}" fill="${SCU_C[hz]}">${hz}</text>${ar(ox,oy-L,SCU_C[vt])}<text x="${ox-4}" y="${oy-L-3}" fill="${SCU_C[vt]}">${vt}</text>
+    <circle cx="${ox}" cy="${oy}" r="5" fill="#fff" stroke="${SCU_C[sort]}" stroke-width="1.4"/>${dans?`<path d="M${ox-3},${oy-3} L${ox+3},${oy+3} M${ox+3},${oy-3} L${ox-3},${oy+3}" stroke="${SCU_C[sort]}" stroke-width="1.3"/>`:`<circle cx="${ox}" cy="${oy}" r="1.6" fill="${SCU_C[sort]}"/>`}<text x="${ox-16}" y="${oy+13}" fill="${SCU_C[sort]}">${sort}</text><text x="${ox-4}" y="${oy+24}" font-size="8" font-weight="600" fill="#5f6670">SCU</text></g>`;
+}
 function vueFace(D,V,opt={}){                               // plan Y–Z (regard le long des tuyaux)
   const W=480,H=opt.plan?420:430,Gm=V.Gm,T=Gm.T, plan=!!opt.plan;
   const lc=(l,v)=>plan?l:`${l} = ${f(v*1000,0)}`;          // libellé de cote (mm)
@@ -722,7 +729,7 @@ function vueFace(D,V,opt={}){                               // plan Y–Z (regar
     if(b.vert){ const z0=D.typ==='plafond'?0:b.A[2], xx=X(yMax)+14+16*iv++; s+=rap(cx,cy,xx+4,cy)+rap(X(b.A[1]),Y(z0),xx+4,Y(z0))+cVd(xx,Y(z0),cy,lib); }
     else { const y0=D.typ==='T'?0:b.A[1], n=ih[t.bi]=(ih[t.bi]||0)+1, top=Math.min(...T.filter(o=>o.bi===t.bi).map(o=>Y(o.c[2])-o.P.Dc/2000*k)), yy=top-(plan?14:46)-16*(n-1);
       s+=rap(cx,cy,cx,yy-4)+rap(X(y0),Y(b.A[2]),X(y0),yy-4)+cH(X(y0),cx,yy,lib,true); } });
-  return s+`<text x="6" y="${H-6}" font-size="10" fill="#5f6670">${plan?'Cotes : voir tableau des configurations':`Y →  Z ↑ · G (rouge) · vent W<tspan font-size="7" dy="2">y</tspan><tspan dy="-2"> (bleu) · cotes en mm</tspan>`}</text></svg>`;
+  return s+scu2D(W-44,H-34,'Y','Z','X',false)+`<text x="6" y="${H-6}" font-size="10" fill="#5f6670">${plan?'Cotes : voir tableau des configurations · X = axe des tuyaux':`X = axe des tuyaux · G (rouge) · vent W<tspan font-size="7" dy="2">y</tspan><tspan dy="-2"> (bleu) · cotes en mm</tspan>`}</text></svg>`;
 }
 function vueCote(D,V,opt={}){                             // plan X–Z
   const W=320,H=390,Gm=V.Gm,T=Gm.T;
@@ -737,7 +744,7 @@ function vueCote(D,V,opt={}){                             // plan X–Z
   T.forEach((t,i)=>{const y=Y(t.c[2]),r=t.P.Dc/2000*k,key=t.bi,dy=-(vus[key]=(vus[key]??-1)+1)*14;
     s+=`<rect x="${X(-0.6)}" y="${y-r}" width="${1.2*k}" height="${2*r}" fill="#0b5d73" opacity=".18" stroke="#0b5d73"/><text x="${X(-0.56)}" y="${y+4+dy}" font-size="10" fill="#0b5d73" font-weight="700">${escH(t.nom)}</text>`;
     if(D.cT&&!opt.plan) s+=`<line x1="${X(0)+10}" y1="${y+dy}" x2="${X(0)+46}" y2="${y+dy}" stroke="#d9822b" stroke-width="2" marker-end="url(#fo)"/><text x="${X(0)+50}" y="${y+4+dy}" font-size="9.5" fill="#d9822b">${escH(t.nom)} : F<tspan font-size="7" dy="2">x</tspan><tspan dy="-2"> = ${f(Math.abs(V.CC.detail[i].T[0]),2)} kN</tspan></text>`;});
-  return s+`<text x="6" y="${H-6}" font-size="10" fill="#5f6670">X → (axe tuyaux) · F<tspan font-size="7" dy="2">x</tspan><tspan dy="-2"> : frottement / dilatation (±)</tspan></text></svg>`;
+  return s+scu2D(W-44,H-34,'X','Z','Y',true)+`<text x="6" y="${H-6}" font-size="10" fill="#5f6670">X = axe des tuyaux · F<tspan font-size="7" dy="2">x</tspan><tspan dy="-2"> : frottement / dilatation (±)</tspan></text></svg>`;
 }
 
 /* =====================================================================
@@ -819,7 +826,11 @@ function construireScene(T){
     if(D.cW&&d.W) sc.add(new T.ArrowHelper(v3(0,1,0),o.clone().add(v3(0,-r-0.3,0)),0.25,0x0098db,0.06,0.04));
     if(D.cT&&d.T[0]) sc.add(new T.ArrowHelper(v3(1,0,0),o.clone().add(v3(0.82,0,0)),0.25,0xd9822b,0.06,0.04));
   });
-  sc.add(new T.AxesHelper(0.25));
+  // repère SCU : flèches X (rouge), Y (vert), Z (bleu) + étiquettes, posé à côté du support
+  const Ls=Math.max(0.25,taille*0.2), oS=v3(-0.55,Math.min(...ys)-0.2,Math.min(...zs,0)), etiq=(txt,coul,pos)=>{ const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d');
+    g.font="bold 54px Inter,Arial,sans-serif"; g.fillStyle=coul; g.textAlign='center'; g.textBaseline='middle'; g.fillText(txt,32,34);
+    const sp=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(c),depthTest:false})); sp.scale.set(Ls*0.45,Ls*0.45,1); sp.position.copy(pos); sc.add(sp); };
+  [['X',v3(1,0,0),SCU_C.X],['Y',v3(0,1,0),SCU_C.Y],['Z',v3(0,0,1),SCU_C.Z]].forEach(([n,d,c])=>{ sc.add(new T.ArrowHelper(d,oS,Ls,new T.Color(c),Ls*0.25,Ls*0.12)); etiq(n,c,oS.clone().add(d.clone().multiplyScalar(Ls*1.25))); });
   plans.forEach(m=>m.visible=false); const bb=new T.Box3().setFromObject(sc); plans.forEach(m=>m.visible=true);
   return {sc,ctr:bb.getCenter(new T.Vector3()),sz:Math.max(bb.getSize(new T.Vector3()).length(),0.5)};
 }
@@ -951,8 +962,8 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.6"></script>
-<script src="../commun/export.js?v=2.6"></script>
+<script src="../commun/replier.js?v=2.7"></script>
+<script src="../commun/export.js?v=2.7"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
