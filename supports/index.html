@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.4"></script>
+<script src="../commun/auth.js?v=2.5"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.4">
+<link rel="stylesheet" href="../commun/calc.css?v=2.5">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.4"></script>
-<script src="../commun/data/tuyauterie.js?v=2.4"></script>
-<script src="../commun/acier.js?v=2.4"></script>
-<script src="../commun/barres3d.js?v=2.4"></script>
-<script src="../commun/cahier.js?v=2.4"></script>
+<script src="../commun/data/profils.js?v=2.5"></script>
+<script src="../commun/data/tuyauterie.js?v=2.5"></script>
+<script src="../commun/acier.js?v=2.5"></script>
+<script src="../commun/barres3d.js?v=2.5"></script>
+<script src="../commun/cahier.js?v=2.5"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -303,7 +303,12 @@ function geometrie(D){
     B.forEach((o,oi)=>{ if(oi!==bi) [o.A,o.B].forEach(P=>{const s=surBarre(b,P); if(s!==null) S.add(+s.toFixed(6));}); });
     appuis.forEach(a=>{const s=surBarre(b,a.pt); if(s!==null) S.add(+s.toFixed(6));});
     const ss=[...S].sort((x,y)=>x-y); b.ss=ss; b.noeuds=ss.map(s=>cle(add3(b.A,mul3(b.dir,s))));
-    const sec=sectionBarre(b.p);
+    const sec=sectionBarre(b.p), p=b.p;
+    // raideur de gauchissement (torsion non uniforme) : profilé ouvert I / U encastré (gauchissement bloqué par la platine soudée),
+    // extrémité opposée libre de gauchir (prudent) : φ = T/(G·I_t)·[L − a·tanh(L/a)] → I_t,eff = I_t·L/(L − a·tanh(L/a)), a = √(E·I_w/(G·I_t))
+    b.kw=1;
+    if(!/^LI?$/.test(p.f)&&!/HS$/.test(p.f)&&p.Iw>0&&p.tf&&p.It>0&&appuis.some(a=>a.c.every(v=>v===1)&&Math.hypot(...b.A.map((v,i)=>v-a.pt[i]))<1e-6)){
+      const a=Math.sqrt(ACIER.E*p.Iw*1e-12/(ACIER.G*p.It*1e-8)); b.kw=b.L/(b.L-a*Math.tanh(b.L/a)); b.aw=a; sec.J*=b.kw; }
     for(let k=0;k<ss.length-1;k++){ if(ss[k+1]-ss[k]<1e-6) continue; barres.push({i:b.noeuds[k],j:b.noeuds[k+1],...sec,vz:b.vz}); elemBarre.push({bi,s0:ss[k],L:ss[k+1]-ss[k]}); }
   });
   T.forEach(t=>t.n=cle(t.pt));
@@ -532,7 +537,7 @@ function donneesCalc(D,V){
   V.PB.forEach(P=>{ const p=P.b.p, R=P.R; if(vus.has(p.n+P.b.role)) return; vus.add(p.n+P.b.role);
     h+=`<tr><td>${escH(P.b.role==='m'?(TYPES[D.typ].multi?'Montant(s)':P.b.lib):'Traverse / consoles')}</td><td>${escH(p.n)} – ${p.m} kg/m – A = ${f(p.A,2)} cm² – ${R.isL?`I<sub>u</sub> = ${f(p.Iu,1)} / I<sub>v</sub> = ${f(p.Iv,1)} cm⁴ – i<sub>v</sub> = ${f(p.iv,2)} cm`:`I<sub>y</sub> = ${f(p.Iy,1)} / I<sub>z</sub> = ${f(p.Iz,1)} cm⁴`} – I<sub>t</sub> = ${f(p.It,3)} cm⁴ · ${$('nuance').value} f<sub>y</sub> = ${R.fy} MPa, classe ${R.cl} · N<sub>Rk</sub> = ${f(R.NRk,1)} kN ; M<sub>${R.isL?'u':'y'},Rk</sub> = ${f(R.MyRk,2)} ; M<sub>${R.isL?'v':'z'},Rk</sub> = ${f(R.MzRk,2)} kNm ; W<sub>t</sub> = ${f(R.Wt/1000,2)} cm³</td></tr>`; });
   V.PB.forEach(P=>{ const e=P.eff; if(!e) return; h+=`<tr><td>${escH(P.b.lib)} : stabilité et efforts</td><td>L<sub>cr</sub> = ${f(P.St.Lcr,2)} m ; courbe ${escH(P.St.courbe)} ; λ̄ = ${f(P.St.lam,3)} ; χ = ${f(P.St.chiN,3)}${isFinite(P.St.mcr)?` ; M<sub>cr</sub> = ${f(P.St.mcr,2)} kNm ; χ<sub>LT</sub> = ${f(P.St.chiLT,3)}`:''} · section la plus sollicitée à ${f(e.x,2)} m de l'origine (${escH(P.cS.nom.replace(/<[^>]+>/g,''))}) : N = ${f(e.F[0],2)} kN ; V<sub>y</sub> = ${f(e.F[1],2)} ; V<sub>z</sub> = ${f(e.F[2],2)} kN ; T = ${f(e.F[3],3)} ; M<sub>${P.R.isL?'u':'y'}</sub> = ${f(e.F[4],3)} ; M<sub>${P.R.isL?'v':'z'}</sub> = ${f(e.F[5],3)} kNm</td></tr>`; });
-  V.PB.filter(P=>P.gw).forEach(P=>{h+=`<tr><td>${escH(P.b.lib)} : gauchissement</td><td>a = √(E·I<sub>w</sub>/G·I<sub>t</sub>) = ${f(P.gw.a,3)} m ; L<sub>e</sub> = ${f(P.gw.Le,2)} m ; B = T·a·tanh(L<sub>e</sub>/a) ; ω = (h − t<sub>f</sub>)·b/4 = ${f(P.gw.omega*1e4,1)} cm² ; σ<sub>w</sub>/f<sub>y</sub> max = ${f(P.rW*100,1)} %</td></tr>`;});
+  V.PB.filter(P=>P.gw).forEach(P=>{h+=`<tr><td>${escH(P.b.lib)} : gauchissement</td><td>a = √(E·I<sub>w</sub>/G·I<sub>t</sub>) = ${f(P.gw.a,3)} m ; L<sub>e</sub> = ${f(P.gw.Le,2)} m ; B = T·a·tanh(L<sub>e</sub>/a) ; ω = (h − t<sub>f</sub>)·b/4 = ${f(P.gw.omega*1e4,1)} cm² ; σ<sub>w</sub>/f<sub>y</sub> max = ${f(P.rW*100,1)} %${P.b.kw>1?` ; raideur de torsion du modèle I<sub>t,eff</sub> = ${f(P.b.kw,3)}·I<sub>t</sub>`:''}</td></tr>`;});
   h+=`<tr><td>Platines</td><td>${D.platine==='rigide'?'Encastrement parfait':D.platine==='saisie'?`Semi-rigides, S<sub>j</sub> = ${f(D.Sj,0)} kNm/rad`:'Semi-rigides, S<sub>j</sub> = 10·E·I/L (rotations de flexion), torsion bloquée'}</td></tr>`;
   h+=`<tr><td>Modèle</td><td>${V.Gm.B.length} barre(s), ${V.Gm.barres.length} tronçons, ${V.Gm.noeuds.length} nœuds ; appuis : ${V.Gm.appuis.map(a=>escH(a.lib)).join(', ')} ; tuyaux reliés par bras rigides (excentricités) ; calcul 3D élastique au 1<sup>er</sup> ordre</td></tr></table>${svgSection(D.pm)}</div>`;
   $('rData').innerHTML=h;
@@ -608,7 +613,7 @@ function notes(D,V){
    <li>Longueurs de flambement (prudentes) : montants, suspentes et porte-à-faux L<sub>cr</sub> = 2L (y compris montants du U, pieds encastrés supposés à nœuds déplaçables hors plan) ; traverses entre appuis (U, L mural) L<sub>cr</sub> = L. Déplacements limités à min(L<sub>réf</sub>/n ; d<sub>max</sub>) avec L<sub>réf</sub> = longueur de la barre portant le tuyau (demi-traverse pour le T).</li>
    <li>Combinaisons NF EN 1990 + AN : 6.10 (γ<sub>G</sub> = 1,35/1,0 ; γ<sub>Q</sub> = 1,5), chaque action variable dominante ; T (ψ = 0,6/0,5/0), neige, vent (0,6/0,2/0), directions ±X ±Y exclusives ; épreuve non combinée aux autres variables. Situation sismique : G + A<sub>Ed</sub>, 100 % / 30 % (EN 1998-1 §4.3.3.5.2), composante verticale non prise en compte.</li>
    <li>Vérifications NF EN 1993-1-1 : section (critère linéaire §6.2.1(7)), cisaillement + torsion de Saint-Venant (gauchissement négligé), stabilité simplifiée (k = 1 + 0,6·λ̄·n). Cornières : axes principaux, élastique, sans déversement. Tubes : courbe c (formés à froid, prudent).</li>
-   <li>Gauchissement (profilés I et U) : bi-moment B = T·a·tanh(L<sub>e</sub>/a) avec gauchissement bloqué à l'encastrement (L<sub>e</sub> = L pour un porte-à-faux, L/2 entre appuis), σ<sub>w</sub> = B·ω/I<sub>w</sub>, ajouté aux taux de section et de stabilité (prudent, U traité comme un I).</li>
+   <li>Gauchissement (profilés I et U) : bi-moment B = T·a·tanh(L<sub>e</sub>/a) avec gauchissement bloqué à l'encastrement (L<sub>e</sub> = L pour un porte-à-faux, L/2 entre appuis), σ<sub>w</sub> = B·ω/I<sub>w</sub>, ajouté aux taux de section et de stabilité (prudent, U traité comme un I). Raideur : pour une barre I / U encastrée (platine soudée), le modèle prend I<sub>t,eff</sub> = I<sub>t</sub>·L/(L − a·tanh(L/a)) (gauchissement bloqué à l'encastrement, libre à l'autre extrémité : prudent) ; les autres barres gardent la seule raideur de Saint-Venant.</li>
    <li>Platines semi-rigides par défaut (S<sub>j</sub> = 10·EI/L) : hypothèse prudente pour les déplacements. Taux au-delà du taux cible signalés en jaune (non bloquant) ; l'optimisation vise le taux cible.</li>
    <li>Non traités : platine, chevilles (ETE fabricant), soudures, étriers, effets du 2<sup>nd</sup> ordre, séisme vertical, déversement des cornières.</li></ul>`;
 }
@@ -806,10 +811,10 @@ function importerC1(){
   let o=null; try{o=JSON.parse(localStorage.getItem('fip.climat'));}catch(e){}
   if(!o){$('infoC1').textContent='Aucune donnée : dans C1, cliquer « Envoyer vers les supports S1 ».';return;}
   const z=Math.max(num('zsol',2)+(typeSup()==='mur'?0:num('Lm',1)),0.1);
-  if(o.vent){const v=o.vent,zz=Math.max(z,v.zmin),cr=v.kr*Math.log(zz/v.z0),vm=cr*v.co*v.vb,Iv=v.kI/(v.co*Math.log(zz/v.z0));$('qp').value=((1+7*Iv)*0.5*v.rho*vm*vm/1000).toFixed(3);}
+  if(o.vent){const v=o.vent,co=v.coMode==='p1'&&v.dAc!=null?Math.max(1,1+0.004*v.dAc*Math.exp(-0.014*(Math.max(z,10)-10))):(v.co||1),zz=Math.max(z,v.zmin),cr=v.kr*Math.log(zz/v.z0),vm=cr*co*v.vb,Iv=v.kI/(co*Math.log(zz/v.z0));$('qp').value=((1+7*Iv)*0.5*v.rho*vm*vm/1000).toFixed(3);}
   if(o.neige){$('sk').value=o.neige.sk.toFixed(3);$('altN').value=o.neige.alt>1000?'1':'0';}
   if(o.seisme){$('aS').value=(o.seisme.alpha*o.seisme.S).toFixed(4);}
-  $('infoC1').innerHTML=`✓ C1 : ${escH(o.lieu||'')} – q<sub>p</sub> recalculé à z = ${f(z,1)} m (sol + support) ; s<sub>k</sub> = ${o.neige?f(o.neige.sk,2):'—'} kN/m² ; α·S = ${o.seisme?f(o.seisme.alpha*o.seisme.S,3):'—'}.`;
+  $('infoC1').innerHTML=`✓ C1 : ${escH(o.lieu||'')} – q<sub>p</sub> recalculé à z = ${f(z,1)} m (sol + support)${o.vent?`, c<sub>o</sub>(z) = ${f(o.vent.coMode==='p1'&&o.vent.dAc!=null?Math.max(1,1+0.004*o.vent.dAc*Math.exp(-0.014*(Math.max(z,10)-10))):(o.vent.co||1),3)}`:''} ; s<sub>k</sub> = ${o.neige?f(o.neige.sk,2):'—'} kN/m² ; α·S = ${o.seisme?f(o.seisme.alpha*o.seisme.S,3):'—'}.`;
   calc();
 }
 function remplirProfils(sel,i=''){const fa=$('fam'+i).value;$('prof'+i).innerHTML=PROFILS.filter(p=>p.f===fa).sort((a,b)=>a.m-b.m).map(p=>`<option ${p.n===sel?'selected':''}>${p.n}</option>`).join('');}
@@ -905,8 +910,8 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.4"></script>
-<script src="../commun/export.js?v=2.4"></script>
+<script src="../commun/replier.js?v=2.5"></script>
+<script src="../commun/export.js?v=2.5"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
