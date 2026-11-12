@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.7"></script>
+<script src="../commun/auth.js?v=2.8"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.7">
+<link rel="stylesheet" href="../commun/calc.css?v=2.8">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.7"></script>
-<script src="../commun/data/tuyauterie.js?v=2.7"></script>
-<script src="../commun/acier.js?v=2.7"></script>
-<script src="../commun/barres3d.js?v=2.7"></script>
-<script src="../commun/cahier.js?v=2.7"></script>
+<script src="../commun/data/profils.js?v=2.8"></script>
+<script src="../commun/data/tuyauterie.js?v=2.8"></script>
+<script src="../commun/acier.js?v=2.8"></script>
+<script src="../commun/barres3d.js?v=2.8"></script>
+<script src="../commun/cahier.js?v=2.8"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -289,8 +289,20 @@ function sectionBarre(p){
   return {A:p.A*1e-4, Iy:(L?p.Iu:p.Iy)*1e-8, Iz:(L?p.Iv:p.Iz)*1e-8, J:Math.max(p.It,1e-3)*1e-8, E:ACIER.E*1e3, G:ACIER.G*1e3, beta:L?(p.alpha||45):0};
 }
 const add3=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]], mul3=(a,k)=>a.map(v=>v*k);
+/* Cornière : grande aile = face d'appui (normale n = z local, vers le tuyau), étrier à travers cette aile ; petite aile vers −n.
+   Coordonnées de section (s le long de y local = w, q le long de z local = n), talon à l'origine, centre de gravité (sc, qc). */
+function geoCorniere(p){
+  const Lf=Math.max(p.b,p.h)/1000, Lb=Math.min(p.b,p.h)/1000, t=(p.t||p.tf||6)/1000, A1=Lf*t, A2=(Lb-t)*t;
+  return {Lf,Lb,t,sc:(A1*Lf/2+A2*t/2)/(A1+A2),qc:(A1*(-t/2)+A2*(-(t+Lb)/2))/(A1+A2)};
+}
+function bordSection(p,vz,dir){                              // emprise [lo ; hi] de la section le long d'une direction globale (m)
+  if(!/^LI?$/.test(p.f)){ const ex=extSection(p,vz,dir); return d=>{const e=ex(d);return {lo:-e/2,hi:e/2};}; }
+  const g=geoCorniere(p), R0=Barres3D.repere([{x:0,y:0,z:0},{x:dir[0],y:dir[1],z:dir[2]}],{i:0,j:1,vz,beta:0}).R;
+  const S=[-g.sc,g.Lf-g.sc], Q=[-g.Lb-g.qc,-g.qc];
+  return d=>{ const cw=d[0]*R0[1][0]+d[1]*R0[1][1]+d[2]*R0[1][2], cn=d[0]*R0[2][0]+d[1]*R0[2][1]+d[2]*R0[2][2], v=S.flatMap(a=>Q.map(q=>a*cw+q*cn)); return {lo:Math.min(...v),hi:Math.max(...v)}; };
+}
 function extSection(p,vz,dir){                                // emprise de la section selon une direction globale (m)
-  const hp=(p.h||100)/1000, bp=(p.b||p.h||100)/1000, R0=Barres3D.repere([{x:0,y:0,z:0},{x:dir[0],y:dir[1],z:dir[2]}],{i:0,j:1,vz,beta:0}).R;
+  const L=/^LI?$/.test(p.f), hp=L?Math.min(p.b,p.h)/1000:(p.h||100)/1000, bp=L?Math.max(p.b,p.h)/1000:(p.b||p.h||100)/1000, R0=Barres3D.repere([{x:0,y:0,z:0},{x:dir[0],y:dir[1],z:dir[2]}],{i:0,j:1,vz,beta:0}).R;
   return d=>Math.abs(d[0]*R0[1][0]+d[1]*R0[1][1]+d[2]*R0[1][2])*bp+Math.abs(d[0]*R0[2][0]+d[1]*R0[2][1]+d[2]*R0[2][2])*hp;
 }
 function modele(D){
@@ -311,7 +323,9 @@ function modele(D){
     case 'Lmur': barre('Montant','m',pm,[0,0,0],[0,0,H],vzM,2*H,H,true); barre('Traverse','t',pt,[0,0,H],[0,Lt,H],vzT,Lt,Lt,false);
       appuis.push({pt:[0,0,0],c:ENC,lib:'Pied (platine au sol)',k:'sol'}); appuis.push({pt:[0,Lt,H],c:[1,1,1,0,1,0],lib:'Appui mural (articulé)',k:'murArt'}); break;
   }
-  B.forEach(b=>{ b.L=Math.hypot(...b.B.map((v,i)=>v-b.A[i])); b.dir=b.B.map((v,i)=>(v-b.A[i])/b.L); b.ext=extSection(b.p,b.vz,b.dir); b.vert=Math.abs(b.dir[2])>0.9; });
+  B.forEach(b=>{ b.L=Math.hypot(...b.B.map((v,i)=>v-b.A[i])); b.dir=b.B.map((v,i)=>(v-b.A[i])/b.L); b.vert=Math.abs(b.dir[2])>0.9;
+    if(/^LI?$/.test(b.p.f)) b.vz=b.vert?[0,1,0]:[0,0,1];          // cornière : aile d'appui face au tuyau (+Y sur un montant, +Z sur une traverse)
+    b.ext=extSection(b.p,b.vz,b.dir); b.bord=bordSection(b.p,b.vz,b.dir); });
   return {B,appuis};
 }
 function barreDuTuyau(t,D){
@@ -325,8 +339,8 @@ function geometrie(D){
     const bi=barreDuTuyau(t,D), b=B[bi], P=t.P;
     let s=+t.pos||0; if(D.typ==='T') s+=b.L/2; s=Math.min(Math.max(s,0),b.L);
     const pt=add3(b.A,mul3(b.dir,s)); let e=t.e===''||t.e==null?null:+t.e, c;
-    if(b.vert){ if(e===null) e=b.ext([0,1,0])/2+P.Dc/2000+D.sabot/1000; c=add3(pt,[0,e,0]); }
-    else { if(e===null) e=b.ext([0,0,1])/2+P.Dc/2000+D.sabot/1000; c=add3(pt,[0,0,e]); }
+    if(b.vert){ if(e===null) e=b.bord([0,1,0]).hi+P.Dc/2000+D.sabot/1000; c=add3(pt,[0,e,0]); }
+    else { if(e===null) e=b.bord([0,0,1]).hi+P.Dc/2000+D.sabot/1000; c=add3(pt,[0,0,e]); }
     return {...t,bi,s,e,pt,c,n:null};
   });
   const surBarre=(b,P)=>{const v=P.map((x,i)=>x-b.A[i]), s=v[0]*b.dir[0]+v[1]*b.dir[1]+v[2]*b.dir[2]; if(s<-1e-6||s>b.L+1e-6) return null; return Math.hypot(...v.map((x,i)=>x-s*b.dir[i]))<1e-6?s:null;};
@@ -702,8 +716,8 @@ function vueFace(D,V,opt={}){                               // plan Y–Z (regar
     if(a.k==='murArt') s+=hachures(x+4,y-60,x+4,y+60,8,8)+`<circle cx="${x}" cy="${y}" r="4.5" fill="#fff" stroke="#171a1e" stroke-width="1.5"/>`;});
   // barres
   Gm.B.forEach(b=>{
-    if(b.vert){const e=b.ext([0,1,0]),z0=Math.min(b.A[2],b.B[2]),z1=Math.max(b.A[2],b.B[2]);s+=`<rect x="${X(b.A[1]-e/2)}" y="${Y(z1)}" width="${Math.max(e*k,3)}" height="${(z1-z0)*k}" fill="#cfd8e3" stroke="#171a1e"/>`;}
-    else{const e=b.ext([0,0,1]),y0=Math.min(b.A[1],b.B[1]),y1=Math.max(b.A[1],b.B[1]);s+=`<rect x="${X(y0)}" y="${Y(b.A[2]+e/2)}" width="${(y1-y0)*k}" height="${Math.max(e*k,3)}" fill="#cfd8e3" stroke="#171a1e"/>`;}
+    if(b.vert){const o=b.bord([0,1,0]),e=o.hi-o.lo,z0=Math.min(b.A[2],b.B[2]),z1=Math.max(b.A[2],b.B[2]);s+=`<rect x="${X(b.A[1]+o.lo)}" y="${Y(z1)}" width="${Math.max(e*k,3)}" height="${(z1-z0)*k}" fill="#cfd8e3" stroke="#171a1e"/>`;}
+    else{const o=b.bord([0,0,1]),e=o.hi-o.lo,y0=Math.min(b.A[1],b.B[1]),y1=Math.max(b.A[1],b.B[1]);s+=`<rect x="${X(y0)}" y="${Y(b.A[2]+o.hi)}" width="${(y1-y0)*k}" height="${Math.max(e*k,3)}" fill="#cfd8e3" stroke="#171a1e"/>`;}
   });
   Gm.appuis.filter(a=>a.c[3]).forEach(a=>{const b=Gm.B.find(b=>Math.hypot(...b.A.map((v,i)=>v-a.pt[i]))<1e-6)||Gm.B[0], e=(b.vert?b.ext([0,1,0]):b.ext([0,0,1]))*k;
     if(a.k==='mur') s+=`<rect x="${X(0)}" y="${Y(0)-e*1.4}" width="5" height="${e*2.8}" fill="#171a1e"/>`;
@@ -737,9 +751,9 @@ function vueCote(D,V,opt={}){                             // plan X–Z
   const c=cadre([[-0.6,Math.min(...zs)],[0.6,Math.max(...zs)+0.05]],W,H,40),X=c.X,Y=c.Y,k=c.k;
   let s=`<svg viewBox="0 0 ${W} ${H}" style="width:100%"><defs>${fl('fo','#d9822b')}</defs><text x="6" y="16" font-size="12" font-weight="700" fill="#114088">Vue de côté (axe X des tuyaux)</text>`;
   Gm.appuis.forEach(a=>{ if(a.k==='sol') s+=hachures(X(-0.6),Y(a.pt[2]),X(0.6),Y(a.pt[2]),-8,8); if(a.k==='plafond') s+=hachures(X(-0.6),Y(0),X(0.6),Y(0),-8,-8); });
-  Gm.B.forEach(b=>{const e=b.ext([1,0,0]);
-    if(b.vert){const z0=Math.min(b.A[2],b.B[2]),z1=Math.max(b.A[2],b.B[2]);s+=`<rect x="${X(-e/2)}" y="${Y(z1)}" width="${Math.max(e*k,4)}" height="${(z1-z0)*k}" fill="#cfd8e3" stroke="#171a1e" opacity=".9"/>`;}
-    else{const hz=b.ext([0,0,1]);s+=`<rect x="${X(-e/2)}" y="${Y(b.A[2]+hz/2)}" width="${Math.max(e*k,4)}" height="${Math.max(hz*k,3)}" fill="#cfd8e3" stroke="#171a1e"/>`;}});
+  Gm.B.forEach(b=>{const o=b.bord([1,0,0]),e=o.hi-o.lo;
+    if(b.vert){const z0=Math.min(b.A[2],b.B[2]),z1=Math.max(b.A[2],b.B[2]);s+=`<rect x="${X(o.lo)}" y="${Y(z1)}" width="${Math.max(e*k,4)}" height="${(z1-z0)*k}" fill="#cfd8e3" stroke="#171a1e" opacity=".9"/>`;}
+    else{const v=b.bord([0,0,1]);s+=`<rect x="${X(o.lo)}" y="${Y(b.A[2]+v.hi)}" width="${Math.max(e*k,4)}" height="${Math.max((v.hi-v.lo)*k,3)}" fill="#cfd8e3" stroke="#171a1e"/>`;}});
   const vus={};
   T.forEach((t,i)=>{const y=Y(t.c[2]),r=t.P.Dc/2000*k,key=t.bi,dy=-(vus[key]=(vus[key]??-1)+1)*14;
     s+=`<rect x="${X(-0.6)}" y="${y-r}" width="${1.2*k}" height="${2*r}" fill="#0b5d73" opacity=".18" stroke="#0b5d73"/><text x="${X(-0.56)}" y="${y+4+dy}" font-size="10" fill="#0b5d73" font-weight="700">${escH(t.nom)}</text>`;
@@ -782,7 +796,8 @@ let tPersp=null; const planifierPerspective=()=>{clearTimeout(tPersp);tPersp=set
 async function imprimerS1(){ calc(); await perspective(); setTimeout(()=>window.print(),80); }
 function formeProfil(T,p){                                  // section dans le plan local y–z (m)
   const sh=new T.Shape(), h=(p.h||100)/1000, b=(p.b||p.h||100)/1000, tw=(p.tw||p.t||5)/1000, tf=(p.tf||p.t||8)/1000;
-  if(/^LI?$/.test(p.f)){ sh.moveTo(0,0);sh.lineTo(b,0);sh.lineTo(b,tf);sh.lineTo(tw,tf);sh.lineTo(tw,h);sh.lineTo(0,h);sh.lineTo(0,0); }
+  if(/^LI?$/.test(p.f)){ const g=geoCorniere(p), P=[[0,0],[g.Lf,0],[g.Lf,-g.t],[g.t,-g.t],[g.t,-g.Lb],[0,-g.Lb]].map(([a,q])=>[a-g.sc,q-g.qc]);
+    sh.moveTo(...P[0]); P.slice(1).forEach(v=>sh.lineTo(...v)); sh.lineTo(...P[0]); }
   else if(/^U/.test(p.f)){ sh.moveTo(-b/2,-h/2);sh.lineTo(b/2,-h/2);sh.lineTo(b/2,-h/2+tf);sh.lineTo(-b/2+tw,-h/2+tf);sh.lineTo(-b/2+tw,h/2-tf);sh.lineTo(b/2,h/2-tf);sh.lineTo(b/2,h/2);sh.lineTo(-b/2,h/2);sh.lineTo(-b/2,-h/2); }
   else if(p.f==='CHS'){ sh.absarc(0,0,h/2,0,Math.PI*2,false); const ho=new T.Path(); ho.absarc(0,0,h/2-tw,0,Math.PI*2,true); sh.holes.push(ho); }
   else if(/HS$/.test(p.f)){ sh.moveTo(-b/2,-h/2);sh.lineTo(b/2,-h/2);sh.lineTo(b/2,h/2);sh.lineTo(-b/2,h/2);sh.lineTo(-b/2,-h/2); const ho=new T.Path(); ho.moveTo(-b/2+tw,-h/2+tw);ho.lineTo(-b/2+tw,h/2-tw);ho.lineTo(b/2-tw,h/2-tw);ho.lineTo(b/2-tw,-h/2+tw);ho.lineTo(-b/2+tw,-h/2+tw); sh.holes.push(ho); }
@@ -962,8 +977,8 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.7"></script>
-<script src="../commun/export.js?v=2.7"></script>
+<script src="../commun/replier.js?v=2.8"></script>
+<script src="../commun/export.js?v=2.8"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
