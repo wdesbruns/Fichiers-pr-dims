@@ -4,14 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.17"></script>
+<script src="../commun/auth.js?v=2.18"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — Référentiel</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.17">
-<script src="fiches.js?v=2.17"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.18">
+<script src="fiches.js?v=2.18"></script>
+<script src="schemas.js?v=2.18"></script>
 <style>
   main{grid-template-columns:minmax(220px,280px) 1fr}
   nav.toc{position:sticky;top:10px;align-self:start;max-height:calc(100vh - 20px);overflow:auto}
@@ -23,6 +24,7 @@
   .fiche p,.fiche li{font-size:13.5px;line-height:1.55}
   .fiche .pied{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:6px;margin-top:8px}
   .fiche .pied b{color:var(--ink)}
+  .fiche .schema{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px;margin:8px 0;text-align:center}
   .fiche:target{box-shadow:0 0 0 3px rgba(227,0,9,.35)}
   .theme{font-size:11px;font-weight:700;color:var(--fip-rouge);text-transform:uppercase;letter-spacing:.06em}
   @media (max-width:950px){main{grid-template-columns:1fr}nav.toc{position:static;max-height:none}}
@@ -50,13 +52,13 @@ function rendre(q=''){
   const m=sa(q).split(/\s+/).filter(x=>x.length>2), L=FICHES.filter(F=>!m.length||m.every(w=>sa(F.titre+' '+F.bref+' '+F.corps+' '+F.refs+' '+F.theme).includes(w)));
   const themes=[...new Set(L.map(F=>F.theme))];
   $('toc').innerHTML=themes.map(t=>`<h3>${t}</h3>`+L.filter(F=>F.theme===t).map(F=>`<a href="#${F.id}">${F.titre}</a>`).join('')).join('')||'<div class="note">Aucune fiche.</div>';
-  $('fiches').innerHTML=L.map(F=>`<article class="card fiche" id="${F.id}"><div class="theme">${F.theme}</div><h2>${F.titre}</h2><div class="bref">${F.bref}</div>${F.corps}
+  $('fiches').innerHTML=L.map(F=>`<article class="card fiche" id="${F.id}"><div class="theme">${F.theme}</div><h2>${F.titre}</h2><div class="bref">${F.bref}</div>${SCHEMAS[F.id]?`<div class="schema">${SCHEMAS[F.id]}</div>`:''}${F.corps}
     <div class="pied"><span><b>Références :</b> ${F.refs}</span>${F.calc?`<span><b>Outils :</b> ${F.calc}</span>`:''}</div></article>`).join('');
 }
 $('q').addEventListener('input',()=>rendre($('q').value));
 rendre();
 if(location.hash){ const el=document.querySelector(location.hash); if(el) setTimeout(()=>el.scrollIntoView({block:'start'}),50); }
 </script>
-<script src="../commun/replier.js?v=2.17"></script>
+<script src="../commun/replier.js?v=2.18"></script>
 </body>
 </html>
