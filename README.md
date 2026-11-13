@@ -24,6 +24,7 @@ commun/
   img/                     ← logo et picto FIP
   barres3d.js              ← calcul de barres 3D (méthode des déplacements), validé sur cas analytiques
   data/tuyauterie.js       ← base commune tubes / matériaux / fluides (T1, S1)
+  coefvent.js              ← coefficients aérodynamiques (AN fig. 7.39–7.50, Tab. 7.1–7.4, 7.9, CNC2M N0380) : C1 et S1
   replier.js               ← cartes repliables (− / +) et « tout replier » sur toutes les pages
   cahier.js                ← stockage du cahier (localStorage « fip.cahier ») + remplissage auto des champs d'affaire + cartouche Word
   acier.js                 ← moteur commun P1/P2 : combinaisons, classes, χ, Mcr

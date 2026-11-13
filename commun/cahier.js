@@ -9,7 +9,7 @@ const CAHIER = (() => {
   const PARAMS = [                                            // paramètres communs de l'affaire appliqués à chaque support S1
     ["rCible", "Taux cible APS/APD (%)", 90], ["platine", "Platines (rigide / semi / saisie)", "semi"], ["Sj", "S_j saisie (kNm/rad)", 500],
     ["jeu", "Jeu J des entraxes (mm)", 50], ["dlim", "Déplacement ≤ L / …", 150], ["dmax", "Déplacement maxi (mm)", 5],
-    ["cft", "c_f tuyau", 1.2], ["cfp", "c_f profilé", 2.0], ["mus", "μ₁·Ce·Ct (neige)", 0.8], ["altN", "Neige : altitude > 1000 m (0/1)", "0"],
+    ["cft", "c_f tuyau", 1.2], ["cfp", "c_f profilé (vide = AN par famille)", ""], ["mus", "μ₁·Ce·Ct (neige)", 0.8], ["altN", "Neige : altitude > 1000 m (0/1)", "0"],
     ["zH", "Séisme : z/H", 1], ["TaT", "Séisme : Ta/T1", 1], ["qa", "Séisme : q_a", 1], ["ga", "Séisme : γ_a", 1],
     ["rTmin", "Épaisseur mini (mm)", 4], ["rGarde", "Garde au sol mini (mm)", 150], ["rElanc", "Élancement Lcr/i maxi", 200],
     ["rConsole", "Porte-à-faux sans jambe de force ≤ (m)", 1.2], ["rMontant", "Montant / suspente ≤ (m)", 2.5], ["rBerceau", "Étrier jusqu'au DN", 250],

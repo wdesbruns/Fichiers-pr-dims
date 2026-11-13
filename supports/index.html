@@ -4,19 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.10"></script>
+<script src="../commun/auth.js?v=2.11"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.10">
+<link rel="stylesheet" href="../commun/calc.css?v=2.11">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.10"></script>
-<script src="../commun/data/tuyauterie.js?v=2.10"></script>
-<script src="../commun/acier.js?v=2.10"></script>
-<script src="../commun/barres3d.js?v=2.10"></script>
-<script src="../commun/cahier.js?v=2.10"></script>
+<script src="../commun/data/profils.js?v=2.11"></script>
+<script src="../commun/data/tuyauterie.js?v=2.11"></script>
+<script src="../commun/acier.js?v=2.11"></script>
+<script src="../commun/barres3d.js?v=2.11"></script>
+<script src="../commun/coefvent.js?v=2.11"></script>
+<script src="../commun/cahier.js?v=2.11"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -118,7 +119,7 @@
     <div class="row3">
       <div><label>q<sub>p</sub>(z) (kN/m²)</label><input id="qp" type="number" step="0.01" value="0.70"></div>
       <div><label>c<sub>f</sub> tuyau</label><input id="cft" type="number" step="0.1" value="1.2"></div>
-      <div><label>c<sub>f</sub> profilé</label><input id="cfp" type="number" step="0.1" value="2.0"></div>
+      <div><label>c<sub>f</sub> profilé (vide = AN par famille)</label><input id="cfp" type="number" step="0.1" value="" placeholder="AN fig. 7.39–7.50"></div>
     </div>
     <div class="row3">
       <div><label>s<sub>k</sub> (kN/m²)</label><input id="sk" type="number" step="0.05" value="0.45"></div>
@@ -387,6 +388,9 @@ function geometrie(D){
    CAS DE CHARGE ÉLÉMENTAIRES (valeurs caractéristiques)
    G, T, S, WY, WX, EP, EX, EY — les opposés (T−, W−…) par superposition
    ===================================================================== */
+/* c_f du profilé : saisi, sinon NF EN 1991-1-4/NA fig. 7.39 à 7.50 ramené à la largeur projetée (commun/coefvent.js), ψλ = 1 */
+const CF_FAM=CV.cfFamilles();
+const cfProfil=(p,D)=>D.cfp!=null?D.cfp:(CF_FAM[p.f]??2.0);
 function casDeCharge(D,Gm){
   const cas={}; ['G','T','S','WY','WX','EP','EX','EY'].forEach(c=>cas[c]={charges:[],reparties:[]});
   const add=(c,n,F)=>cas[c].charges.push({n,F}), rep=(c,b,q)=>cas[c].reparties.push({b,q});
@@ -406,7 +410,7 @@ function casDeCharge(D,Gm){
   Gm.barres.forEach((e,k)=>{
     const b=Gm.B[Gm.elemBarre[k].bi], pp=b.p.m*gN/1000;
     rep('G',k,[0,0,-pp]);
-    if(D.cW){ rep('WY',k,[0,D.qp*D.cfp*b.ext([0,1,0])*Math.hypot(b.dir[0],b.dir[2]),0]); rep('WX',k,[D.qp*D.cfp*b.ext([1,0,0])*Math.hypot(b.dir[1],b.dir[2]),0,0]); }
+    if(D.cW){ const cf=cfProfil(b.p,D); rep('WY',k,[0,D.qp*cf*b.ext([0,1,0])*Math.hypot(b.dir[0],b.dir[2]),0]); rep('WX',k,[D.qp*cf*b.ext([1,0,0])*Math.hypot(b.dir[1],b.dir[2]),0,0]); }
     if(D.cE){ rep('EX',k,[kE*pp,0,0]); rep('EY',k,[0,kE*pp,0]); }
   });
   return {cas,detail,Sa,kE};
@@ -507,7 +511,7 @@ function donnees(){
   return {typ,Lm:Math.max(num('Lm',1),0.05),Lt:Math.max(num('Lt',0.8),0.05),nc:+$('nc').value,hc:Math.max(num('hc',0.5),0.05),hj:Math.max(num('hj',0.5),0.05),
     pm:profil($('prof').value),pt:multi?profil($('prof2').value):null,sabot:num('sabot'),tuyaux:tuyaux.map(t=>({...t,P:propsTuyau(t)})),
     cT:$('cT').checked,cW:$('cW').checked,cS:$('cS').checked,cE:$('cE').checked,cEP:$('cEP').checked,
-    qp:num('qp'),cft:num('cft',1.2),cfp:num('cfp',2),sk:num('sk'),mus:num('mus',0.8),altN:$('altN').value==='1',
+    qp:num('qp'),cft:num('cft',1.2),cfp:$('cfp').value===''?null:num('cfp',2),sk:num('sk'),mus:num('mus',0.8),altN:$('altN').value==='1',
     aS:num('aS'),zH:num('zH',1),TaT:num('TaT',1),qa:num('qa',1),ga:num('ga',1),dlim:num('dlim',150),dmax:num('dmax',5),jeu:num('jeu',50),
     platine:$('platine').value,Sj:num('Sj',500),cible:Math.min(Math.max(num('rCible',90),50),100)/100};
 }
@@ -580,7 +584,7 @@ function ddc(V,env){
 function charges(V,D){
   $('rCharges').innerHTML=`<table><tr><th>Tuyauterie</th><th>Barre</th><th class="n">G (kN)</th><th class="n">T : F<sub>x</sub> / F<sub>y</sub> / F<sub>z</sub> (kN)</th><th class="n">S (kN)</th><th class="n">W (kN)</th><th class="n">EP (kN)</th><th class="n">E (kN)</th></tr>`+
    V.CC.detail.map((d,k)=>`<tr><td>${escH(d.nom)}</td><td>${escH(V.Gm.B[V.Gm.T[k].bi].lib)}</td><td class="n">${f(d.G,2)}</td><td class="n">${d.T.map(x=>f(x,2)).join(' / ')}</td><td class="n">${f(d.S,2)}</td><td class="n">${f(d.W,2)}</td><td class="n">${f(d.EP,2)}</td><td class="n">${f(d.E,2)}</td></tr>`).join('')+
-   `</table><div class="note">G = q<sub>service</sub> × portée + G suppl. · T : frottement μ·G (glissant), + F<sub>y</sub> (guidé), efforts saisis (point fixe) · S = μ·s<sub>k</sub>·D<sub>cal</sub>·portée · W = q<sub>p</sub>·c<sub>f</sub>·D<sub>cal</sub>·portée (EN 1991-1-4 §7.9) · E = S<sub>a</sub>·γ<sub>a</sub>/q<sub>a</sub>·G avec S<sub>a</sub> = ${f(V.CC.Sa,3)} (EN 1998-1 éq. 4.24). Profilés : poids propre, vent q<sub>p</sub>·c<sub>f</sub>·largeur exposée (sans facteur d'élancement), masse sismique.</div>`;
+   `</table><div class="note">G = q<sub>service</sub> × portée + G suppl. · T : frottement μ·G (glissant), + F<sub>y</sub> (guidé), efforts saisis (point fixe) · S = μ·s<sub>k</sub>·D<sub>cal</sub>·portée · W = q<sub>p</sub>·c<sub>f</sub>·D<sub>cal</sub>·portée (EN 1991-1-4 §7.9) · E = S<sub>a</sub>·γ<sub>a</sub>/q<sub>a</sub>·G avec S<sub>a</sub> = ${f(V.CC.Sa,3)} (EN 1998-1 éq. 4.24). Profilés : poids propre, vent q<sub>p</sub>·c<sub>f</sub>·largeur exposée (ψ<sub>λ</sub> = 1), c<sub>f</sub> = ${D.cfp!=null?f(D.cfp,2)+' (saisi)':[...new Set(V.Gm.B.map(b=>b.p.f))].map(fa=>fa+' '+f(CF_FAM[fa]??2,2)).join(', ')+' (NF EN 1991-1-4/NA fig. 7.39–7.50, ramené à la largeur projetée)'}, masse sismique.</div>`;
 }
 function entraxes(D,V){
   const T=V.Gm.T,out=[];
@@ -913,7 +917,7 @@ function importerC1(){
   let o=null; try{o=JSON.parse(localStorage.getItem('fip.climat'));}catch(e){}
   if(!o){$('infoC1').textContent='Aucune donnée : dans C1, cliquer « Envoyer vers les supports S1 ».';return;}
   const z=Math.max(num('zsol',2)+(['mur','murJ'].includes(typeSup())?0:num('Lm',1)),0.1);
-  if(o.vent){const v=o.vent,co=v.coMode==='p1'&&v.dAc!=null?Math.max(1,1+0.004*v.dAc*Math.exp(-0.014*(Math.max(z,10)-10))):(v.co||1),zz=Math.max(z,v.zmin),cr=v.kr*Math.log(zz/v.z0),vm=cr*co*v.vb,Iv=v.kI/(co*Math.log(zz/v.z0));$('qp').value=((1+7*Iv)*0.5*v.rho*vm*vm/1000).toFixed(3);}
+  if(o.vent){const v=o.vent;const co=v.coMode==='p1'&&v.dAc!=null?Math.max(1,1+0.004*v.dAc*Math.exp(-0.014*(Math.max(z,10)-10))):(v.co||1),zz=Math.max(z,v.zmin),cr=v.kr*Math.log(zz/v.z0),vm=cr*co*v.vb,Iv=v.kI/Math.log(zz/v.z0);$('qp').value=((1+7*Iv)*0.5*v.rho*vm*vm/1000).toFixed(3);}
   if(o.neige){$('sk').value=o.neige.sk.toFixed(3);$('altN').value=o.neige.alt>1000?'1':'0';}
   if(o.seisme){$('aS').value=(o.seisme.alpha*o.seisme.S).toFixed(4);}
   $('infoC1').innerHTML=`✓ C1 : ${escH(o.lieu||'')} – q<sub>p</sub> recalculé à z = ${f(z,1)} m (sol + support)${o.vent?`, c<sub>o</sub>(z) = ${f(o.vent.coMode==='p1'&&o.vent.dAc!=null?Math.max(1,1+0.004*o.vent.dAc*Math.exp(-0.014*(Math.max(z,10)-10))):(o.vent.co||1),3)}`:''} ; s<sub>k</sub> = ${o.neige?f(o.neige.sk,2):'—'} kN/m² ; α·S = ${o.seisme?f(o.seisme.alpha*o.seisme.S,3):'—'}.`;
@@ -1012,8 +1016,8 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.10"></script>
-<script src="../commun/export.js?v=2.10"></script>
+<script src="../commun/replier.js?v=2.11"></script>
+<script src="../commun/export.js?v=2.11"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
