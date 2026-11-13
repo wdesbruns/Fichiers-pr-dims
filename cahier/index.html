@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.12"></script>
+<script src="../commun/auth.js?v=2.13"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — CS Cahier de supportage</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.12">
-<script src="../commun/acier.js?v=2.12"></script>
-<script src="../commun/cahier.js?v=2.12"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.13">
+<script src="../commun/acier.js?v=2.13"></script>
+<script src="../commun/cahier.js?v=2.13"></script>
 <style>
   .logoAff{max-height:48px;max-width:160px;border:1px solid var(--line);border-radius:4px;padding:2px;background:#fff}
   .actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.actions button{padding:5px 10px;font-size:12px}
@@ -95,7 +95,7 @@
   <div class="printhead"><img src="../commun/img/logo-fip.png" alt="FIP"><strong id="phTitre">Cahier de supportage</strong><br><span id="phInfo"></span></div>
   <div class="card noprint" id="cGestion"><h2>Supports du cahier</h2>
     <div class="actions" style="margin-top:0">
-      <a href="../supports/?v=2.12"><button type="button" title="Créer et calculer un support type dans S1, puis « Ajouter au cahier »">➕ Type calculé (S1)</button></a>
+      <a href="../supports/?v=2.13"><button type="button" title="Créer et calculer un support type dans S1, puis « Ajouter au cahier »">➕ Type calculé (S1)</button></a>
       <button class="sec" id="addNC" type="button" title="Réserver un type (quantités, repères) à calculer plus tard dans S1">➕ Type à calculer</button>
       <button class="sec" id="addSPE" type="button" title="Support spécial dessiné à part (AutoCAD, Plant 3D, Advance Steel)">➕ Support spécial</button>
       <button class="sec" id="recalc" type="button">⟳ Recalculer tout</button>
@@ -186,7 +186,7 @@ let api=null;
 function moteur(){
   if(api) return Promise.resolve(api);
   return new Promise((ok,ko)=>{ const fr=$('iframeS1'), t0=Date.now();
-    fr.src='../supports/?moteur=1&v=2.12';
+    fr.src='../supports/?moteur=1&v=2.13';
     const att=()=>{ try{ const w=fr.contentWindow; if(w&&w.S1API&&w.document.readyState==='complete'){ api=w.S1API; return ok(api);} }catch(e){ return ko(e); }
       if(Date.now()-t0>20000) return ko(new Error('S1 ne répond pas')); setTimeout(att,150); };
     setTimeout(att,300); });
@@ -217,7 +217,7 @@ function nouveauType(kind){
   K.types.push(T); enr(); tout();
 }
 $('addNC').onclick=()=>nouveauType('s1'); $('addSPE').onclick=()=>nouveauType('spe');
-const lienS1=(T,c)=>`../supports/?cahier=${encodeURIComponent(T.id)}&conf=${encodeURIComponent(c.id)}&v=2.12`;
+const lienS1=(T,c)=>`../supports/?cahier=${encodeURIComponent(T.id)}&conf=${encodeURIComponent(c.id)}&v=2.13`;
 function gestion(){
   if(!K.types.length){ $('rGestion').innerHTML='<div class="msg info">Cahier vide. « ➕ Type calculé (S1) » : créer le support dans S1 puis « Ajouter au cahier ». « ➕ Type à calculer » : réserver un type et ses quantités, à calculer plus tard. « ➕ Support spécial » : support dessiné à part, compté dans la BOM.</div>'; etatRecalc(); return; }
   $('rGestion').innerHTML=K.types.map((T,ti)=>{
@@ -278,14 +278,18 @@ function listing(){
 
 /* ---------------- BOM ---------------- */
 function bom(){
-  const P={}, E={}, PL={}, SP=[]; let nPl=0, manq=[];
+  const P={}, E={}, PL={}, FX={}, SP=[]; let nPl=0, manq=[];
   const LIB={sol:'Platine de pied',mur:'Platine murale',plafond:'Platine de plafond',murArt:'Patte d\'appui mural articulé',murPied:'Patte de pied de jambe de force (articulée)'};
   K.types.forEach(T=>T.configs.forEach(c=>{ const q=+c.qte||0, rep=repere(T,c);
     if(T.kind==='spe'){ SP.push({rep,des:T.designation||'Support spécial',plan:T.plan,q,m:T.masse===''||T.masse==null?null:+T.masse}); return; }
     const r=c.resume; if(!r){ if(q) manq.push(rep); return; }
     r.barres.forEach(b=>{ const k=b.profil+'|'+r.nuance, o=P[k]||(P[k]={profil:b.profil,nuance:r.nuance,m:b.m,L:0,det:[]}); o.L+=q*b.L; o.det.push(`${rep} : ${q} × ${f(b.L,2)} m`); });
     (r.tuyaux||[]).forEach(t=>{ if(!t.d) return; const k=`Étrier M${t.d} pour ${t.dn?'DN'+t.dn:'Ø'+f(t.De,1)}`; E[k]=(E[k]||0)+q; });
-    (r.appuis||[]).forEach(a=>{ const k=`${LIB[a.k]||'Platine'} – ${a.profil||''}`; PL[k]=(PL[k]||0)+q; if(a.k!=='murArt') nPl+=q; }); }));
+    (r.appuis||[]).forEach(a=>{ const k=`${LIB[a.k]||'Platine'} – ${a.profil||''}`, fm=(r.fix||{}).mode||'chev'; PL[k]=(PL[k]||0)+q;
+      if(['murArt','murPied'].includes(a.k)) return;
+      if(fm==='tige'&&a.k==='mur'){ const t=`Tige filetée M${r.fix.d} classe ${r.fix.cl} traversante (écrous, rondelles)`; FX[t]=(FX[t]||0)+4*q; FX['Contre-plaque (côté opposé du mur)']=(FX['Contre-plaque (côté opposé du mur)']||0)+q; }
+      else if(fm==='crap'&&a.k==='plafond') FX['Crapaud / pince-poutre (sur profilé existant)']=(FX['Crapaud / pince-poutre (sur profilé existant)']||0)+4*q;
+      else nPl+=q; }); }));
   const L=Object.values(P).sort((a,b)=>a.profil.localeCompare(b.profil,'fr',{numeric:true})), tot=L.reduce((s,o)=>s+o.L*o.m,0), maj=+K.reglages.majo||0, chev=+K.reglages.chev||0;
   const mSp=SP.reduce((s,x)=>s+(x.m||0)*x.q,0);
   let html='';
@@ -293,7 +297,7 @@ function bom(){
   html+=`<h3>Profilés</h3>`+(L.length?`<table><tr><th>Profilé</th><th>Nuance</th><th>Détail (repère : qté × longueur)</th><th class="n">Longueur totale (m)</th><th class="n">kg/m</th><th class="n">Masse (kg)</th></tr>`+
     L.map(o=>`<tr><td><b>${h(o.profil)}</b></td><td>${h(o.nuance||'')}</td><td style="font-size:12px">${o.det.map(h).join(' ; ')}</td><td class="n">${f(o.L,2)}</td><td class="n">${f(o.m,2)}</td><td class="n">${f(o.L*o.m,1)}</td></tr>`).join('')+
     `<tr><td colspan="5"><b>Total profilés</b></td><td class="n"><b>${f(tot,1)} kg</b></td></tr><tr><td colspan="5">Majoration platines, goussets, boulonnerie, soudures (${maj} %)</td><td class="n">${f(tot*maj/100,1)} kg</td></tr></table>`:'<div class="note">—</div>');
-  const acc=[...Object.entries(PL).map(([k,n])=>[k,n,'u']),...(nPl&&chev?[[`Chevilles (forfait ${chev} par platine, à dimensionner avec la DDC)`,nPl*chev,'u']]:[]),...Object.entries(E).sort().map(([k,n])=>[k,n,'u'])];
+  const acc=[...Object.entries(PL).map(([k,n])=>[k,n,'u']),...Object.entries(FX).map(([k,n])=>[k,n,'u']),...(nPl&&chev?[[`Chevilles (forfait ${chev} par platine, à dimensionner avec la DDC)`,nPl*chev,'u']]:[]),...Object.entries(E).sort().map(([k,n])=>[k,n,'u'])];
   html+=`<h3>Platines, fixations et étriers</h3>`+(acc.length?`<table><tr><th>Désignation</th><th class="n">Quantité</th></tr>${acc.map(([k,n])=>`<tr><td>${h(k)}</td><td class="n">${n}</td></tr>`).join('')}</table><div class="note">Platines et chevilles à dimensionner (hors périmètre S1). Un étrier par tuyauterie et par support ; diamètre automatique indicatif ou saisi dans S1.</div>`:'<div class="note">—</div>');
   html+=`<h3>Supports spéciaux</h3>`+(SP.length?`<table><tr><th>Repère</th><th>Désignation</th><th>Plan</th><th class="n">Qté</th><th class="n">Masse unitaire (kg)</th><th class="n">Masse (kg)</th></tr>${SP.map(x=>`<tr><td><b>${h(x.rep)}</b></td><td>${h(x.des)}</td><td>${h(x.plan||'')}</td><td class="n">${x.q}</td><td class="n">${x.m==null?'—':f(x.m,1)}</td><td class="n">${x.m==null?'—':f(x.m*x.q,1)}</td></tr>`).join('')}</table>`:'<div class="note">—</div>');
   const totG=tot*(1+maj/100)+mSp;
@@ -378,8 +382,10 @@ window.addEventListener('storage',e=>{ if(e.key===CAHIER.CLE){ K=CAHIER.lire(); 
 if(!CAHIER.existe()) enr(); else enr();               // enregistre la migration éventuelle (v1 → v2)
 demarrer();
 </script>
-<script src="../commun/replier.js?v=2.12"></script>
-<script src="../commun/export.js?v=2.12"></script>
+<script src="../commun/replier.js?v=2.13"></script>
+<script src="../commun/aide.js?v=2.13"></script>
+<script src="aide-cs.js?v=2.13"></script>
+<script src="../commun/export.js?v=2.13"></script>
 <script>EXPORT.init(CFG);</script>
 </body>
 </html>
