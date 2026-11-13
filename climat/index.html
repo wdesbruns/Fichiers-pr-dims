@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.10"></script>
+<script src="../commun/auth.js?v=2.13"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — C1 Hypothèses climatiques et sismiques</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
@@ -12,9 +12,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../commun/lib/leaflet/leaflet.css">
 <script src="../commun/lib/leaflet/leaflet.js"></script>
-<script src="data/zonage.js?v=2.10"></script>
-<script src="data/communes.js?v=2.10"></script>
-<script src="data/departements.js?v=2.10"></script>
+<script src="data/zonage.js?v=2.13"></script>
+<script src="data/communes.js?v=2.13"></script>
+<script src="data/departements.js?v=2.13"></script>
+<script src="../commun/coefvent.js?v=2.13"></script>
 <style>
 :root{
   --fip-bleu:#114088; --fip-bleu-fonce:#0b2d63; --fip-rouge:#e30009; --fip-ciel:#0098db;
@@ -207,7 +208,7 @@ svg text{font-family:inherit}
   </div>
 
   <div class="tabs noprint" id="tabs">
-    <button data-p="p-vent" class="on">Vent</button><button data-p="p-neige">Neige</button><button data-p="p-seisme">Séisme</button><button data-p="p-cpx">Complexes</button><button data-p="p-syn">Synthèse</button>
+    <button data-p="p-vent" class="on">Vent</button><button data-p="p-neige">Neige</button><button data-p="p-seisme">Séisme</button><button data-p="p-cv">Coefficients vent</button><button data-p="p-cpx">Complexes</button><button data-p="p-syn">Synthèse</button>
   </div>
 
   <!-- ======== VENT ======== -->
@@ -242,14 +243,18 @@ svg text{font-family:inherit}
     <div class="card">
       <h2>Données neige</h2>
       <div class="row">
+        <div><label>Toiture</label><select id="ntype"><option value="bi">2 versants</option><option value="mono">1 versant</option></select></div>
+        <div><label>Pente d'écoulement de l'eau (%)</label><input id="pEc" type="number" step="0.5" value="" placeholder="&gt; 5 % : sans objet"></div>
+      </div>
+      <div class="row">
         <div><label>Pente versant 1 α<sub>1</sub> (°)</label><input id="a1" type="number" step="1" value="10"></div>
         <div><label>Pente versant 2 α<sub>2</sub> (°)</label><input id="a2" type="number" step="1" value="10"></div>
       </div>
       <div class="row">
-        <div><label>Coefficient d'exposition C<sub>e</sub></label><select id="Ce"><option>0.8</option><option selected>1</option><option>1.2</option></select></div>
-        <div><label>Coefficient thermique C<sub>t</sub></label><select id="Ct"><option selected>1</option><option>0.8</option></select></div>
+        <div><label>Coefficient d'exposition C<sub>e</sub></label><select id="Ce"><option value="1" selected>1,0 – cas général</option><option value="1.25">1,25 – abri quasi permanent (bâtiments voisins)</option></select></div>
+        <div><label>Coefficient thermique C<sub>t</sub></label><select id="Ct"><option value="1" selected>1,0 (AN : bâtiments isolés)</option><option value="0.8">0,8 – justifié par le projet</option></select></div>
       </div>
-      <div class="note">Pente en degrés (et non en %). C<sub>e</sub> : EN 1991-1-3 §5.2(7), Tab. 5.1, valeur retenue par l'AN à confirmer. C<sub>t</sub> : §5.2(8), 1,0 sauf toiture à forte transmission thermique.</div>
+      <div class="note">Pentes des versants en degrés. C<sub>e</sub> : AN clause 5.2(7) (le Tableau 5.1 est remplacé : 1,25 si abri quasi permanent empêchant le déplacement de la neige par le vent, 1,0 sinon). C<sub>t</sub> : AN clause 5.2(8), 1,0 sauf justification particulière. Pente d'écoulement &lt; 5 % : majoration AN clause 5.2(6).</div>
       <label>Forçage de la zone de neige (facultatif)</label><select id="fNeige"></select>
     </div>
     <div>
@@ -281,6 +286,39 @@ svg text{font-family:inherit}
       <div class="card"><h2>Éléments non structuraux — F<sub>a</sub> = S<sub>a</sub>·W<sub>a</sub>·γ<sub>a</sub>/q<sub>a</sub> (EN 1998-1 §4.3.5.2)</h2><div id="seismeFa"></div></div>
     </div>
   </div></section>
+
+  <!-- ======== COEFFICIENTS VENT ======== -->
+  <section class="panel" id="p-cv">
+    <div class="msg info small">Coefficients aérodynamiques retenus pour le projet (NF EN 1991-1-4 + AN, recommandations CNC2M N0380). Les blocs cochés « note » figurent dans la note d'hypothèses (onglet Synthèse, impression, Word, Excel). Les c<sub>f</sub> des profilés sont transmis à S1 (« ➜ Supports S1 »).</div>
+    <div class="card"><h2>A. Profilés et tuyauteries — coefficients de force</h2><div id="cvProf"></div></div>
+    <div class="card"><h2>B. Bâtiment fermé — c<sub>pe,10</sub> murs et toiture, c<sub>pi</sub></h2>
+      <div class="noprint row4" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">
+        <label class="chk"><input type="checkbox" id="bfOn" checked> note</label>
+        <div><label>Toiture</label><select id="bfType"><option value="bi">2 versants</option><option value="mono">1 versant</option></select></div>
+        <div><label>Longueur L ∥ faîtage (m)</label><input id="bfL" type="number" step="1" value="30"></div>
+        <div><label>Largeur W (m)</label><input id="bfW" type="number" step="1" value="20"></div>
+        <div><label>Hauteur au faîtage h (m)</label><input id="bfh" type="number" step="0.5" value="8"></div>
+        <div><label>Pente α (°)</label><input id="bfa" type="number" step="1" value="10"></div>
+        <label class="chk"><input type="checkbox" id="bfkdc"> k<sub>dc</sub> (défaut de corrélation)</label>
+      </div><div id="cvBat"></div></div>
+    <div class="card"><h2>C. Toiture isolée (auvent, abri, préau) — c<sub>f</sub> et c<sub>p</sub></h2>
+      <div class="noprint" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">
+        <label class="chk"><input type="checkbox" id="tiOn"> note</label>
+        <div><label>Versants</label><select id="tiType"><option value="1">1 versant</option><option value="2">2 versants</option></select></div>
+        <div><label>Pente α (°) (2 versants : − = en V)</label><input id="tia" type="number" step="1" value="10"></div>
+        <div><label>Obstruction φ (0 vide → 1 encombré)</label><input id="tiphi" type="number" step="0.1" min="0" max="1" value="0"></div>
+        <div><label>Profondeur d (m)</label><input id="tid" type="number" step="0.5" value="6"></div>
+        <div><label>Longueur b (m)</label><input id="tib" type="number" step="0.5" value="12"></div>
+      </div><div id="cvTi"></div></div>
+    <div class="card"><h2>D. Mur isolé, clôture, écran — c<sub>p,net</sub></h2>
+      <div class="noprint" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">
+        <label class="chk"><input type="checkbox" id="miOn"> note</label>
+        <div><label>Longueur l (m)</label><input id="mil" type="number" step="0.5" value="12"></div>
+        <div><label>Hauteur h (m)</label><input id="mih" type="number" step="0.1" value="2"></div>
+        <div><label>Taux de remplissage φ</label><input id="miphi" type="number" step="0.05" min="0" max="1" value="1"></div>
+        <label class="chk"><input type="checkbox" id="miret"> retour d'angle (l ≥ h)</label>
+      </div><div id="cvMi"></div></div>
+  </section>
 
   <!-- ======== COMPLEXES ======== -->
   <section class="panel" id="p-cpx">
@@ -397,7 +435,7 @@ function calcVent(zv){
   const vb0=VB0[zv], cdir=num('cdir',1), cse=num('cseason',1), rho=1.225, H=num('H'), ze=num('ze'), coZ=coOro, co=coZ(ze);
   const vb=cdir*cse*vb0, qb=.5*rho*vb*vb;
   const R=(RAYON.find(r=>H<=r[0])||[0,null])[1];
-  const prof=z=>{const zz=Math.max(z,t.zmin), co=coZ(z), cr=kr*Math.log(zz/t.z0), vm=cr*co*vb, Iv=t.kI/(co*Math.log(zz/t.z0)), qp=(1+7*Iv)*.5*rho*vm*vm;return{zz,cr,vm,Iv,qp,ce:qp/qb}};
+  const prof=z=>{const zz=Math.max(z,t.zmin), co=coZ(z), cr=kr*Math.log(zz/t.z0), vm=cr*co*vb, Iv=t.kI/Math.log(zz/t.z0), qp=(1+7*Iv)*.5*rho*vm*vm;return{zz,cr,vm,Iv,qp,ce:qp/qb}};
   const p=prof(ze);
   const ctrl=ze>200?'ze > zmax = 200 m : hors domaine':ze<=0?'ze invalide':'OK';
   return{t,kr,vb0,cdir,cse,co,rho,H,ze,vb,qb,R,p,prof,ctrl};
@@ -431,9 +469,9 @@ function calcNeige(zn){
     else ds=NaN;
   }
   const sk=sk0+ds, Ce=+$('Ce').value, Ct=+$('Ct').value, a1=num('a1'), a2=num('a2');
-  const mu=a=>a<=30?.8:a<60?.8*(60-a)/30:0, m1=mu(a1), m2=mu(a2), k=Ce*Ct;
+  const mu=a=>a<=30?.8:a<60?.8*(60-a)/30:0, m1=mu(a1), m2=mu(a2), k=Ce*Ct, pe=$('pEc').value===''?null:num('pEc'), maj=pe==null?0:pe<3?0.2:pe<=5?0.1:0, mono=$('ntype').value==='mono';
   const ctrl=A>2000?"A > 2000 m : hors domaine de l'AN":sAd!=null?'OK':'OK – pas de sAd défini pour cette zone';
-  return{A,sk0,ds,sk,sAd,Ce,Ct,a1,a2,m1,m2,
+  return{A,sk0,ds,sk,sAd,Ce,Ct,a1,a2,m1,m2,pe,maj,mono,
     un:m1*k*sk, i:[m1*k*sk,m2*k*sk], ii:[.5*m1*k*sk,m2*k*sk], iii:[m1*k*sk,.5*m2*k*sk],
     acc:sAd!=null?[m1*k*sAd,m2*k*sAd]:null, ctrl};
 }
@@ -476,7 +514,7 @@ function render(){
   const cc=calcComplexe('couv'), cb=calcComplexe('bard');
   const V=Z.zv?calcVent(Z.zv):null, N=Z.zn?calcNeige(Z.zn):null, E=Z.zs?calcSeisme(Z.zs,cc.tot,cb.tot):null;
   window.__R={Z,V,N,E,cc,cb};
-  renderPanneau(Z,V,N,E); renderVent(Z,V); renderNeige(Z,N); renderSeisme(Z,E); renderCpx(cc,cb); renderSyn(Z,V,N,E,cc,cb); colorerCarte(Z);
+  renderPanneau(Z,V,N,E); renderVent(Z,V); renderNeige(Z,N); renderSeisme(Z,E); renderCpx(cc,cb); const CVH=renderCV(V); renderSyn(Z,V,N,E,cc,cb,CVH); colorerCarte(Z);
 }
 
 function renderPanneau(Z,V,N,E){
@@ -539,7 +577,7 @@ function renderVent(Z,V){
    +ligne('c<sub>r</sub>(z) = k<sub>r</sub>·ln(z/z<sub>0</sub>)',f(V.p.cr,4),'','§4.3.2, éq. (4.4)')
    +ligne('c<sub>o</sub>(z<sub>e</sub>) (orographie)',f(V.co,3),'',{1:'§4.3.3 + AN : relief peu marqué',p1:`§4.3.3 + AN, procédure 1 : ΔA<sub>C</sub> = ${S.oro&&S.oro.dAc!=null?f(S.oro.dAc,1):'—'} m`,saisie:'§4.3.3 + AN : étude spécifique (saisie)'}[$('coMode').value])
    +ligne('v<sub>m</sub>(z) = c<sub>r</sub>·c<sub>o</sub>·v<sub>b</sub>',f(V.p.vm,2),'m/s','§4.3.1, éq. (4.3)')
-   +ligne('I<sub>v</sub>(z) = k<sub>I</sub>/(c<sub>o</sub>·ln(z/z<sub>0</sub>))',f(V.p.Iv,4),'','§4.4(1), éq. (4.7)')
+   +ligne('I<sub>v</sub>(z) = k<sub>I</sub>/(c<sub>o</sub>·ln(z/z<sub>0</sub>)) avec k<sub>I</sub> = c<sub>o</sub>·[1 − 2·10⁻⁴·(log z<sub>0</sub> + 3)⁶] ⇒ I<sub>v</sub> = k<sub>I,0</sub>/ln(z/z<sub>0</sub>)',f(V.p.Iv,4),'','§4.4(1), éq. (4.7) ; AN éq. (4.20-NA) : turbulence non réduite par l\'orographie (prudent pour une valeur saisie)')
    +ligne('q<sub>p</sub>(z<sub>e</sub>) = [1 + 7·I<sub>v</sub>]·½·ρ·v<sub>m</sub>²',`${f(V.p.qp,1)} Pa = ${f(V.p.qp/1000,3)}`,'kN/m²','§4.5(1), éq. (4.8)',1)
    +ligne('c<sub>e</sub>(z<sub>e</sub>) = q<sub>p</sub>/q<sub>b</sub>',f(V.p.ce,3),'','§4.5(1), éq. (4.9)')+'</table>';
   h+=`<div class="msg ${V.ctrl==='OK'?'ok':'bad'}">Contrôle : ${esc(V.ctrl)}</div>`;
@@ -567,17 +605,31 @@ function renderNeige(Z,N){
    +ligne('s<sub>k</sub> = s<sub>k,0</sub> + Δs',f(N.sk,3),'kN/m²','NA §4.1',1)
    +ligne('s<sub>Ad</sub> (accidentelle, indép. de l\'altitude)',N.sAd!=null?f(N.sAd,2):'— (non définie)','kN/m²','§4.3 + AN',N.sAd!=null)
    +ligne('C<sub>e</sub> / C<sub>t</sub>',`${f(N.Ce,1)} / ${f(N.Ct,1)}`,'','§5.2(7)-(8)')
-   +ligne('μ<sub>1</sub>(α<sub>1</sub>) / μ<sub>1</sub>(α<sub>2</sub>)',`${f(N.m1,3)} / ${f(N.m2,3)}`,'','§5.3, Tab. 5.2')+'</table>';
+   +ligne(N.mono?'μ<sub>1</sub>(α)':'μ<sub>1</sub>(α<sub>1</sub>) / μ<sub>1</sub>(α<sub>2</sub>)',N.mono?f(N.m1,3):`${f(N.m1,3)} / ${f(N.m2,3)}`,'','§5.3.2-5.3.3, Tab. 5.2 : 0,8 (α ≤ 30°) ; 0,8·(60 − α)/30 ; 0 (α ≥ 60°)')
+   +(N.maj?ligne('Majoration pente d\'écoulement faible ('+f(N.pe,1)+' %)','+'+f(N.maj,1),'kN/m²','AN clause 5.2(6) : +0,2 (&lt; 3 %), +0,1 (3 à 5 %), sur la zone et 2 m au-delà',1):'')+'</table>';
   h+=`<div class="msg ${N.ctrl.startsWith('OK')?'ok':'bad'}">Contrôle : ${esc(N.ctrl)}</div>`;
   $('neigeRes').innerHTML=h;
   const c=(v)=>f(v,3);
-  let t=`<table><tr><th>Cas de charge</th><th class="n">Versant 1</th><th class="n">Versant 2</th><th>Référence</th></tr>
-   <tr><td>Toiture à un versant – durable/transitoire</td><td class="n">${c(N.un)}</td><td class="n">—</td><td class="ref">§5.3.2, Fig. 5.2</td></tr>
+  let t=N.mono?`<table><tr><th>Cas de charge</th><th class="n">Versant</th><th>Référence</th></tr>
+   <tr class="key"><td>Toiture à un versant – durable/transitoire μ<sub>1</sub>·C<sub>e</sub>·C<sub>t</sub>·s<sub>k</sub>${N.maj?' + majoration':''}</td><td class="n">${c(N.un+N.maj)}</td><td class="ref">§5.3.2, Fig. 5.2${N.maj?' ; AN 5.2(6)':''}</td></tr>
+   <tr><td>Situation accidentelle μ<sub>1</sub>·C<sub>e</sub>·C<sub>t</sub>·s<sub>Ad</sub></td><td class="n">${N.acc?c(N.acc[0]):'—'}</td><td class="ref">§5.2 + AN – EN 1990</td></tr></table>`
+  :`<table><tr><th>Cas de charge</th><th class="n">Versant 1</th><th class="n">Versant 2</th><th>Référence</th></tr>
    <tr class="key"><td>Deux versants – cas (i) non redistribuée</td><td class="n">${c(N.i[0])}</td><td class="n">${c(N.i[1])}</td><td class="ref">§5.3.3, Fig. 5.3 (i)</td></tr>
    <tr><td>Deux versants – cas (ii) 0,5 μ<sub>1</sub> sur versant 1</td><td class="n">${c(N.ii[0])}</td><td class="n">${c(N.ii[1])}</td><td class="ref">§5.3.3, Fig. 5.3 (ii)</td></tr>
    <tr><td>Deux versants – cas (iii) 0,5 μ<sub>1</sub> sur versant 2</td><td class="n">${c(N.iii[0])}</td><td class="n">${c(N.iii[1])}</td><td class="ref">§5.3.3, Fig. 5.3 (iii)</td></tr>
-   <tr><td>Situation accidentelle μ<sub>i</sub>·C<sub>e</sub>·C<sub>t</sub>·s<sub>Ad</sub></td><td class="n">${N.acc?c(N.acc[0]):'—'}</td><td class="n">${N.acc?c(N.acc[1]):'—'}</td><td class="ref">§5.2 + AN – EN 1990</td></tr></table><div class="note">Valeurs en kN/m² de projection horizontale. Non traité : accumulations (acrotères, toitures à niveaux multiples, §5.3.6 et Annexe B), neige en débord (§5.2(9)), autres formes de toiture.</div>`;
-  $('neigeToit').innerHTML=schemaToit(N)+t;
+   <tr><td>Situation accidentelle μ<sub>i</sub>·C<sub>e</sub>·C<sub>t</sub>·s<sub>Ad</sub></td><td class="n">${N.acc?c(N.acc[0]):'—'}</td><td class="n">${N.acc?c(N.acc[1]):'—'}</td><td class="ref">§5.2 + AN – EN 1990</td></tr></table><div class="note">Valeurs en kN/m² de projection horizontale${N.maj&&!N.mono?` ; majoration faible pente +${f(N.maj,1)} kN/m² à ajouter sur les zones concernées (AN 5.2(6))`:''}. Non traité : accumulations (acrotères, toitures à niveaux multiples, §5.3.6 et Annexe B), neige en débord (§5.2(9)), autres formes de toiture.</div>`;
+  $('neigeToit').innerHTML=t.startsWith('<table><tr><th>Cas de charge</th><th class="n">Versant</th>')?schemasNeige(N)+t:schemasNeige(N)+t;
+}
+/* coefficients de forme : schémas des dispositions de charge (Fig. 5.2 et 5.3) */
+function schemasNeige(N){
+  const un=(a1,a2,v1,v2,titre,mono)=>{const r=d=>d*Math.PI/180,W=230,x0=20,x1=210,xm=mono?x1:(x0+x1)/2,yb=110,ht=Math.min(48,Math.tan(r(Math.max(a1,3)))*(xm-x0)*0.6),mx=Math.max(N.m1,N.m2,0.01);
+    const bloc=(xa,xb,v,lab)=>{const hh=Math.max(3,34*v/mx);return `<rect x="${xa}" y="${yb-ht-10-hh}" width="${xb-xa}" height="${hh}" fill="#a9c9ef" stroke="#114088" stroke-width=".8"/><text x="${(xa+xb)/2}" y="${yb-ht-14-hh}" text-anchor="middle" font-size="10.5" fill="#114088" font-weight="700">${lab}</text>`;};
+    return `<svg viewBox="0 0 ${W} 150" style="width:100%;max-width:260px">${bloc(x0,xm,v1,f(v1,2)+'·μ')}${mono?'':bloc(xm,x1,v2,f(v2,2)+'·μ')}
+      <polygon points="${x0},${yb} ${mono?`${x1},${yb-ht} ${x1},${yb}`:`${xm},${yb-ht} ${x1},${yb}`}" fill="#eef1f5" stroke="#171a1e" stroke-width="1.4"/>
+      <text x="${x0+4}" y="${yb+14}" font-size="9.5">α${mono?'':'₁'} = ${f(a1,0)}°</text>${mono?'':`<text x="${x1-4}" y="${yb+14}" font-size="9.5" text-anchor="end">α₂ = ${f(a2,0)}°</text>`}
+      <text x="${W/2}" y="144" font-size="10" text-anchor="middle" fill="#5f6670">${titre}</text></svg>`.replace(/·μ/g,'');};
+  if(N.mono) return `<div style="display:flex;gap:10px;flex-wrap:wrap">${un(N.a1,0,N.m1,0,'μ₁(α) – Fig. 5.2',true)}</div>`;
+  return `<div style="display:flex;gap:6px;flex-wrap:wrap">${un(N.a1,N.a2,N.m1,N.m2,'cas (i) : μ₁(α₁) / μ₁(α₂)')}${un(N.a1,N.a2,0.5*N.m1,N.m2,'cas (ii) : 0,5·μ₁(α₁) / μ₁(α₂)')}${un(N.a1,N.a2,N.m1,0.5*N.m2,'cas (iii) : μ₁(α₁) / 0,5·μ₁(α₂)')}</div><div class="note">Coefficients de forme μ affichés au-dessus de chaque versant (Fig. 5.3) ; charge = μ·C<sub>e</sub>·C<sub>t</sub>·s<sub>k</sub>.</div>`;
 }
 function schemaToit(N){
   const r=d=>d*Math.PI/180, W=420, x0=40, xm=210, x1=380, yb=150, h1=Math.min(70,Math.tan(r(N.a1))*170), h2=Math.min(70,Math.tan(r(N.a2))*170), yt=yb-Math.max(h1,h2);
@@ -666,7 +718,61 @@ function renderCpx(cc,cb){
 }
 
 /* ---------- synthèse ---------- */
-function renderSyn(Z,V,N,E,cc,cb){
+/* ---------- coefficients aérodynamiques (onglet « Coefficients vent ») ---------- */
+function renderCV(V){
+  const fx=CV.fx, qp=V?V.p.qp/1000:null, cells=a=>a.map(v=>`<td class="n">${fx(v)}</td>`).join(''), out={};
+  // A. profilés
+  const ico=P=>{const k=14,pts=P.pts.map(([x,y])=>`${18+x*k},${14-y*k}`).join(' ');return `<svg viewBox="0 0 36 28" width="36" height="28"><polyline points="${pts}${P.pts.length>2&&!/L|LI|T45|T1|PL/.test(P.id)?' '+pts.split(' ')[0]:''}" fill="none" stroke="#171a1e" stroke-width="2.2"/></svg>`;};
+  let h=`<table><tr><th></th><th>Profilé (AN fig.)</th><th class="n">c<sub>x</sub> α = 0°</th><th class="n">c<sub>x</sub> α = 45°</th><th class="n">c<sub>x</sub> α = 90°</th><th class="n">c<sub>f</sub> retenu<br>(largeur projetée)</th><th>Familles S1</th></tr>`;
+  CV.PROFILS.forEach(P=>{const c=CV.cfProj(P),cx=a=>{const r=P.t.find(t=>t[0]===a);return r?fx(r[1]):'—';};
+    h+=`<tr><td>${ico(P)}</td><td>${esc(P.lib)} <span class="note">(${P.fig})</span></td><td class="n">${cx(0)}</td><td class="n">${cx(45)}</td><td class="n">${cx(90)}</td><td class="n"><b>${f(c.cf,2)}</b> <span class="note">α = ${c.a}°</span></td><td>${P.fam.join(', ')||'—'}</td></tr>`;});
+  h+=`<tr><td><svg viewBox="0 0 36 28" width="36" height="28"><circle cx="18" cy="14" r="9" fill="none" stroke="#171a1e" stroke-width="2.2"/></svg></td><td>Tube rond, tuyauterie (fig. 7.28)</td><td class="n" colspan="3">c<sub>f,0</sub> ≤ 1,2 (sous-critique)</td><td class="n"><b>${f(CV.CF_TUBE,2)}</b></td><td>CHS, tuyauteries</td></tr></table>
+   <div class="note">AN clause 7.7(1) : F = c<sub>f,0</sub>·ψ<sub>λ</sub>·q<sub>p</sub>(z<sub>e</sub>)·A<sub>ref</sub>, A<sub>ref</sub> = e·ℓ quelle que soit l'orientation (éq. 7.29-NA). c<sub>f</sub> retenu = max<sub>α</sub>(c<sub>x</sub>·e / largeur projetée normale au vent), pour l'appliquer à la surface projetée comme dans S1 ; ψ<sub>λ</sub> = 1 (élancement infini, prudent). Tuyauteries : valeur maximale de la figure 7.28 (régime sous-critique), indépendante de la rugosité.${qp?` Avec q<sub>p</sub>(z<sub>e</sub>) = ${f(qp,3)} kN/m² : charge linéique = c<sub>f</sub> × ${f(qp,3)} × largeur projetée (m).`:''}</div>`;
+  $('cvProf').innerHTML=h; out.prof=`<div class="card"><h2>Vent – coefficients de force des profilés et tuyauteries</h2>${h}</div>`;
+  // B. bâtiment fermé
+  const L=num('bfL',30),W=num('bfW',20),hb=num('bfh',8),a=num('bfa',10),ty=$('bfType').value,kdc=$('bfkdc').checked;
+  const R=CV.toiture(ty,L,W,hb,a), M0=CV.murs(L,W,hb), M90=CV.murs(W,L,hb);
+  const kd=M=>{const hd=M.hd;return hd>=5?1:hd<=1?0.85:0.85+0.15*(hd-1)/4;};
+  const tm=(M,t)=>`<tr><td>${t}</td>${['A','B','C','D','E'].map(z=>`<td class="n">${M.zones.some(x=>x[0]===z)||'DE'.includes(z)?fx(M.cpe[z]*(kdc&&'DE'.includes(z)?kd(M):1)):'—'}</td>`).join('')}<td class="n">${f(M.e,2)}</td><td class="n">${f(M.hd,2)}</td>${kdc?`<td class="n">${f(kd(M),3)}</td>`:''}</tr>`;
+  let b=`<h3>Murs verticaux (Tab. 7.1, c<sub>pe,10</sub>)</h3><table><tr><th>Direction</th><th class="n">A</th><th class="n">B</th><th class="n">C</th><th class="n">D</th><th class="n">E</th><th class="n">e (m)</th><th class="n">h/d</th>${kdc?'<th class="n">k<sub>dc</sub></th>':''}</tr>${tm(M0,'θ = 0° (vent ⊥ à L)')}${tm(M90,'θ = 90° (vent ∥ à L)')}</table>`;
+  b+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px">${CV.svgMurs(M0,L,W)}${CV.svgMurs(M90,W,L)}</div>`;
+  b+=`<h3>Toiture ${R.terrasse?'terrasse':ty==='bi'?'à deux versants':'à un versant'} (α = ${f(a,1)}°)</h3><table><tr><th>Cas</th><th>Zones : c<sub>pe,10</sub></th><th>Référence</th></tr>`+
+    R.cas.map(c=>`<tr><td>${c.nom}</td><td>${c.zones.map((z,i)=>`<b>${z.replace('_','<sub>')+(z.includes('_')?'</sub>':'')}</b> ${fx(c.v[i])}${c.v2&&c.v2[i]!=null?' / '+fx(c.v2[i]):''}`).join(' · ')}</td><td class="ref">${c.ref}</td></tr>`).join('')+'</table>'+(R.note?`<div class="note">${R.note}</div>`:'');
+  b+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px">${R.cas.filter(c=>!/– pression$/.test(c.nom)).map(c=>`<div><div class="note"><b>${c.nom}</b></div>${CV.svgToiture(R,c,L,W)}</div>`).join('')}</div>`;
+  b+=`<h3>Pression intérieure et compléments</h3><table>
+    <tr><td>c<sub>pi</sub> (perméabilité non connue avec certitude)</td><td class="n"><b>+0,2 / −0,3</b></td><td class="ref">§7.2.9(6) + AN NOTE 2</td></tr>
+    <tr><td>Coefficients retenus pour l'ossature</td><td class="n">c<sub>pe,10</sub></td><td class="ref">CNC2M N0380 §7 (surfaces &gt; 10 m²)</td></tr>
+    <tr><td>c<sub>s</sub>c<sub>d</sub> des éléments secondaires (pannes, lisses)</td><td class="n">1,0 (ou valeur de l'ossature si &gt; 1)</td><td class="ref">CNC2M N0380 §6</td></tr>
+    ${kdc?`<tr><td>Défaut de corrélation k<sub>dc</sub> appliqué aux murs D et E (actions d'ensemble seulement)</td><td class="n">0,85 (h/d ≤ 1) à 1 (h/d ≥ 5)</td><td class="ref">§7.2.2(3) NOTE ; AN clause 5.3(5) ; CNC2M §8</td></tr>`:''}
+    <tr><td>Pression sur une paroi</td><td class="n">w = q<sub>p</sub>(z<sub>e</sub>)·(c<sub>pe</sub> − c<sub>pi</sub>)</td><td class="ref">§5.2, éq. (5.1) et (5.2)</td></tr></table>
+    <div class="note">Zones selon les figures 7.5 (murs), 7.6 à 7.8 (toitures) : e = min(b ; 2h), b étant la dimension perpendiculaire au vent. Interpolation linéaire en h/d et en α entre valeurs de même signe ; pour θ = 0°, les deux cas (dépression et pression) sont à étudier séparément, sans mélange sur un même versant.${qp?` q<sub>p</sub>(z<sub>e</sub>) = ${f(qp,3)} kN/m² (onglet Vent).`:''}</div>`;
+  $('cvBat').innerHTML=b; if($('bfOn').checked) out.bat=`<div class="card"><h2>Vent – bâtiment fermé (L = ${f(L,1)} m, W = ${f(W,1)} m, h = ${f(hb,1)} m, α = ${f(a,1)}°)</h2>${b}</div>`;
+  // C. toiture isolée à un versant
+  if($('tiType').value==='2'){
+    const T2=CV.toitIsolee2(num('tia',10),num('tiphi',0)), A2=num('tib',12)*num('tid',6);
+    let t2=`<table><tr><th>Cas</th><th class="n">c<sub>f</sub></th><th class="n">c<sub>p,net</sub> A</th><th class="n">B</th><th class="n">C</th><th class="n">D</th></tr>
+      <tr><td>Maximum (quel que soit φ) – vers le bas</td>${cells(T2.max)}</tr><tr><td>Minimum (φ = ${f(T2.phi,2)}) – soulèvement</td>${cells(T2.min)}</tr></table>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px">${CV.svgToitIsolee2(T2)}${CV.svgZonesTI2(T2)}</div>
+      <div class="note">NF EN 1991-1-4 §7.3, Tableau 7.7 (valeurs recommandées : la clause 7.3 ne fait l'objet d'aucune disposition de l'AN) ; α ${T2.snap?'compris entre −5° et +5° : ligne ±5° retenue ; ':''}= ${f(T2.a,0)}°, interpolation linéaire en α et en φ. Ossature : c<sub>f</sub> appliqués comme coefficients de pression sur chaque versant (centre de poussée au milieu du versant, fig. 7.17), y compris un versant chargé (max ou min) et l'autre non chargé — CNC2M N0380 §5.1. A<sub>ref</sub> = b·d = ${f(A2,1)} m²${qp?` ; F = ${f(T2.max[0]*qp*A2,1)} / ${f(T2.min[0]*qp*A2,1)} kN`:''}. c<sub>p,net</sub> : couverture et fixations (enveloppe).</div>`;
+    $('cvTi').innerHTML=t2; if($('tiOn').checked) out.ti=`<div class="card"><h2>Vent – toiture isolée à deux versants (α = ${f(num('tia',10),1)}°, φ = ${f(T2.phi,2)})</h2>${t2}</div>`;
+  } else {
+  const T=CV.toitIsolee1(num('tia',10),num('tiphi',0));
+  let t=`<table><tr><th>Cas</th><th class="n">c<sub>f</sub></th><th class="n">c<sub>1</sub> (0,1·d)</th><th class="n">c<sub>2</sub></th><th class="n">c<sub>3</sub></th><th class="n">X</th></tr>
+    <tr><td>Maximum (quel que soit φ) – vers le bas</td>${cells(T.max)}<td class="n">${f(T.X,3)}</td></tr><tr><td>Minimum (φ = ${f(T.phi,2)}) – soulèvement</td>${cells(T.min)}<td class="n">${f(T.X,3)}</td></tr>
+    <tr><td>Vent sur une rive inclinée (toute la toiture)</td><td class="n">${fx(T.rive.max)} / ${fx(T.rive.min)}</td><td colspan="4" class="note">CNC2M Tableau 3 (c<sub>f</sub> à α = 0)</td></tr></table>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px">${CV.svgToitIsolee(T,T.max,'Maximum (pression vers le bas)')}${CV.svgToitIsolee(T,T.min,'Minimum (soulèvement)')}</div>
+    <div class="note">Traduction des c<sub>f</sub> du Tableau 7.6 en répartition de pression le long du versant (c<sub>1</sub> sur 0,1·d côté rive attaquée, puis variation linéaire de c<sub>2</sub> à c<sub>3</sub>), résultante conforme en grandeur et en position X·d : CNC2M N0380 §5.3, Tableau 2, figure 22. Interpolation linéaire en α et en φ. A<sub>ref</sub> = b·d = ${f(num('tib',12)*num('tid',6),1)} m² ; force F = c<sub>f</sub>·q<sub>p</sub>(z<sub>e</sub>)·A<sub>ref</sub>${qp?` = ${f(T.max[0]*qp*num('tib',12)*num('tid',6),1)} / ${f(T.min[0]*qp*num('tib',12)*num('tid',6),1)} kN`:''} (z<sub>e</sub> = hauteur du faîtage). Toiture isolée à deux versants : choisir « 2 versants » (Tableau 7.7).</div>`;
+  $('cvTi').innerHTML=t; if($('tiOn').checked) out.ti=`<div class="card"><h2>Vent – toiture isolée à un versant (α = ${f(T.a,1)}°, φ = ${f(T.phi,2)})</h2>${t}</div>`;
+  }
+  // D. mur isolé
+  const l=num('mil',12),hm=num('mih',2),Mi=CV.murIsole(l,hm,num('miphi',1),$('miret').checked);
+  let m=Mi.treillis?`<div class="msg warn">φ &lt; 0,8 : à traiter comme une structure en treillis (§7.11), hors de ce module.</div>`:'';
+  m+=`<table><tr><th>Zone</th><th class="n">A</th><th class="n">B</th><th class="n">C</th><th class="n">D</th><th>Référence</th></tr><tr><td>c<sub>p,net</sub></td>${cells(Mi.c)}<td class="ref">§7.4.1, Tab. 7.9${$('miret').checked?' (avec retour d\'angle)':''} ; l/h = ${f(Mi.lh,2)}, φ = ${f(Mi.p,2)}</td></tr></table>${CV.svgMurIsole(Mi,l,hm)}
+    <div class="note">Interpolation linéaire en l/h (3 à 10) et en φ (0,8 à 1). Pression nette w = c<sub>p,net</sub>·q<sub>p</sub>(z<sub>e</sub>) avec z<sub>e</sub> = h (§7.4.1(2)).${qp?` Zone A : ${f(Mi.c[0]*qp,3)} kN/m².`:''} Acrotères : c<sub>p,net</sub> = 2,0 (zones F), 1,5 (zone G), 1,0 sous le vent (AN clause 7.4.1 ; CNC2M §9).${!Mi.retourOK?' ⚠ Retour d\'angle avec l &lt; h : valeurs sans retour à retenir.':''}</div>`;
+  $('cvMi').innerHTML=m; if($('miOn').checked) out.mi=`<div class="card"><h2>Vent – mur isolé (l = ${f(l,1)} m, h = ${f(hm,1)} m)</h2>${m}</div>`;
+  return out;
+}
+function renderSyn(Z,V,N,E,cc,cb,CVH={}){
   const c=S.commune, T=(titre,rows)=>`<div class="card"><h2>${titre}</h2><table><tr><th>Paramètre</th><th class="n">Valeur</th><th>Unité</th><th>Référence normative</th><th>Contrôle</th></tr>${rows}</table></div>`;
   const r=(p,v,u,ref,ct,key)=>`<tr class="${key?'key':''}"><td>${p}</td><td class="n">${v}</td><td>${u||''}</td><td class="ref">${ref||''}</td><td class="note">${ct?esc(ct):''}</td></tr>`;
   const dt=$('date').value?new Date($('date').value).toLocaleDateString('fr-FR'):'';
@@ -681,9 +787,13 @@ function renderSyn(Z,V,N,E,cc,cb){
   h+=T('Neige – NF EN 1991-1-3 + AN',!N?r('Zone de neige','—','','',Z.sn):
     r('Zone de neige',Z.zn,'','NF EN 1991-1-3/NA',Z.sn)+r('Altitude A',f(N.A,0),'m','')+r('s<sub>k,0</sub>',f(N.sk0,2),'kN/m²','NA §4.1')+r('Δs (correction d\'altitude)',f(N.ds,3),'kN/m²','NA §4.1')
     +r('Charge de neige sur le sol s<sub>k</sub>',f(N.sk,3),'kN/m²','NA §4.1',N.ctrl,1)+r('Charge accidentelle sur le sol s<sub>Ad</sub>',N.sAd!=null?f(N.sAd,2):'—','kN/m²','§4.3 + AN')
-    +r('Pente α<sub>1</sub> / α<sub>2</sub>',`${f(N.a1,1)} / ${f(N.a2,1)}`,'°','')+r('μ<sub>1</sub>(α<sub>1</sub>) / μ<sub>1</sub>(α<sub>2</sub>)',`${f(N.m1,3)} / ${f(N.m2,3)}`,'','Tab. 5.2')+r('C<sub>e</sub> / C<sub>t</sub>',`${f(N.Ce,1)} / ${f(N.Ct,1)}`,'','§5.2(7)-(8)')
-    +r('Neige sur toiture – cas (i) versant 1 / versant 2',`${f(N.i[0],3)} / ${f(N.i[1],3)}`,'kN/m²','§5.3.3, Fig. 5.3','',1)
-    +r('Neige sur toiture – cas redistribué (ii) / (iii)',`${f(Math.max(...N.ii),3)} / ${f(Math.max(...N.iii),3)}`,'kN/m²','§5.3.3 (max. sur les 2 versants)'));
+    +(N.mono?r('Toiture à un versant : pente α',f(N.a1,1),'°','')+r('μ<sub>1</sub>(α)',f(N.m1,3),'','§5.3.2, Tab. 5.2'):r('Toiture à deux versants : pentes α<sub>1</sub> / α<sub>2</sub>',`${f(N.a1,1)} / ${f(N.a2,1)}`,'°','')+r('μ<sub>1</sub>(α<sub>1</sub>) / μ<sub>1</sub>(α<sub>2</sub>)',`${f(N.m1,3)} / ${f(N.m2,3)}`,'','§5.3.3, Tab. 5.2'))
+    +r('C<sub>e</sub> / C<sub>t</sub>',`${f(N.Ce,2)} / ${f(N.Ct,1)}`,'','AN clauses 5.2(7) et 5.2(8)')
+    +(N.mono?r('Neige sur toiture μ<sub>1</sub>·C<sub>e</sub>·C<sub>t</sub>·s<sub>k</sub>',f(N.un,3),'kN/m²','§5.3.2, Fig. 5.2','',1)
+      :r('Neige sur toiture – cas (i) versant 1 / versant 2',`${f(N.i[0],3)} / ${f(N.i[1],3)}`,'kN/m²','§5.3.3, Fig. 5.3','',1)
+      +r('Neige sur toiture – cas redistribué (ii) / (iii)',`${f(Math.max(...N.ii),3)} / ${f(Math.max(...N.iii),3)}`,'kN/m²','§5.3.3 (max. sur les 2 versants)'))
+    +(N.maj?r(`Majoration pente d'écoulement ${f(N.pe,1)} %`,'+'+f(N.maj,1),'kN/m²','AN clause 5.2(6) (zone concernée + 2 m)','',1):''));
+  if(N) h+=`<div class="card"><h2>Neige – coefficients de forme (NF EN 1991-1-3 §5.3 + AN)</h2>${schemasNeige(N)}</div>`;
   h+=T('Séisme – arrêté du 22/10/2010 modifié + NF EN 1998-1 + AN',!E?r('Zone de sismicité','—','','',Z.ss):
     r('Zone de sismicité',E.zs,'','Décret n°2010-1255',Z.ss)+r('Aléa sismique',ALEA[E.zs],'','Décret n°2010-1255 (art. R.563-4 C. env.)')+r('Catégorie d\'importance / γ<sub>I</sub>',`${E.cat} / ${f(E.gI,1)}`,'','Arrêté art. 1-2')
     +r('a<sub>gR</sub>',f(E.agR,2),'m/s²','Arrêté art. 4')+r('a<sub>g</sub> = γ<sub>I</sub>·a<sub>gR</sub>',f(E.ag,3),'m/s²','EN 1998-1 §3.2.1','',1)+r('Classe de sol / S',`${E.sol} / ${f(E.S,2)}`,'','EN 1998-1 Tab. 3.1-3.2')
@@ -694,8 +804,9 @@ function renderSyn(Z,V,N,E,cc,cb){
   h+=T('Complexes – charges permanentes (EN 1991-1-1)',
     r('Poids propre du complexe de couverture',`${f(cc.tot,3)} kN/m² = ${f(cc.tot*100,1)}`,'daN/m²','EN 1991-1-1 §5.2','',1)
     +r('Poids propre du complexe de bardage',`${f(cb.tot,3)} kN/m² = ${f(cb.tot*100,1)}`,'daN/m²','EN 1991-1-1 §5.2','',1));
+  h+=(CVH.prof||'')+(CVH.bat||'')+(CVH.ti||'')+(CVH.mi||'');
   if(V&&E) h+=`<div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><h2>Profil q<sub>p</sub>(z)</h2>${graphVent(V)}</div><div><h2>Spectres de réponse</h2>${graphSpectre(E)}</div></div>`;
-  h+=`<div class="note">Zones issues de la base de zonage du classeur « ${esc(ZONAGE.source)} » (vent/neige : par canton ; séisme : par commune), à confirmer sur les textes en vigueur. Outil d'aide : les résultats doivent être vérifiés par l'ingénieur ; il ne dispense pas de la lecture des textes. Non traités : Cp<sub>e</sub>/Cp<sub>i</sub>, accumulations de neige, orographie (c<sub>o</sub> ≠ 1 à saisir), cas cycloniques des DROM.</div>`;
+  h+=`<div class="note">Zones issues de la base de zonage du classeur « ${esc(ZONAGE.source)} » (vent/neige : par canton ; séisme : par commune), à confirmer sur les textes en vigueur. Outil d'aide : les résultats doivent être vérifiés par l'ingénieur ; il ne dispense pas de la lecture des textes. Non traités : accumulations de neige (obstacles, noues, acrotères), procédure 2 d'orographie (obstacle isolé : valeur à saisir), cas cycloniques des DROM.</div>`;
   $('syn').innerHTML=h;
   $('phInfo').innerHTML=`Affaire : ${esc($('affaire').value)||'—'} · ${esc($('phase').value)||''} · Date : ${dt||new Date().toLocaleDateString('fr-FR')} · Rédacteur : ${esc($('auteur').value)||'—'}`;
 }
@@ -820,17 +931,19 @@ init();
 $('versS1').onclick=()=>{
   render(); const {Z,V,N,E}=window.__R, c=S.commune;
   const o={lieu:(c?c.n+' ('+c.d+')':'')+' – alt. '+f(num('alt'),0)+' m', date:new Date().toISOString(),
-    vent:V?{zone:Z.zv,vb:V.vb,rho:V.rho,z0:V.t.z0,zmin:V.t.zmin,kr:V.kr,kI:V.t.kI,co:V.co,coMode:$('coMode').value,dAc:$('coMode').value==='p1'&&S.oro?S.oro.dAc??null:null,cat:V.t.id}:null,
+    vent:V?{cfFam:CV.cfFamilles(),zone:Z.zv,vb:V.vb,rho:V.rho,z0:V.t.z0,zmin:V.t.zmin,kr:V.kr,kI:V.t.kI,co:V.co,coMode:$('coMode').value,dAc:$('coMode').value==='p1'&&S.oro?S.oro.dAc??null:null,cat:V.t.id}:null,
     neige:N?{zone:Z.zn,sk:N.sk,sAd:N.sAd,alt:N.A}:null,
     seisme:E?{zone:E.zs,ag:E.ag,alpha:E.alpha,S:E.S,cat:E.cat,sol:E.sol}:null};
   try{localStorage.setItem('fip.climat',JSON.stringify(o));$('versS1').textContent='✓ Envoyé vers S1';setTimeout(()=>$('versS1').textContent='➜ Supports S1',2500);}
   catch(e){alert('Stockage indisponible sur ce navigateur.');}
 };
 </script>
-<script src="../commun/cahier.js?v=2.10"></script>
+<script src="../commun/cahier.js?v=2.13"></script>
 <script>CAHIER.remplir({affaire:'affaire',auteur:'realise'});</script>
-<script src="../commun/replier.js?v=2.10"></script>
-<script src="../commun/export.js?v=2.10"></script>
+<script src="../commun/replier.js?v=2.13"></script>
+<script src="../commun/aide.js?v=2.13"></script>
+<script src="aide-c1.js?v=2.13"></script>
+<script src="../commun/export.js?v=2.13"></script>
 <script>EXPORT.init({code:'C1',titre:'Hypothèses climatiques, sismiques et complexes',
   zones:()=>[...document.querySelectorAll('#syn > .card')].concat(['ventRes','neigeRes','neigeToit','seismeRes','seismeGraph','seismeFa','cpxCouv','cpxBard'].map(id=>document.getElementById(id).closest('.card'))),
   donnees:()=>[document.querySelector('.panneau'),...document.querySelectorAll('main .card')],

@@ -4,19 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.10"></script>
+<script src="../commun/auth.js?v=2.13"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.10">
+<link rel="stylesheet" href="../commun/calc.css?v=2.13">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.10"></script>
-<script src="../commun/data/tuyauterie.js?v=2.10"></script>
-<script src="../commun/acier.js?v=2.10"></script>
-<script src="../commun/barres3d.js?v=2.10"></script>
-<script src="../commun/cahier.js?v=2.10"></script>
+<script src="../commun/data/profils.js?v=2.13"></script>
+<script src="../commun/data/tuyauterie.js?v=2.13"></script>
+<script src="../commun/acier.js?v=2.13"></script>
+<script src="../commun/barres3d.js?v=2.13"></script>
+<script src="../commun/coefvent.js?v=2.13"></script>
+<script src="../commun/cahier.js?v=2.13"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -89,12 +90,36 @@
     <div class="row" id="bloc3">
       <div><label id="labLt">Largeur de la traverse L<sub>b</sub> (m)</label><input id="Lt" type="number" step="0.05" value="0.8"></div>
       <div id="blocHj"><label>Pied de jambe sous la console h<sub>j</sub> (m)</label><input id="hj" type="number" step="0.05" value="0.5"></div>
-      <div id="blocNc"><label>Consoles : nombre / espacement h<sub>c</sub> (m)</label><div class="row"><select id="nc"><option>1</option><option selected>2</option><option>3</option><option>4</option></select><input id="hc" type="number" step="0.05" value="0.5"></div></div>
+      <div id="blocNc"><label>Consoles : nombre / espacement h<sub>c</sub> (m)</label><div class="row"><select id="nc"><option>1</option><option selected>2</option><option>3</option><option>4</option></select><input id="hc" type="number" step="0.05" value="0.5"></div>
+        <label title="Distance entre le sommet du montant et la première console (0 = console en tête)">Décalage de la 1<sup>re</sup> console sous le sommet o (m)</label><input id="off" type="number" step="0.05" min="0" value="0"></div>
     </div>
     <div class="row">
       <div><label>Hauteur du support au-dessus du sol z (m)</label><input id="zsol" type="number" step="0.5" value="2"></div>
       <div><label>Hauteur de sabot / cale (mm)</label><input id="sabot" type="number" step="5" value="0"></div>
     </div>
+  </div>
+
+  <div class="card" id="cFix">
+    <h2>Fixation sur l'ouvrage</h2>
+    <div class="row">
+      <div><label>Mode de fixation de la platine</label><select id="fix"></select></div>
+      <div id="bFixN"><label>Fixations (4) : entraxes a<sub>1</sub> × a<sub>2</sub> (mm)</label><div class="row"><input id="fa1" type="number" step="10" value="120" title="a1 : entraxe le long de l'axe u1 (X pour mur et plafond)"><input id="fa2" type="number" step="10" value="120" title="a2 : entraxe le long de l'axe u2"></div></div>
+    </div>
+    <div class="row" id="bFixT">
+      <div><label>Tiges filetées : diamètre / classe</label><div class="row"><select id="tD"><option>10</option><option selected>12</option><option>16</option><option>20</option><option>24</option></select><select id="tCl"><option>4.6</option><option>5.6</option><option selected>8.8</option></select></div></div>
+      <div><label>Épaisseur du mur (mm, information)</label><input id="eMur" type="number" step="10" value="200"></div>
+    </div>
+    <div id="bFixC">
+      <div class="row">
+        <div><label>Profilé existant : direction</label><select id="crDir"><option value="X">∥ X (axe des tuyaux)</option><option value="Y">∥ Y (transversal)</option></select></div>
+        <div><label>Inclinaison θ (°) / sens de la pente</label><div class="row"><input id="crAng" type="number" step="1" min="0" max="45" value="0"><select id="crPente" title="Panne : semelle inclinée en travers du profilé ; arbalétrier : profilé incliné dans son axe (glissement le long du profilé)"><option value="travers">en travers (panne)</option><option value="long">le long (arbalétrier)</option></select></div></div>
+      </div>
+      <div class="row">
+        <div><label>Crapaud : résistance en traction (kN / u)</label><input id="crT" type="number" step="0.5" value="5"></div>
+        <div><label>Crapaud : résistance au glissement (kN / u)</label><input id="crV" type="number" step="0.1" value="0.8"></div>
+      </div>
+    </div>
+    <div class="note" id="noteFix"></div>
   </div>
 
   <div class="card">
@@ -118,7 +143,7 @@
     <div class="row3">
       <div><label>q<sub>p</sub>(z) (kN/m²)</label><input id="qp" type="number" step="0.01" value="0.70"></div>
       <div><label>c<sub>f</sub> tuyau</label><input id="cft" type="number" step="0.1" value="1.2"></div>
-      <div><label>c<sub>f</sub> profilé</label><input id="cfp" type="number" step="0.1" value="2.0"></div>
+      <div><label>c<sub>f</sub> profilé (vide = AN par famille)</label><input id="cfp" type="number" step="0.1" value="" placeholder="AN fig. 7.39–7.50"></div>
     </div>
     <div class="row3">
       <div><label>s<sub>k</sub> (kN/m²)</label><input id="sk" type="number" step="0.05" value="0.45"></div>
@@ -172,6 +197,7 @@
   <div class="card"><h2>Vérifications (taux = sollicitation / résistance)</h2><div id="rRatios"></div></div>
   <div class="card"><h2>Synthèse par barre</h2><div id="rBarres"></div></div>
   <div class="card"><h2>Descente de charges sur l'ouvrage (platines / fixations)</h2><div id="rDDC"></div></div>
+  <div class="card"><h2>Fixations sur l'ouvrage (efforts par fixation)</h2><div id="rFix"></div></div>
   <div class="card"><h2>Charges des tuyauteries par cas</h2><div id="rCharges"></div></div>
   <div class="card"><h2>Entraxes entre tuyauteries</h2><div id="rEntraxes"></div></div>
   <div class="card"><h2>Données de calcul</h2><div id="rData"></div></div>
@@ -323,7 +349,7 @@ function modele(D){
     case 'T': barre('Montant','m',pm,[0,0,0],[0,0,H],vzM,2*H,H,true); barre('Traverse','t',pt,[0,-Lt/2,H],[0,Lt/2,H],vzT,Lt,Lt/2,true);
       appuis.push({pt:[0,0,0],c:ENC,lib:'Pied (platine au sol)',k:'sol'}); break;
     case 'L': barre('Montant','m',pm,[0,0,0],[0,0,H],vzM,2*H,H,true);
-      for(let k=0;k<D.nc;k++){ const z=Math.max(H-k*D.hc,0.05); barre('Console '+(k+1),'t',pt,[0,0,z],[0,Lt,z],vzT,2*Lt,Lt,true); }
+      for(let k=0;k<D.nc;k++){ const z=Math.max(H-D.off-k*D.hc,0.05); barre('Console '+(k+1),'t',pt,[0,0,z],[0,Lt,z],vzT,2*Lt,Lt,true); }
       appuis.push({pt:[0,0,0],c:ENC,lib:'Pied (platine au sol)',k:'sol'}); break;
     case 'U': barre('Montant gauche','m',pm,[0,0,0],[0,0,H],vzM,2*H,H,true); barre('Montant droit','m',pm,[0,Lt,0],[0,Lt,H],vzM,2*H,H,true); barre('Traverse','t',pt,[0,0,H],[0,Lt,H],vzT,Lt,Lt,false);
       appuis.push({pt:[0,0,0],c:ENC,lib:'Pied gauche',k:'sol'}); appuis.push({pt:[0,Lt,0],c:ENC,lib:'Pied droit',k:'sol'}); break;
@@ -387,6 +413,9 @@ function geometrie(D){
    CAS DE CHARGE ÉLÉMENTAIRES (valeurs caractéristiques)
    G, T, S, WY, WX, EP, EX, EY — les opposés (T−, W−…) par superposition
    ===================================================================== */
+/* c_f du profilé : saisi, sinon NF EN 1991-1-4/NA fig. 7.39 à 7.50 ramené à la largeur projetée (commun/coefvent.js), ψλ = 1 */
+const CF_FAM=CV.cfFamilles();
+const cfProfil=(p,D)=>D.cfp!=null?D.cfp:(CF_FAM[p.f]??2.0);
 function casDeCharge(D,Gm){
   const cas={}; ['G','T','S','WY','WX','EP','EX','EY'].forEach(c=>cas[c]={charges:[],reparties:[]});
   const add=(c,n,F)=>cas[c].charges.push({n,F}), rep=(c,b,q)=>cas[c].reparties.push({b,q});
@@ -406,7 +435,7 @@ function casDeCharge(D,Gm){
   Gm.barres.forEach((e,k)=>{
     const b=Gm.B[Gm.elemBarre[k].bi], pp=b.p.m*gN/1000;
     rep('G',k,[0,0,-pp]);
-    if(D.cW){ rep('WY',k,[0,D.qp*D.cfp*b.ext([0,1,0])*Math.hypot(b.dir[0],b.dir[2]),0]); rep('WX',k,[D.qp*D.cfp*b.ext([1,0,0])*Math.hypot(b.dir[1],b.dir[2]),0,0]); }
+    if(D.cW){ const cf=cfProfil(b.p,D); rep('WY',k,[0,D.qp*cf*b.ext([0,1,0])*Math.hypot(b.dir[0],b.dir[2]),0]); rep('WX',k,[D.qp*cf*b.ext([1,0,0])*Math.hypot(b.dir[1],b.dir[2]),0,0]); }
     if(D.cE){ rep('EX',k,[kE*pp,0,0]); rep('EY',k,[0,kE*pp,0]); }
   });
   return {cas,detail,Sa,kE};
@@ -504,10 +533,10 @@ function verifier(D){
    ===================================================================== */
 function donnees(){
   const typ=typeSup(), multi=TYPES[typ].multi;
-  return {typ,Lm:Math.max(num('Lm',1),0.05),Lt:Math.max(num('Lt',0.8),0.05),nc:+$('nc').value,hc:Math.max(num('hc',0.5),0.05),hj:Math.max(num('hj',0.5),0.05),
+  return {typ,Lm:Math.max(num('Lm',1),0.05),Lt:Math.max(num('Lt',0.8),0.05),nc:+$('nc').value,hc:Math.max(num('hc',0.5),0.05),hj:Math.max(num('hj',0.5),0.05),off:Math.max(num('off',0),0),
     pm:profil($('prof').value),pt:multi?profil($('prof2').value):null,sabot:num('sabot'),tuyaux:tuyaux.map(t=>({...t,P:propsTuyau(t)})),
     cT:$('cT').checked,cW:$('cW').checked,cS:$('cS').checked,cE:$('cE').checked,cEP:$('cEP').checked,
-    qp:num('qp'),cft:num('cft',1.2),cfp:num('cfp',2),sk:num('sk'),mus:num('mus',0.8),altN:$('altN').value==='1',
+    qp:num('qp'),cft:num('cft',1.2),cfp:$('cfp').value===''?null:num('cfp',2),sk:num('sk'),mus:num('mus',0.8),altN:$('altN').value==='1',
     aS:num('aS'),zH:num('zH',1),TaT:num('TaT',1),qa:num('qa',1),ga:num('ga',1),dlim:num('dlim',150),dmax:num('dmax',5),jeu:num('jeu',50),
     platine:$('platine').value,Sj:num('Sj',500),cible:Math.min(Math.max(num('rCible',90),50),100)/100};
 }
@@ -517,6 +546,10 @@ function majFormulaire(){
   $('labL').textContent=typ==='murJ'?'Longueur de la console L (m)':typ==='mur'?'Longueur de la console L (m)':typ==='plafond'?'Longueur de la suspente H (m)':'Hauteur du montant H (m)';
   $('labP1').textContent=typ==='murJ'?'Profilé de la console':multi?'Profilé des montants':typ==='mur'?'Profilé de la console':typ==='plafond'?'Profilé de la suspente':'Profilé du montant';
   $('bloc2').style.display=multi?'':'none'; $('bloc3').style.display=multi?'':'none'; $('blocNc').style.display=typ==='L'?'':'none'; $('blocHj').style.display=typ==='murJ'?'':'none';
+  const fx=$('fix'), opts=[['chev','Chevilles (efforts transmis au fournisseur)']].concat(['mur','murJ'].includes(typ)?[['tige','Tiges filetées traversantes + contre-plaque']]:[]).concat(typ==='plafond'?[['crap','Crapautage sur profilé existant']]:[]);
+  if(fx.dataset.t!==typ||fx.options.length!==opts.length){ const v=fx.value; fx.innerHTML=opts.map(([k,l])=>`<option value="${k}">${l}</option>`).join(''); if(opts.some(o=>o[0]===v)) fx.value=v; fx.dataset.t=typ; }
+  $('bFixT').style.display=fx.value==='tige'?'':'none'; $('bFixC').style.display=fx.value==='crap'?'':'none';
+  $('noteFix').innerHTML={chev:'Platine fixée par 4 chevilles : les efforts par cheville (traction, cisaillement) sont donnés pour le choix fournisseur (Hilti PROFIS, Fischer…).',tige:'Mur peu résistant ou mince : 4 tiges filetées traversantes, contre-plaque côté opposé. Tiges vérifiées NF EN 1993-1-8 Tab. 3.4 ; mur (écrasement sous contre-plaque) non vérifié.',crap:'Platine pincée par 4 crapauds sur la semelle d\'un profilé existant (sans perçage). Traction et glissement à comparer aux valeurs du catalogue (Lindapter, Kee Klamp…) ; le glissement le long du profilé est le point sensible, aggravé par l\'inclinaison θ.'}[fx.value]||'';
   $('labOr').textContent=['mur','murJ'].includes(typ)?'Orientation de la console (et de la jambe)':typ==='plafond'?'Orientation de la suspente':'Orientation du montant';
   $('bloc2').querySelector('label').textContent=typ==='murJ'?'Profilé de la jambe de force':'Profilé de la traverse / des consoles';
   $('blocSj').style.display=$('platine').value==='saisie'?'':'none';
@@ -547,9 +580,45 @@ function calc(){
   $('rRatios').innerHTML=barresRatios(V.lignes,D.cible)+`<div class="note">${V.res.length} combinaisons ELU vérifiées (dont ${V.res.filter(r=>r.c.type==='Sismique').length} sismiques) sur ${V.Gm.B.length} barre(s), sections aux extrémités et au milieu de chaque tronçon.</div>`;
   $('rBarres').innerHTML=`<table><tr><th>Barre</th><th>Profilé</th><th class="n">L (m)</th><th class="n">L<sub>cr</sub> (m)</th><th class="n">Section</th><th class="n">Cisaill.</th><th class="n">Stabilité</th><th class="n">Gauchis.</th><th class="n">Déplac.</th><th></th></tr>`+
     V.PB.map(P=>`<tr><td>${escH(P.b.lib)}</td><td>${escH(P.b.p.n)} (cl. ${P.R.cl})</td><td class="n">${f(P.b.L,2)}</td><td class="n">${f(P.St.Lcr,2)}</td><td class="n">${f(P.rS*100,0)} %</td><td class="n">${f(P.rV*100,0)} %</td><td class="n">${f(P.rB*100,0)} %</td><td class="n">${P.gw?f(P.rW*100,0)+' %':'—'}</td><td class="n">${f(P.rD*100,0)} %</td><td>${badgeTaux(P.max,D.cible)}</td></tr>`).join('')+`</table><div class="note">Gauchissement : part σ<sub>w</sub>/f<sub>y</sub> incluse dans les taux de section et de stabilité (profilés I et U ; négligeable pour cornières et tubes).</div>`;
-  ddc(V,env); charges(V,D); $('rEntraxes').innerHTML=tableEntraxes(D,V); donneesCalc(D,V); combos(V); notes(D,V);
+  ddc(V,env); $('rFix').innerHTML=tableFix(D,V); charges(V,D); $('rEntraxes').innerHTML=tableEntraxes(D,V); donneesCalc(D,V); combos(V); notes(D,V);
   if(vue3dActive) majVue3D();
   planifierPerspective();
+}
+/* ---------- fixations des platines (4 fixations en rectangle a1 × a2) ---------- */
+const AS_T={10:58,12:84.3,16:157,20:245,24:353}, FUB={'4.6':400,'5.6':500,'8.8':800};
+function rot3(v,k,t){ const c=Math.cos(t),s=Math.sin(t),d=v[0]*k[0]+v[1]*k[1]+v[2]*k[2],x=[k[1]*v[2]-k[2]*v[1],k[2]*v[0]-k[0]*v[2],k[0]*v[1]-k[1]*v[0]]; return v.map((vi,i)=>vi*c+x[i]*s+k[i]*d*(1-c)); }
+function fixations(D,V){
+  const mode=$('fix').value||'chev', a1=Math.max(num('fa1',120),20)/1000, a2=Math.max(num('fa2',120),20)/1000, r=Math.hypot(a1,a2)/2;
+  const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]], dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+  const out=[];
+  V.Gm.appuis.forEach((ap,ia)=>{ if(!['sol','mur','plafond'].includes(ap.k)) return;
+    let n=ap.k==='sol'?[0,0,1]:ap.k==='mur'?[0,1,0]:[0,0,-1], u1=[1,0,0], th=0;
+    if(mode==='crap'&&ap.k==='plafond'){ const db=$('crDir').value==='X'?[1,0,0]:[0,1,0], kax=$('crPente').value==='long'?cross([0,0,1],db):db; th=Math.max(0,Math.min(num('crAng',0),60))*Math.PI/180; n=rot3(n,kax,th); u1=rot3(db,kax,th); }
+    const u2=cross(n,u1); let w={T:{v:0},V:{v:0},S:{v:0},I:{v:0}};
+    V.res.forEach(rc=>{ const F=rc.Rb[ia].map(x=>-x), Fv=F.slice(0,3), M=F.slice(3);
+      const Nt=dot(Fv,n), T=Math.max(0,Nt)/4+Math.abs(dot(M,u1))/(2*a2)+Math.abs(dot(M,u2))/(2*a1), Mt=Math.abs(dot(M,n));
+      const Vb=Math.hypot(dot(Fv,u1),dot(Fv,u2))/4+Mt/(4*r), Sl=Math.abs(dot(Fv,u1))/4+Mt/(4*r);
+      if(T>w.T.v) w.T={v:T,c:rc.c.nom,Vc:Vb}; if(Vb>w.V.v) w.V={v:Vb,c:rc.c.nom,Tc:T}; if(Sl>w.S.v) w.S={v:Sl,c:rc.c.nom};
+      if(mode==='tige'){ const d=+$('tD').value, fub=FUB[$('tCl').value], As=AS_T[d], FtRd=0.9*fub*As/1.25/1000, FvRd=0.6*fub*As/1.25/1000, I=Vb/FvRd+T/(1.4*FtRd);
+        if(I>w.I.v) w.I={v:I,c:rc.c.nom,FtRd,FvRd,rt:T/FtRd,rv:Vb/FvRd}; } });
+    const o={ap,ia,mode,a1,a2,th,...w}; if(mode==='crap'&&ap.k==='plafond'){ o.rT=w.T.v/Math.max(num('crT',5),0.01); o.rS=w.S.v/Math.max(num('crV',0.8),0.01); }
+    if(mode==='tige'&&ap.k==='mur'){ o.d=+$('tD').value; o.cl=$('tCl').value; }
+    out.push(o); });
+  return out;
+}
+function tableFix(D,V){
+  const L=fixations(D,V), nm=c=>escH(String(c||'').replace(/<[^>]+>/g,''));
+  if(!L.length) return '<div class="note">Pas de platine encastrée.</div>';
+  return L.map(o=>{ const m=o.mode==='tige'&&o.ap.k==='mur'?'tige':o.mode==='crap'&&o.ap.k==='plafond'?'crap':'chev';
+    let h=`<h3>${escH(o.ap.lib)} – ${m==='tige'?`4 tiges filetées M${o.d} cl. ${o.cl} traversantes + contre-plaque`:m==='crap'?`4 crapauds sur profilé existant${o.th?` (semelle inclinée θ = ${f(o.th*180/Math.PI,0)}°)`:''}`:'4 chevilles'} – entraxes ${f(o.a1*1000,0)} × ${f(o.a2*1000,0)} mm</h3><table>
+      <tr><td>Traction maximale par fixation</td><td class="n"><b>${f(o.T.v,2)} kN</b></td><td class="note">${nm(o.T.c)} (cisaillement concomitant ${f(o.T.Vc,2)} kN)</td></tr>
+      <tr><td>Cisaillement maximal par fixation</td><td class="n"><b>${f(o.V.v,2)} kN</b></td><td class="note">${nm(o.V.c)} (traction concomitante ${f(o.V.Tc,2)} kN)</td></tr>`;
+    if(m==='tige') h+=`<tr><td>F<sub>t,Rd</sub> = 0,9·f<sub>ub</sub>·A<sub>s</sub>/γ<sub>M2</sub> ; F<sub>v,Rd</sub> = 0,6·f<sub>ub</sub>·A<sub>s</sub>/γ<sub>M2</sub></td><td class="n">${f(o.I.FtRd,1)} / ${f(o.I.FvRd,1)} kN</td><td class="note">NF EN 1993-1-8 Tab. 3.4 (γ<sub>M2</sub> = 1,25, filetage dans le plan de cisaillement)</td></tr>
+      <tr class="key"><td>Interaction F<sub>v,Ed</sub>/F<sub>v,Rd</sub> + F<sub>t,Ed</sub>/(1,4·F<sub>t,Rd</sub>) ≤ 1</td><td class="n">${f(o.I.v*100,0)} %</td><td>${badgeTaux(o.I.v,D.cible)} <span class="note">${nm(o.I.c)}</span></td></tr>`;
+    if(m==='crap') h+=`<tr><td>Glissement le long du profilé existant (par crapaud)</td><td class="n"><b>${f(o.S.v,2)} kN</b></td><td class="note">${nm(o.S.c)}</td></tr>
+      <tr class="key"><td>Traction / résistance catalogue</td><td class="n">${f(o.rT*100,0)} %</td><td>${badgeTaux(o.rT,D.cible)}</td></tr>
+      <tr class="key"><td>Glissement / résistance catalogue</td><td class="n">${f(o.rS*100,0)} %</td><td>${badgeTaux(o.rS,D.cible)}</td></tr>`;
+    return h+'</table>'; }).join('')+`<div class="note">Modèle prudent : platine rigide, 4 fixations aux angles d'un rectangle a<sub>1</sub> × a<sub>2</sub>, traction = N/4 + M<sub>1</sub>/(2·a<sub>2</sub>) + M<sub>2</sub>/(2·a<sub>1</sub>) (axe neutre au centre du groupe, sans soulagement par la compression), cisaillement = V/4 + M<sub>t</sub>/(4·r). Toutes les combinaisons ELU et sismiques sont parcourues. Platine, soudures et support existant non vérifiés.</div>`;
 }
 /* ---------- descente de charges (par appui) ---------- */
 const COMP=['F<sub>x</sub> (kN)','F<sub>y</sub> (kN)','F<sub>z</sub> (kN)','M<sub>x</sub> (kNm)','M<sub>y</sub> (kNm)','M<sub>z</sub> (kNm)'];
@@ -580,7 +649,7 @@ function ddc(V,env){
 function charges(V,D){
   $('rCharges').innerHTML=`<table><tr><th>Tuyauterie</th><th>Barre</th><th class="n">G (kN)</th><th class="n">T : F<sub>x</sub> / F<sub>y</sub> / F<sub>z</sub> (kN)</th><th class="n">S (kN)</th><th class="n">W (kN)</th><th class="n">EP (kN)</th><th class="n">E (kN)</th></tr>`+
    V.CC.detail.map((d,k)=>`<tr><td>${escH(d.nom)}</td><td>${escH(V.Gm.B[V.Gm.T[k].bi].lib)}</td><td class="n">${f(d.G,2)}</td><td class="n">${d.T.map(x=>f(x,2)).join(' / ')}</td><td class="n">${f(d.S,2)}</td><td class="n">${f(d.W,2)}</td><td class="n">${f(d.EP,2)}</td><td class="n">${f(d.E,2)}</td></tr>`).join('')+
-   `</table><div class="note">G = q<sub>service</sub> × portée + G suppl. · T : frottement μ·G (glissant), + F<sub>y</sub> (guidé), efforts saisis (point fixe) · S = μ·s<sub>k</sub>·D<sub>cal</sub>·portée · W = q<sub>p</sub>·c<sub>f</sub>·D<sub>cal</sub>·portée (EN 1991-1-4 §7.9) · E = S<sub>a</sub>·γ<sub>a</sub>/q<sub>a</sub>·G avec S<sub>a</sub> = ${f(V.CC.Sa,3)} (EN 1998-1 éq. 4.24). Profilés : poids propre, vent q<sub>p</sub>·c<sub>f</sub>·largeur exposée (sans facteur d'élancement), masse sismique.</div>`;
+   `</table><div class="note">G = q<sub>service</sub> × portée + G suppl. · T : frottement μ·G (glissant), + F<sub>y</sub> (guidé), efforts saisis (point fixe) · S = μ·s<sub>k</sub>·D<sub>cal</sub>·portée · W = q<sub>p</sub>·c<sub>f</sub>·D<sub>cal</sub>·portée (EN 1991-1-4 §7.9) · E = S<sub>a</sub>·γ<sub>a</sub>/q<sub>a</sub>·G avec S<sub>a</sub> = ${f(V.CC.Sa,3)} (EN 1998-1 éq. 4.24). Profilés : poids propre, vent q<sub>p</sub>·c<sub>f</sub>·largeur exposée (ψ<sub>λ</sub> = 1), c<sub>f</sub> = ${D.cfp!=null?f(D.cfp,2)+' (saisi)':[...new Set(V.Gm.B.map(b=>b.p.f))].map(fa=>fa+' '+f(CF_FAM[fa]??2,2)).join(', ')+' (NF EN 1991-1-4/NA fig. 7.39–7.50, ramené à la largeur projetée)'}, masse sismique.</div>`;
 }
 function entraxes(D,V){
   const T=V.Gm.T,out=[];
@@ -670,6 +739,10 @@ function alertes(D,V){
       add(nul?'warn':'info',`Point fixe – ${nom}`,nul?'Efforts de dilatation nuls : sur un point fixe, ce sont les réactions issues de l\'étude de flexibilité (CAESAR II, ROHR2…) qui gouvernent, souvent plus que le poids. Les saisir (F<sub>x</sub>, F<sub>y</sub>, F<sub>z</sub>) ou les estimer prudemment.':`Efforts F<sub>x</sub> = ${f(+t.Fx||0,2)}, F<sub>y</sub> = ${f(+t.Fy||0,2)}, F<sub>z</sub> = ${f(+t.Fz||0,2)} kN : à confirmer par l'étude de flexibilité de la ligne (hors prédimensionnement rapide).`,'Étude de flexibilité (EN 13480-3 §12 / ASME B31.3 §319)'); }
     if(t.fonc==='guide') add('info',`Guidage – ${nom}`,'Prévoir des butées latérales soudées (jeu de guidage à préciser) ; vérifier leur soudure en exécution.');
   }
+  fixations(D,V).forEach(o=>{ const lib=escH(o.ap.lib);
+    if(o.I&&o.I.v>1) add('bloq',`Tiges filetées insuffisantes – ${lib}`,`Interaction traction + cisaillement ${f(o.I.v*100,0)} % : augmenter le diamètre, la classe ou l'entraxe.`,'NF EN 1993-1-8 Tab. 3.4');
+    if(o.rT>1) add('bloq',`Crapauds : traction dépassée – ${lib}`,`${f(o.T.v,2)} kN par crapaud &gt; ${f(num('crT',5),2)} kN (catalogue).`,'Catalogue fabricant');
+    if(o.rS>1) add('bloq',`Crapauds : risque de glissement – ${lib}`,`${f(o.S.v,2)} kN par crapaud le long du profilé &gt; ${f(num('crV',0.8),2)} kN (catalogue)${o.th?` ; inclinaison θ = ${f(o.th*180/Math.PI,0)}° défavorable`:''}. Prévoir une butée soudée ou boulonnée, ou des crapauds anti-glissement.`,'Catalogue fabricant'); });
   if(D.typ==='murJ'){ const bj=num('Lt',0.6), L=D.Lm, Js=Gm.B[1], ang=Math.atan2(D.hj,Math.min(bj,L))*180/Math.PI;
     if(bj>L+1e-9) add('bloq','Jambe de force attachée au-delà du bout de la console',`b = ${f(bj,2)} m &gt; L = ${f(L,2)} m : géométrie impossible (calcul fait avec b = L). Prendre 0,5·L ≤ b ≤ L.`,'Règle de conception','t');
     else if(bj<0.5*L-1e-9) add('warn','Jambe de force attachée trop près du mur',`b = ${f(bj,2)} m &lt; 0,5·L = ${f(0.5*L,2)} m : la jambe soulage peu la console (porte-à-faux de ${f(L-bj,2)} m au-delà). Prendre 0,5·L ≤ b ≤ L.`,'Règle de conception','t');
@@ -713,6 +786,7 @@ function cotesDef(typ=typeSup()){
   const L=[{id:'Lm',l:['mur','murJ'].includes(typ)?'L':'H',lib:['mur','murJ'].includes(typ)?'Longueur de la console':typ==='plafond'?'Longueur de la suspente':'Hauteur du montant'}];
   if(TYPES[typ].multi) L.push({id:'Lt',l:'L',lib:typ==='L'?'Longueur des consoles':typ==='T'?'Largeur de la traverse':'Portée de la traverse'});
   if(typ==='L'&&+$('nc').value>1) L.push({id:'hc',l:'h',lib:'Espacement des consoles'});
+  if(typ==='L') L.push({id:'off',l:'o',lib:'Décalage de la 1re console sous le sommet'});
   if(typ==='murJ'){ L[1]={id:'Lt',l:'b',lib:'Attache de la jambe sur la console'}; L.push({id:'hj',l:'h',lib:'Pied de jambe sous la console'}); }
   tuyaux.forEach((t,i)=>L.push({id:'pos'+i,l:'a'+(i+1),lib:'Position de '+(t.nom||'L'+(i+1))}));
   L.push({id:'zsol',l:'Z',lib:'Hauteur de pose au-dessus du sol (vent)'});
@@ -771,6 +845,7 @@ function vueFace(D,V,opt={}){                               // plan Y–Z (regar
   if(hz){const y0=Math.min(hz.A[1],hz.B[1]),y1=Math.max(hz.A[1],hz.B[1]),yy=Math.min(Y(Math.min(...Gm.B.map(b=>Math.min(b.A[2],b.B[2])+(b.vert?0:b.bord([0,0,1]).lo))))+18+(D.typ==='murJ'?20:0),H-24);s+=cH(X(y0),X(y1),yy,lc('L',y1-y0));}
   if(D.typ==='murJ'){ const j=Gm.B[1], xx=X(0)-30, yb=Y(j.A[2]); s+=rap(X(0),yb,xx-4,yb)+rap(X(0),Y(0),xx-4,Y(0))+cV(xx,Y(0),yb,lc('h',-j.A[2]));
     const yy=Y(0)-(plan?18:22)-16*0; s+=rap(X(j.B[1]),Y(0),X(j.B[1]),yy-4)+cH(X(0),X(j.B[1]),Y(j.A[2])+18,lc('b',j.B[1]),false)+rap(X(j.B[1]),Y(0),X(j.B[1]),Y(j.A[2])+22); }
+  if(D.typ==='L'&&D.off>0){const b1=Gm.B[1],m=Gm.B[0],xx=X(m.A[1])-14;s+=rap(X(m.A[1]),Y(m.B[2]),xx-4,Y(m.B[2]))+cV(xx,Y(m.B[2]),Y(b1.A[2]),lc('o',D.off));}
   if(D.typ==='L'&&D.nc>1){const b1=Gm.B[1],b2=Gm.B[2],xx=X(b1.B[1])+14;s+=rap(X(b1.B[1]),Y(b1.A[2]),xx+4,Y(b1.A[2]))+rap(X(b2.B[1]),Y(b2.A[2]),xx+4,Y(b2.A[2]))+cVd(xx,Y(b1.A[2]),Y(b2.A[2]),lc('h',b1.A[2]-b2.A[2]));}
   let iv=0, ih={};
   T.forEach((t,i)=>{ const b=Gm.B[t.bi], lib=lc('a'+(i+1),Math.abs(+t.pos||0)), cx=X(t.c[1]), cy=Y(t.c[2]);
@@ -913,7 +988,7 @@ function importerC1(){
   let o=null; try{o=JSON.parse(localStorage.getItem('fip.climat'));}catch(e){}
   if(!o){$('infoC1').textContent='Aucune donnée : dans C1, cliquer « Envoyer vers les supports S1 ».';return;}
   const z=Math.max(num('zsol',2)+(['mur','murJ'].includes(typeSup())?0:num('Lm',1)),0.1);
-  if(o.vent){const v=o.vent,co=v.coMode==='p1'&&v.dAc!=null?Math.max(1,1+0.004*v.dAc*Math.exp(-0.014*(Math.max(z,10)-10))):(v.co||1),zz=Math.max(z,v.zmin),cr=v.kr*Math.log(zz/v.z0),vm=cr*co*v.vb,Iv=v.kI/(co*Math.log(zz/v.z0));$('qp').value=((1+7*Iv)*0.5*v.rho*vm*vm/1000).toFixed(3);}
+  if(o.vent){const v=o.vent;const co=v.coMode==='p1'&&v.dAc!=null?Math.max(1,1+0.004*v.dAc*Math.exp(-0.014*(Math.max(z,10)-10))):(v.co||1),zz=Math.max(z,v.zmin),cr=v.kr*Math.log(zz/v.z0),vm=cr*co*v.vb,Iv=v.kI/Math.log(zz/v.z0);$('qp').value=((1+7*Iv)*0.5*v.rho*vm*vm/1000).toFixed(3);}
   if(o.neige){$('sk').value=o.neige.sk.toFixed(3);$('altN').value=o.neige.alt>1000?'1':'0';}
   if(o.seisme){$('aS').value=(o.seisme.alpha*o.seisme.S).toFixed(4);}
   $('infoC1').innerHTML=`✓ C1 : ${escH(o.lieu||'')} – q<sub>p</sub> recalculé à z = ${f(z,1)} m (sol + support)${o.vent?`, c<sub>o</sub>(z) = ${f(o.vent.coMode==='p1'&&o.vent.dAc!=null?Math.max(1,1+0.004*o.vent.dAc*Math.exp(-0.014*(Math.max(z,10)-10))):(o.vent.co||1),3)}`:''} ; s<sub>k</sub> = ${o.neige?f(o.neige.sk,2):'—'} kN/m² ; α·S = ${o.seisme?f(o.seisme.alpha*o.seisme.S,3):'—'}.`;
@@ -972,7 +1047,7 @@ function resumeS1(){                                     // résultats synthéti
     barres:V.Gm.B.map(b=>({lib:b.lib,profil:b.p.n,f:b.p.f,L:b.L,m:b.p.m})),masse:V.Gm.B.reduce((s,b)=>s+b.p.m*b.L,0),
     taux:V.gov.r,critere:V.gov.n.replace(/<[^>]+>/g,''),statut,bloq:nb,warn:nw,alertes:A.filter(a=>a.niv!=='info').map(a=>(a.niv==='bloq'?'⛔ ':'⚠ ')+a.titre.replace(/<[^>]+>/g,'')),
     tuyaux:V.Gm.T.map(t=>({nom:t.nom,desc:t.P.desc,G:V.CC.detail[V.Gm.T.indexOf(t)].G,barre:V.Gm.B[t.bi].lib,d:diamEtrier(t),dn:t.mode==='base'?+t.dn:null,De:t.P.De})),
-    appuis:env.map(E=>({lib:E.a.lib,k:E.a.k,profil:(V.Gm.B.find(b=>[b.A,b.B].some(P=>Math.hypot(...P.map((v,i)=>v-E.a.pt[i]))<1e-6))||V.Gm.B[0]).p.n,ELU:E.ELU.map(e=>e.v),SIS:V.res.some(r=>r.c.type==='Sismique')?E.SIS.map(e=>e.v):null,
+    fix:{mode:$('fix').value||'chev',d:+$('tD').value,cl:$('tCl').value},appuis:env.map(E=>({lib:E.a.lib,k:E.a.k,profil:(V.Gm.B.find(b=>[b.A,b.B].some(P=>Math.hypot(...P.map((v,i)=>v-E.a.pt[i]))<1e-6))||V.Gm.B[0]).p.n,ELU:E.ELU.map(e=>e.v),SIS:V.res.some(r=>r.c.type==='Sismique')?E.SIS.map(e=>e.v):null,
       cas:Object.fromEntries(['G','T','S','WY','WX','EP','EX','EY'].filter(c=>V.R[c]).map(c=>[c,V.R[c].reactions[E.a.n].map(x=>-x)]))})),
     lignes:V.lignes.map(l=>({n:l.n.replace(/<[^>]+>/g,''),r:l.r})),date:new Date().toISOString()};
 }
@@ -1012,8 +1087,10 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.10"></script>
-<script src="../commun/export.js?v=2.10"></script>
+<script src="../commun/replier.js?v=2.13"></script>
+<script src="../commun/aide.js?v=2.13"></script>
+<script src="aide-s1.js?v=2.13"></script>
+<script src="../commun/export.js?v=2.13"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>

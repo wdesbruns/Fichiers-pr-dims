@@ -1,0 +1,35 @@
+/* Aide de C1 — hypothèses climatiques, sismiques et complexes (contenu ; moteur : commun/aide.js) */
+AIDE.init({
+  titre: "Aide – C1 Hypothèses de charges",
+  intro: "C1 détermine les hypothèses de charges du projet : vent, neige, séisme, coefficients aérodynamiques et complexes de couverture et de bardage. L'onglet <b>Synthèse</b> constitue la note d'hypothèses (impression, Word, Excel). Le bouton « ➜ Supports S1 » transmet les hypothèses aux supports et au cahier.",
+  etapes: [
+    { t: "Localiser le site", html: "Taper l'adresse ou la commune, ou cliquer sur la carte. Les zones de vent, de neige et de sismicité ainsi que l'altitude (IGN) se remplissent automatiquement.", cible: "#q" },
+    { t: "Renseigner le projet", html: "Affaire, phase, date et rédacteur : ils apparaissent dans l'en-tête de la note.", cible: "#affaire" },
+    { t: "Vent", html: "Catégorie de terrain (rugosité la plus défavorable autour du site), hauteur du bâtiment et hauteur de référence. Orographie : laisser c₀ = 1, sauf site en relief (procédure 1 automatique avec l'IGN) ou étude spécifique (valeur saisie).", cible: "#terrain" },
+    { t: "Neige", html: "Toiture à un ou deux versants, pentes en degrés, pente d'écoulement de l'eau (si < 5 %, majoration de l'AN) et C<sub>e</sub> (1,25 seulement si le site est abrité en permanence).", cible: "#ntype" },
+    { t: "Séisme", html: "Catégorie d'importance du bâtiment, classe de sol et coefficient de comportement.", cible: "#p-seisme" },
+    { t: "Coefficients de vent", html: "Profilés (transmis à S1), bâtiment fermé, toiture isolée, mur isolé : cocher « note » pour les faire figurer dans la note d'hypothèses.", cible: "#p-cv" },
+    { t: "Sortir la note", html: "Onglet Synthèse, puis Word, Excel ou Imprimer.", cible: "#tabs" },
+  ],
+  faq: [
+    { q: "Quelle catégorie de terrain choisir ?", r: "Celle de la rugosité la plus défavorable (la plus lisse) dans le rayon indiqué autour du site : 0 mer ou lac, II rase campagne, IIIa bocage ou zone industrielle peu dense, IIIb zone urbaine ou industrielle dense, IV ville dense. En cas de doute, prendre la plus lisse (prudent)." },
+    { q: "Que mettre en hauteur de référence z_e ?", r: "En général la hauteur du bâtiment (ou du point étudié). Pour un support de tuyauterie, S1 recalcule q<sub>p</sub> à la hauteur réelle du support." },
+    { q: "Quand utiliser l'orographie ?", r: "Si le site est sur une butte, un plateau ou en haut d'une pente. La procédure 1 de l'AN est automatique (altitudes IGN autour du site). Au-delà de c₀ = 1,15, ou pour une colline ou une falaise isolée, une étude spécifique est nécessaire (Orom, soufflerie)." },
+    { q: "Pente en degrés ou en % ?", r: "Les pentes des versants (neige, vent) sont en degrés. Seule la pente d'écoulement de l'eau (majoration de neige) est en %." },
+    { q: "Pourquoi deux cas de vent sur la toiture (pression / dépression) ?", r: "Pour les pentes faibles et moyennes, la norme donne deux jeux de valeurs à étudier séparément : soit toute la toiture en dépression (soulèvement), soit en pression. On ne les mélange pas sur un même versant." },
+    { q: "C'est quoi c_pi +0,2 / −0,3 ?", r: "La pression intérieure du bâtiment quand la perméabilité des façades n'est pas connue (AN). Elle s'ajoute à la pression extérieure : w = q<sub>p</sub>·(c<sub>pe</sub> − c<sub>pi</sub>). Il faut étudier les deux valeurs." },
+  ],
+  bulles: {
+    terrain: "Rugosité du terrain au vent : plus le terrain est lisse (mer, plaine), plus le vent est fort.",
+    H: "Hauteur totale du bâtiment (m).",
+    ze: "Hauteur à laquelle on calcule la pression de vent (m), en général la hauteur du bâtiment.",
+    coMode: "Effet du relief sur le vent : c₀ = 1 en terrain sans relief marqué.",
+    ntype: "Forme de la toiture pour les coefficients de forme de la neige.",
+    pEc: "Pente pour l'écoulement de l'eau en %. Sous 5 %, la neige est majorée (pluie sur neige).",
+    Ce: "Exposition : 1,0 en général ; 1,25 si des bâtiments voisins empêchent en permanence le vent de déplacer la neige.",
+    a1: "Pente du versant 1 en degrés.",
+    bfL: "Longueur du bâtiment parallèle au faîtage (m).",
+    tiphi: "Encombrement sous la toiture isolée : 0 vide, 1 complètement encombré côté sous le vent (stockage).",
+    miphi: "Taux de remplissage du mur ou de la clôture : 1 plein, 0,8 légèrement ajouré.",
+  },
+});
