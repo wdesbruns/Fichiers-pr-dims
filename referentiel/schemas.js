@@ -20,18 +20,18 @@ const SCHEMAS = (() => {
     return s;
   })(), "Une action variable dominante à 100 %, les autres réduites par ψ₀ (neige 0,5 ; vent 0,6)");
 
-  S.vent = svg(560, 220, (() => {
+  S.vent = svg(560, 235, (() => {
     let s = sol(30, 260, 190) + `<line x1="40" y1="190" x2="40" y2="20" stroke="${K}"/>` + tx(40, 14, "z", { b: 1 });
     const pts = []; for (let z = 4; z <= 160; z += 6) { const zz = Math.max(z, 25); pts.push([40 + 52 * Math.log(zz / 3), 190 - z]); }
     s += `<polyline points="${pts.map((p) => p.join(",")).join(" ")}" fill="none" stroke="${B}" stroke-width="2.5"/>`;
     [40, 80, 120, 160].forEach((z) => { const zz = Math.max(z, 25), x = 40 + 52 * Math.log(zz / 3); s += fl(44, 190 - z, x - 3, 190 - z, C, 1.6); });
-    s += tx(250, 120, "q_p(z) augmente", { c: B, b: 1 }) + tx(250, 135, "avec la hauteur", { c: B }) + tx(80, 172, "z_min : valeur constante", { s: 9.5, c: M, a: "start" });
+    s += tx(80, 172, "z_min : valeur constante", { s: 9.5, c: M, a: "start" });
     s += tx(420, 30, "Rugosité du terrain (catégories)", { b: 1 });
     [["0", "mer, lac", 175, 18], ["II", "rase campagne", 110, 8], ["IIIb", "zone industrielle", 75, 4], ["IV", "ville dense", 50, 2]].forEach(([c, l, v, n], i) => {
       const y = 55 + i * 36; s += `<rect x="330" y="${y}" width="${v}" height="14" fill="${C}" opacity="${0.35 + 0.15 * (3 - i)}"/>` + tx(325, y + 11, c, { a: "end", b: 1 }) + tx(335 + v, y + 11, l, { a: "start", s: 10 });
     });
     return s + tx(420, 205, "terrain lisse = vent plus fort près du sol", { s: 10, c: M });
-  })(), "");
+  })(), "q_p(z) augmente avec la hauteur (profil logarithmique), constant sous z_min");
 
   S["coef-vent"] = svg(560, 230, (() => {
     let s = `<rect x="150" y="50" width="200" height="120" fill="#f7f9fc" stroke="${K}"/>` + fl(40, 110, 140, 110, C, 3) + tx(70, 100, "vent", { c: C, b: 1 });
@@ -67,8 +67,8 @@ const SCHEMAS = (() => {
     const c = [["1", 60, 0.72, B], ["2", 60, 0.45, C], ["3", 48, 0.2, "#d4a300"], ["4", 38, 0.12, R]];
     c.forEach(([n, mx, duc, col], i) => { const ytop = 190 - mx * 2.4, xr = 300 + 30 + duc * 200;
       s += `<path d="M300,190 Q${320},${ytop} ${330},${ytop} L${xr},${ytop} ${n === "1" ? "" : `L${xr + 12},${ytop + 25}`}" fill="none" stroke="${col}" stroke-width="2.2"/>` + tx(xr + 18, ytop + 4 + (n === "1" ? 0 : 20), "classe " + n, { a: "start", s: 10, c: col, b: 1 }); });
-    s += `<line x1="300" y1="${190 - 60 * 2.4}" x2="540" y2="${190 - 60 * 2.4}" stroke="${M}" stroke-dasharray="3 3"/>` + tx(538, 190 - 60 * 2.4 - 4, "M_pl", { a: "end", s: 10, c: M });
-    s += `<line x1="300" y1="${190 - 48 * 2.4}" x2="540" y2="${190 - 48 * 2.4}" stroke="${M}" stroke-dasharray="3 3"/>` + tx(538, 190 - 48 * 2.4 - 4, "M_el", { a: "end", s: 10, c: M });
+    s += `<line x1="300" y1="${190 - 60 * 2.4}" x2="540" y2="${190 - 60 * 2.4}" stroke="${M}" stroke-dasharray="3 3"/>` + tx(304, 190 - 60 * 2.4 - 4, "M_pl", { a: "start", s: 10, c: M });
+    s += `<line x1="300" y1="${190 - 48 * 2.4}" x2="540" y2="${190 - 48 * 2.4}" stroke="${M}" stroke-dasharray="3 3"/>` + tx(304, 190 - 48 * 2.4 - 4, "M_el", { a: "start", s: 10, c: M });
     s += `<path d="M60,60 h120 v10 h-55 v100 h55 v10 h-120 v-10 h55 v-100 h-55z" fill="#cfd8e3" stroke="${K}"/>` + `<line x1="60" y1="50" x2="115" y2="50" stroke="${R}"/>` + tx(88, 45, "c", { c: R, b: 1 }) + tx(200, 66, "t", { c: R, b: 1 });
     s += `<path d="M185,58 Q195,52 205,60 Q215,68 225,58" fill="none" stroke="${R}" stroke-width="1.5"/>` + tx(120, 205, "paroi mince (c/t grand) → voilement local", { s: 10, c: M });
     return s;
