@@ -4,20 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.15"></script>
+<script src="../commun/auth.js?v=2.16"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.15">
+<link rel="stylesheet" href="../commun/calc.css?v=2.16">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.15"></script>
-<script src="../commun/data/tuyauterie.js?v=2.15"></script>
-<script src="../commun/acier.js?v=2.15"></script>
-<script src="../commun/barres3d.js?v=2.15"></script>
-<script src="../commun/coefvent.js?v=2.15"></script>
-<script src="../commun/cahier.js?v=2.15"></script>
+<script src="../commun/data/profils.js?v=2.16"></script>
+<script src="../commun/data/tuyauterie.js?v=2.16"></script>
+<script src="../commun/acier.js?v=2.16"></script>
+<script src="../commun/barres3d.js?v=2.16"></script>
+<script src="../commun/coefvent.js?v=2.16"></script>
+<script src="../commun/cahier.js?v=2.16"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -1091,10 +1091,10 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.15"></script>
-<script src="../commun/aide.js?v=2.15"></script>
-<script src="aide-s1.js?v=2.15"></script>
-<script src="../commun/export.js?v=2.15"></script>
+<script src="../commun/replier.js?v=2.16"></script>
+<script src="../commun/aide.js?v=2.16"></script>
+<script src="aide-s1.js?v=2.16"></script>
+<script src="../commun/export.js?v=2.16"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>

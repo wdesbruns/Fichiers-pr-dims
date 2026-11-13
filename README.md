@@ -6,6 +6,7 @@ Portail de calculettes du bureau d'études, aux couleurs FIP (bleu #114088, roug
 ```
 index.html                 ← page de connexion (l'adresse à communiquer)
 accueil.html               ← tableau de bord : une tuile par calculette
+fluides/                   ← H1 propriétés des fluides (ρ, μ, ν, P_v selon t) ; moteur commun/fluides.js
 supports/                  ← S1 supports de tuyauterie (montant, console, suspente, T, L, U, L mural) – calcul 3D, DDC, vues 2D/3D
 referentiel/               ← RF référentiel vulgarisé (fiches.js) ; ancres #id appelées par les 📘 des calculettes
 base/                      ← BD base de données (profilés, tubes, matériaux, fluides, aciers, ψ, flèches, c_f vent)

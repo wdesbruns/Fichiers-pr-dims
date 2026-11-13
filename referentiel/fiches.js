@@ -166,6 +166,13 @@ const FICHES = [
   <div class="form">Estimation APS d'un point fixe : F<sub>x</sub> ≈ μ·q·L<sub>r</sub> + 12·E·I·Δ/L<sub>b</sub>³ (coude, méthode de la console guidée) ou c·Δ + P·A<sub>eff</sub> (compensateur, point fixe principal)</div>
   <p>Les vraies valeurs viennent de l'étude de flexibilité (CAESAR II, ROHR2).</p>`,
   refs: "NF EN 13480-3 §12, §13 ; ASME B31.3 §319 ; EJMA (compensateurs) ; méthode de la console guidée (M.W. Kellogg).", calc: "S1" },
+{ id: "fluides", theme: "Tuyauterie", titre: "Propriétés des fluides : masse volumique, viscosité, pression de vapeur",
+  bref: "Les propriétés d'un liquide changent avec la température : il s'allège et devient plus fluide en chauffant, et sa pression de vapeur augmente vite (risque d'ébullition, de cavitation).",
+  corps: `<ul><li><b>Masse volumique ρ</b> : sert aux charges (tuyau plein) et aux pressions statiques. Les produits pétroliers se dilatent d'environ 0,1 % par °C (≈ 10 fois plus que l'eau autour de 20 °C).</li>
+  <li><b>Viscosité</b> : dynamique μ (mPa·s = cP) ou cinématique ν = μ/ρ (mm²/s = cSt). Elle fixe le régime d'écoulement (Re = V·D/ν) et les pertes de charge ; elle chute fortement quand la température monte (gazole : ≈ 5 cSt à 20 °C, 3 cSt à 40 °C).</li>
+  <li><b>Pression de vapeur P<sub>v</sub></b> : au-dessous, le liquide se vaporise. À l'aspiration d'une pompe, il faut NPSH disponible = (P<sub>surface</sub> − P<sub>v</sub>)/(ρ·g) + H<sub>géo</sub> − pertes, supérieur au NPSH requis de la pompe avec une marge. L'eau bout à 100 °C sous 1 atm, l'essence a une P<sub>v</sub> de 30 à 70 kPa à température ambiante.</li></ul>
+  <p>Températures à retenir : la plus froide pour les pertes de charge (viscosité maximale), la plus chaude pour la cavitation (P<sub>v</sub> maximale).</p>`,
+  refs: "IAPWS (eau) ; API MPMS 11.1 / ASTM D1250 (masse volumique des produits pétroliers) ; US EPA AP-42 §7.1 (pression de vapeur) ; ASTM D341 (viscosité).", calc: "H1, T1" },
 { id: "entraxes", theme: "Tuyauterie", titre: "Entraxes entre tuyauteries",
   bref: "Deux tuyaux voisins doivent garder un jeu pour le calorifuge, les brides, le montage et les mouvements.",
   corps: `<div class="form">E ≥ (D<sub>1</sub> + D<sub>2</sub>)/2 + e<sub>cal,1</sub> + e<sub>cal,2</sub> + J &nbsp; (J = 50 à 100 mm)</div><p>Prévoir plus si brides décalées ou fortes dilatations latérales.</p>`,

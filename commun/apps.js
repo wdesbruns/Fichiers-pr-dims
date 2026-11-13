@@ -9,7 +9,7 @@
    vignette : petit schéma SVG affiché sur la carte (facultatif)
    marqueur de catégorie : ● ▬ → ■ ◆ … (couleur d'accent FIP)
    ===================================================================== */
-const CALC_VERSION = "v2.15";
+const CALC_VERSION = "v2.16";
 
 const CALC_CATEGORIES = [
   { id: "tuy", nom: "Tuyauterie", sousTitre: "Supportage, portées et descentes de charges · CODETI / EN 13480-3, ASME B31.3", couleur: "#e30009", marqueur: "●" },
@@ -80,6 +80,23 @@ const CALC_APPS = [
   <line x1="70" y1="84" x2="70" y2="118" stroke="#171a1e" stroke-width=".5"/><line x1="334" y1="84" x2="334" y2="118" stroke="#171a1e" stroke-width=".5"/>
   <text x="202" y="126" font-size="10" text-anchor="middle" fill="#171a1e">L = portée entre supports</text>
   <text x="202" y="142" font-size="9" text-anchor="middle" fill="#5f6670">σ = P·D/4e + M/Z ≤ f  ·  δ  ·  f₁</text>
+</svg>`,
+  },
+  {
+    code: "H1",
+    titre: "Propriétés des fluides",
+    description: "Masse volumique, viscosités et pression de vapeur en fonction de la température : eau, éthanol, essence, naphta, kérosène, gazole, fioul, brut, émulseurs, fluide saisi. Tableau, courbes, ébullition et NPSH.",
+    url: "fluides/",
+    categorie: "tuy",
+    normes: ["IAPWS", "ASTM D1250", "AP-42", "ASTM D341"],
+    statut: "ok",
+    vignette: `
+<svg viewBox="0 0 400 195" xmlns="http://www.w3.org/2000/svg" font-family="Inter,Arial,sans-serif">
+  <line x1="50" y1="165" x2="360" y2="165" stroke="#171a1e"/><line x1="50" y1="165" x2="50" y2="25" stroke="#171a1e"/>
+  <path d="M55,155 C150,150 250,120 350,40" fill="none" stroke="#e30009" stroke-width="3"/><path d="M55,50 C150,90 250,120 350,135" fill="none" stroke="#114088" stroke-width="3"/>
+  <text x="300" y="40" font-size="13" fill="#e30009" font-weight="700">P_v</text><text x="300" y="128" font-size="13" fill="#114088" font-weight="700">ν</text>
+  <text x="205" y="185" font-size="11" text-anchor="middle" fill="#5f6670">température</text>
+  <path d="M95,60 q12,-22 24,0 a12,12 0 1,1 -24,0z" fill="#0098db" opacity=".85"/>
 </svg>`,
   },
   {
