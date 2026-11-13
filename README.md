@@ -16,6 +16,8 @@ poutre/                    ← P1 poutre acier sur deux appuis (EN 1990 combinai
 poteau/                    ← P2 poteau acier (flambement, déversement, interaction N–M)
 climat/                    ← C1 hypothèses climatiques, sismiques et complexes (carte, vent, neige, séisme)
   data/                    ← bases de zonage (générées depuis le classeur Excel), contours des départements
+modeles/Base_prix_FIP_modele.xlsx ← modèle VIDE de base de prix (structure, formules, ouvrages) ; une fois rempli, le ranger sur le réseau FIP, jamais ici
+outils/generer_base_prix.py ← régénère le modèle de base de prix
 outils/generer_profils.py  ← régénère commun/data/profils.js (I, U, cornières, tubes)
 outils/proprietes_cornieres.py ← caractéristiques des cornières (axes principaux)
 outils/extraire_excel.py   ← régénère climat/data/ à partir du classeur Excel
