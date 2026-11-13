@@ -142,6 +142,41 @@ const CV = (() => {
     return { a: x, phi: p, X, max: mx.map((v) => +v.toFixed(3)), min: mn.map((v) => +v.toFixed(3)), rive };
   }
 
+  /* ---------- 3 bis. Toiture isolée à deux versants — Tableau 7.7 : [c_f, c_p,net A, B, C, D] ---------- */
+  const TI2 = [
+    [-20, [0.7, 0.8, 1.6, 0.6, 1.7], [-0.7, -0.9, -1.3, -1.6, -0.6], [-1.3, -1.5, -2.4, -2.4, -0.6]],
+    [-15, [0.5, 0.6, 1.5, 0.7, 1.4], [-0.6, -0.8, -1.3, -1.6, -0.6], [-1.4, -1.6, -2.7, -2.6, -0.6]],
+    [-10, [0.4, 0.6, 1.4, 0.8, 1.1], [-0.6, -0.8, -1.3, -1.5, -0.6], [-1.4, -1.6, -2.7, -2.6, -0.6]],
+    [-5, [0.3, 0.5, 1.5, 0.8, 0.8], [-0.5, -0.7, -1.3, -1.6, -0.6], [-1.3, -1.5, -2.4, -2.4, -0.6]],
+    [5, [0.3, 0.6, 1.8, 1.3, 0.4], [-0.6, -0.6, -1.4, -1.4, -1.1], [-1.3, -1.3, -2.0, -1.8, -1.5]],
+    [10, [0.4, 0.7, 1.8, 1.4, 0.4], [-0.7, -0.7, -1.5, -1.4, -1.4], [-1.3, -1.3, -2.0, -1.8, -1.8]],
+    [15, [0.4, 0.9, 1.9, 1.4, 0.4], [-0.8, -0.9, -1.7, -1.4, -1.8], [-1.3, -1.3, -2.2, -1.6, -2.1]],
+    [20, [0.6, 1.1, 1.9, 1.5, 0.4], [-0.9, -1.2, -1.8, -1.4, -2.0], [-1.3, -1.4, -2.2, -1.6, -2.1]],
+    [25, [0.7, 1.2, 1.9, 1.6, 0.5], [-1.0, -1.4, -1.9, -1.4, -2.0], [-1.3, -1.4, -2.0, -1.5, -2.0]],
+    [30, [0.9, 1.3, 1.9, 1.6, 0.7], [-1.0, -1.4, -1.9, -1.4, -2.0], [-1.3, -1.4, -1.8, -1.4, -2.0]]];
+  function toitIsolee2(a, phi) {
+    let x = Math.max(-20, Math.min(a, 30)); const snap = x > -5 && x < 5; if (snap) x = x < 0 ? -5 : 5;
+    const p = Math.max(0, Math.min(phi, 1)), g = (k) => interp(TI2.map((r) => [r[0], r[k]]), x), m0 = g(2), m1 = g(3);
+    return { a: x, snap, phi: p, max: g(1).map((v) => +v.toFixed(3)), min: m0.map((v, k) => +(v + (m1[k] - v) * p).toFixed(3)) };
+  }
+  function svgToitIsolee2(T, d) {                             // élévation : 4 dispositions de charge (fig. 7.17) + plan des zones
+    const fxs = (v) => fx(v), cas = [["Les deux versants – max", T.max[0], T.max[0]], ["Les deux versants – min", T.min[0], T.min[0]], ["Un versant – max, l'autre non chargé", T.max[0], 0], ["Un versant – min, l'autre non chargé", T.min[0], 0]];
+    const pente = Math.max(Math.abs(T.a), 5) * Math.PI / 180, sgn = T.a >= 0 ? -1 : 1;
+    const el = cas.map(([t, c1, c2], i) => { const X0 = 10 + (i % 2) * 190, Y0 = 34 + Math.floor(i / 2) * 92, w = 150, hh = Math.tan(pente) * w / 2 * sgn * 0.8, ym = Y0 + 42;
+      const fl = (xa, xb, ya, yb, c) => { if (!c) return `<text x="${(xa + xb) / 2}" y="${(ya + yb) / 2 - 10}" font-size="9" text-anchor="middle" fill="#5f6670">0</text>`;
+        const n = 4, col = c > 0 ? "#e30009" : "#114088"; let s = ""; for (let k = 0; k < n; k++) { const t2 = (k + 0.5) / n, x = xa + (xb - xa) * t2, y = ya + (yb - ya) * t2, L = 16 * Math.min(Math.abs(c), 2) / 1.3 + 6;
+          s += c > 0 ? `<line x1="${x}" y1="${y - L - 2}" x2="${x}" y2="${y - 3}" stroke="${col}" stroke-width="1.6"/><path d="M${x - 3},${y - 7} L${x},${y - 2} L${x + 3},${y - 7}z" fill="${col}"/>` : `<line x1="${x}" y1="${y - 2}" x2="${x}" y2="${y - L - 2}" stroke="${col}" stroke-width="1.6"/><path d="M${x - 3},${y - L + 2} L${x},${y - L - 3} L${x + 3},${y - L + 2}z" fill="${col}"/>`; }
+        return s + `<text x="${(xa + xb) / 2}" y="${Math.min(ya, yb) - 26}" font-size="9" text-anchor="middle" fill="${col}" font-weight="700">${fxs(c)}</text>`; };
+      return `<text x="${X0}" y="${Y0 - 6}" font-size="9.5" font-weight="700" fill="#114088">${t}</text><polyline points="${X0},${ym} ${X0 + w / 2},${ym + hh} ${X0 + w},${ym}" fill="none" stroke="#171a1e" stroke-width="2.4"/>
+        <line x1="${X0 + w / 2}" y1="${ym + hh}" x2="${X0 + w / 2}" y2="${ym + 34}" stroke="#8a929c" stroke-width="2"/>${fl(X0, X0 + w / 2, ym, ym + hh, c1)}${fl(X0 + w / 2, X0 + w, ym + hh, ym, c2)}`; }).join("");
+    return `<svg viewBox="0 0 380 220" style="width:100%;max-width:440px">${el}</svg>`;
+  }
+  function svgZonesTI2(T) {                                   // plan repère des zones A à D (c_p,net, couverture et fixations)
+    const X0 = 30, Y0 = 20, W = 260, H = 150, v = { A: T.max[1], B: T.max[2], C: T.max[3], D: T.max[4] }, zz = [["B", 0, 0, 1, 0.1], ["B", 0, 0.9, 1, 0.1], ["C", 0, 0.1, 0.1, 0.8], ["C", 0.9, 0.1, 0.1, 0.8], ["A", 0.1, 0.1, 0.3, 0.8], ["D", 0.4, 0.1, 0.2, 0.8], ["A", 0.6, 0.1, 0.3, 0.8]];
+    return `<svg viewBox="0 0 330 200" style="width:100%;max-width:380px">${rectZones(X0, Y0, W, H, zz, v)}<line x1="${X0 + W / 2}" y1="${Y0}" x2="${X0 + W / 2}" y2="${Y0 + H}" stroke="#171a1e" stroke-dasharray="5 3"/>
+      <text x="${X0}" y="${Y0 + H + 16}" font-size="9" fill="#5f6670">plan repère (Tab. 7.7) : C = d/10 aux rives, D = d/5 au faîtage, B = b/10 aux pignons</text><text x="${X0}" y="${Y0 + H + 28}" font-size="9" fill="#5f6670">valeurs « maximum » affichées ; c<tspan font-size="7" dy="2">p,net</tspan><tspan dy="-2"> : couverture et fixations</tspan></text></svg>`;
+  }
+
   /* ---------- 4. Mur isolé — Tableau 7.9 (c_p,net), zones A à D (fig. 7.19) ---------- */
   const MI = [[3, [2.3, 1.4, 1.2, 1.2]], [5, [2.9, 1.8, 1.4, 1.2]], [10, [3.4, 2.1, 1.7, 1.2]]];
   function murIsole(l, h, phi, retour) {
@@ -211,5 +246,5 @@ const CV = (() => {
     return `<svg viewBox="0 0 ${W} ${Hh}" style="width:100%;max-width:420px">${t}<line x1="${X0 - 6}" y1="${Y0 + hh}" x2="${X0 + ww + 6}" y2="${Y0 + hh}" stroke="#171a1e" stroke-width="2"/>
       <text x="${X0}" y="${Hh - 18}" font-size="9" fill="#5f6670">élévation – l = ${l} m, h = ${h} m</text><text x="${X0}" y="${Hh - 6}" font-size="9" fill="#5f6670">zones depuis chaque extrémité libre : A jusqu'à 0,3·h, B 2·h, C 4·h, D au-delà</text></svg>`;
   }
-  return { PROFILS, proj, cfProj, cfFamilles, CF_TUBE, murs, toiture, CPI, toitIsolee1, murIsole, svgMurs, svgToiture, svgToitIsolee, svgMurIsole, fx };
+  return { PROFILS, proj, cfProj, cfFamilles, CF_TUBE, murs, toiture, CPI, toitIsolee1, toitIsolee2, svgToitIsolee2, svgZonesTI2, murIsole, svgMurs, svgToiture, svgToitIsolee, svgMurIsole, fx };
 })();
