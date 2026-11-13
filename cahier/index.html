@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.13"></script>
+<script src="../commun/auth.js?v=2.14"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — CS Cahier de supportage</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.13">
-<script src="../commun/acier.js?v=2.13"></script>
-<script src="../commun/cahier.js?v=2.13"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.14">
+<script src="../commun/acier.js?v=2.14"></script>
+<script src="../commun/cahier.js?v=2.14"></script>
 <style>
   .logoAff{max-height:48px;max-width:160px;border:1px solid var(--line);border-radius:4px;padding:2px;background:#fff}
   .actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.actions button{padding:5px 10px;font-size:12px}
@@ -95,7 +95,7 @@
   <div class="printhead"><img src="../commun/img/logo-fip.png" alt="FIP"><strong id="phTitre">Cahier de supportage</strong><br><span id="phInfo"></span></div>
   <div class="card noprint" id="cGestion"><h2>Supports du cahier</h2>
     <div class="actions" style="margin-top:0">
-      <a href="../supports/?v=2.13"><button type="button" title="Créer et calculer un support type dans S1, puis « Ajouter au cahier »">➕ Type calculé (S1)</button></a>
+      <a href="../supports/?v=2.14"><button type="button" title="Créer et calculer un support type dans S1, puis « Ajouter au cahier »">➕ Type calculé (S1)</button></a>
       <button class="sec" id="addNC" type="button" title="Réserver un type (quantités, repères) à calculer plus tard dans S1">➕ Type à calculer</button>
       <button class="sec" id="addSPE" type="button" title="Support spécial dessiné à part (AutoCAD, Plant 3D, Advance Steel)">➕ Support spécial</button>
       <button class="sec" id="recalc" type="button">⟳ Recalculer tout</button>
@@ -186,7 +186,7 @@ let api=null;
 function moteur(){
   if(api) return Promise.resolve(api);
   return new Promise((ok,ko)=>{ const fr=$('iframeS1'), t0=Date.now();
-    fr.src='../supports/?moteur=1&v=2.13';
+    fr.src='../supports/?moteur=1&v=2.14';
     const att=()=>{ try{ const w=fr.contentWindow; if(w&&w.S1API&&w.document.readyState==='complete'){ api=w.S1API; return ok(api);} }catch(e){ return ko(e); }
       if(Date.now()-t0>20000) return ko(new Error('S1 ne répond pas')); setTimeout(att,150); };
     setTimeout(att,300); });
@@ -217,7 +217,7 @@ function nouveauType(kind){
   K.types.push(T); enr(); tout();
 }
 $('addNC').onclick=()=>nouveauType('s1'); $('addSPE').onclick=()=>nouveauType('spe');
-const lienS1=(T,c)=>`../supports/?cahier=${encodeURIComponent(T.id)}&conf=${encodeURIComponent(c.id)}&v=2.13`;
+const lienS1=(T,c)=>`../supports/?cahier=${encodeURIComponent(T.id)}&conf=${encodeURIComponent(c.id)}&v=2.14`;
 function gestion(){
   if(!K.types.length){ $('rGestion').innerHTML='<div class="msg info">Cahier vide. « ➕ Type calculé (S1) » : créer le support dans S1 puis « Ajouter au cahier ». « ➕ Type à calculer » : réserver un type et ses quantités, à calculer plus tard. « ➕ Support spécial » : support dessiné à part, compté dans la BOM.</div>'; etatRecalc(); return; }
   $('rGestion').innerHTML=K.types.map((T,ti)=>{
@@ -382,10 +382,10 @@ window.addEventListener('storage',e=>{ if(e.key===CAHIER.CLE){ K=CAHIER.lire(); 
 if(!CAHIER.existe()) enr(); else enr();               // enregistre la migration éventuelle (v1 → v2)
 demarrer();
 </script>
-<script src="../commun/replier.js?v=2.13"></script>
-<script src="../commun/aide.js?v=2.13"></script>
-<script src="aide-cs.js?v=2.13"></script>
-<script src="../commun/export.js?v=2.13"></script>
+<script src="../commun/replier.js?v=2.14"></script>
+<script src="../commun/aide.js?v=2.14"></script>
+<script src="aide-cs.js?v=2.14"></script>
+<script src="../commun/export.js?v=2.14"></script>
 <script>EXPORT.init(CFG);</script>
 </body>
 </html>
