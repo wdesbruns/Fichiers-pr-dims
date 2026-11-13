@@ -145,7 +145,7 @@ const EXPORT = (() => {
       if (/^data:image\/png;base64,/.test(aff.logo || "")) { try { logoClient = Uint8Array.from(atob(aff.logo.split(",")[1]), (c) => c.charCodeAt(0)); } catch (e) { } }
       const dt = aff.date ? new Date(aff.date).toLocaleDateString("fr-FR") : "", lib = [aff.num, aff.intitule].filter(Boolean).join(" – ");
       const L = [["Affaire", lib, "Client", aff.client], ["Site", aff.site, "Phase", aff.phase], ["N° de document", aff.doc, "Indice / date", [aff.indice, dt].filter(Boolean).join(" du ")],
-        ["Réalisé", aff.realise, "Contrôlé", aff.controle], ["Approuvé", aff.approuve, "Outil", cfg.code + " – FIP Calculettes"]];
+        ["Réalisé", aff.realise, "Contrôlé", aff.controle], ["Approuvé", aff.approuve, "Outil", cfg.code + " – FIP Études"]];
       const cel = (t, gras, w) => new TableCell({ width: { size: w, type: WidthType.PERCENTAGE }, shading: gras ? undefined : { type: ShadingType.CLEAR, fill: "EEF2F7", color: "auto" }, children: [new Paragraph({ children: [new TextRun({ text: String(t || "—"), size: 17, bold: !!gras, color: gras ? ENCRE : "5F6670" })] })] });
       enfants.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: L.map((r) => new TableRow({ cantSplit: true, children: [cel(r[0], 0, 16), cel(r[1], 1, 34), cel(r[2], 0, 16), cel(r[3], 1, 34)] })) }));
       enfants.push(new Paragraph({ text: "", spacing: { after: 120 } }));
@@ -163,7 +163,7 @@ const EXPORT = (() => {
     function wrap(t) { const d = document.createElement("div"); d.appendChild(t.cloneNode(true)); return d; }
 
     const doc = new D.Document({
-      creator: "FIP Calculettes", title: cfg.titre, description: "Note de calcul générée par FIP Calculettes",
+      creator: "FIP Études", title: cfg.titre, description: "Note de calcul générée par FIP Études",
       styles: { default: { document: { run: { font: "Calibri", size: 20, color: ENCRE } } } },
       sections: [{
         properties: { page: { margin: { top: 1000, bottom: 900, left: 900, right: 900 } } },
@@ -172,7 +172,7 @@ const EXPORT = (() => {
           ...(logo ? [new ImageRun({ type: "png", data: logo, transformation: { width: 92, height: 32 } })] : []),
           new TextRun({ text: "   " + cfg.code + " – " + cfg.titre, size: 16, color: "5F6670" })] })] }) },
         footers: { default: new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [
-          new TextRun({ text: "FIP Calculettes – outil d'aide au calcul, résultats à vérifier par un ingénieur qualifié – page ", size: 14, color: "5F6670" }),
+          new TextRun({ text: "FIP Études – outil d'aide, résultats à vérifier par un ingénieur qualifié – page ", size: 14, color: "5F6670" }),
           new TextRun({ children: [PageNumber.CURRENT], size: 14, color: "5F6670" }), new TextRun({ text: " / ", size: 14, color: "5F6670" }),
           new TextRun({ children: [PageNumber.TOTAL_PAGES], size: 14, color: "5F6670" })] })] }) },
         children: enfants,

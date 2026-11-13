@@ -11,6 +11,7 @@ AIDE.init({
     { t: "Coefficients de vent", html: "Profilés (transmis à S1), bâtiment fermé, toiture isolée, mur isolé : cocher « note » pour les faire figurer dans la note d'hypothèses.", cible: "#p-cv" },
     { t: "Sortir la note", html: "Onglet Synthèse, puis Word, Excel ou Imprimer.", cible: "#tabs" },
   ],
+  liens: [["#ventRes", "vent", "Le vent : de la carte à q_p"], ["#neigeRes", "neige", "La neige"], ["#seismeRes", "seisme", "Séisme"], ["#cvProf", "coef-vent", "Coefficients de pression et de force"], ["#cvBat", "coef-vent", "Coefficients de pression et de force"], ["#neigeToit", "neige", "La neige"]],
   faq: [
     { q: "Quelle catégorie de terrain choisir ?", r: "Celle de la rugosité la plus défavorable (la plus lisse) dans le rayon indiqué autour du site : 0 mer ou lac, II rase campagne, IIIa bocage ou zone industrielle peu dense, IIIb zone urbaine ou industrielle dense, IV ville dense. En cas de doute, prendre la plus lisse (prudent)." },
     { q: "Que mettre en hauteur de référence z_e ?", r: "En général la hauteur du bâtiment (ou du point étudié). Pour un support de tuyauterie, S1 recalcule q<sub>p</sub> à la hauteur réelle du support." },

@@ -9,6 +9,7 @@ AIDE.init({
     { t: "Paramètres communs", html: "Taux cible, règles de conception, climat C1 : ils s'appliquent à tous les supports. « ⟳ Recalculer tout » met les résultats à jour.", cible: "#params" },
     { t: "Choisir le contenu et sortir le cahier", html: "Modèle BOM, simplifié ou complet (ou cases à cocher), puis Word, Excel ou Imprimer. Penser à exporter le .json pour archiver.", cible: "#niveau" },
   ],
+  liens: [["#secRecap", "combinaisons", "Combinaisons et enveloppes"], ["#secBom", "assemblages", "Fixations"]],
   faq: [
     { q: "Type ou configuration ?", r: "Un <b>type</b> = un dessin de support (profilés, tuyaux, actions). Une <b>configuration</b> = le même support avec une ou plusieurs cotes différentes (hauteur, longueur, position des tuyaux). Changer de profilé ou de DN = nouveau type." },
     { q: "Pourquoi « à recalculer » ?", r: "Une cote ou un paramètre commun a changé : cliquer « ⟳ Recalculer tout »." },

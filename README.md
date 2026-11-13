@@ -1,18 +1,23 @@
-# FIP Calculettes
+# FIP Études
 
-Portail de calculettes du bureau d'études, aux couleurs FIP (bleu #114088, rouge #e30009, ciel #0098db). Site statique, GitHub Pages.
+Portail d'outils du bureau d'études (calculs, chiffrage, documents), aux couleurs FIP (bleu #114088, rouge #e30009, ciel #0098db). Site statique, GitHub Pages.
 
 ## Structure
 ```
 index.html                 ← page de connexion (l'adresse à communiquer)
 accueil.html               ← tableau de bord : une tuile par calculette
+fluides/                   ← H1 propriétés des fluides (ρ, μ, ν, P_v selon t) ; moteur commun/fluides.js
 supports/                  ← S1 supports de tuyauterie (montant, console, suspente, T, L, U, L mural) – calcul 3D, DDC, vues 2D/3D
+referentiel/               ← RF référentiel vulgarisé (fiches.js) ; ancres #id appelées par les 📘 des calculettes
+base/                      ← BD base de données (profilés, tubes, matériaux, fluides, aciers, ψ, flèches, c_f vent)
 cahier/                    ← CS cahier de supportage : types / configurations (ST-01.1), spéciaux (SPE-1.1), BOM, plans types cotés, DDC ; modèles BOM / simplifié / complet ; export .json
 portee-tuyauterie/         ← T1 portée entre supports (CODETI / EN 13480-3, ASME B31.3)
 poutre/                    ← P1 poutre acier sur deux appuis (EN 1990 combinaisons + EN 1993-1-1)
 poteau/                    ← P2 poteau acier (flambement, déversement, interaction N–M)
 climat/                    ← C1 hypothèses climatiques, sismiques et complexes (carte, vent, neige, séisme)
   data/                    ← bases de zonage (générées depuis le classeur Excel), contours des départements
+modeles/Base_prix_FIP_modele.xlsx ← modèle VIDE de base de prix (structure, formules, ouvrages) ; une fois rempli, le ranger sur le réseau FIP, jamais ici
+outils/generer_base_prix.py ← régénère le modèle de base de prix
 outils/generer_profils.py  ← régénère commun/data/profils.js (I, U, cornières, tubes)
 outils/proprietes_cornieres.py ← caractéristiques des cornières (axes principaux)
 outils/extraire_excel.py   ← régénère climat/data/ à partir du classeur Excel

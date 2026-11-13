@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.13"></script>
-<script src="../commun/data/tuyauterie.js?v=2.13"></script>
+<script src="../commun/auth.js?v=2.17"></script>
+<script src="../commun/data/tuyauterie.js?v=2.17"></script>
 <script>calcProteger("../");</script>
-<title>FIP Calculettes — T1 Portée de tuyauterie</title>
+<title>FIP Études — T1 Portée de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -96,7 +96,7 @@ svg text{fill:var(--ink);font-family:inherit}
 </head>
 <body>
 <header>
-  <a href="../accueil.html" class="brand" title="Retour à l'accueil"><img src="../commun/img/picto-fip.png" alt="FIP"><span>FIP<em>Calculettes</em></span></a>
+  <a href="../accueil.html" class="brand" title="Retour à l'accueil"><img src="../commun/img/picto-fip.png" alt="FIP"><span>FIP<em>Études</em></span></a>
   <a href="../accueil.html" class="back" title="Retour à l'accueil">← Accueil</a>
   <div style="flex:1 1 auto">
     <h1><span class="code">T1</span>Portée maximale entre supports de tuyauterie</h1>
@@ -519,10 +519,12 @@ function schemaSVG(o){
 
 initUI();calc();
 </script>
-<script src="../commun/cahier.js?v=2.13"></script>
+<script src="../commun/cahier.js?v=2.17"></script>
 <script>CAHIER.remplir({affaire:'affaire',auteur:'realise'});</script>
-<script src="../commun/replier.js?v=2.13"></script>
-<script src="../commun/export.js?v=2.13"></script>
+<script src="../commun/replier.js?v=2.17"></script>
+<script src="../commun/aide.js?v=2.17"></script>
+<script src="aide-t1.js?v=2.17"></script>
+<script src="../commun/export.js?v=2.17"></script>
 <script>EXPORT.init({code:'T1',titre:'Portée maximale entre supports de tuyauterie',
   zones:()=>[...document.querySelectorAll('#results > .card')], donnees:()=>[document.getElementById('form')],
   avant:()=>calc(), nom:()=>document.getElementById('ligne').value||document.getElementById('affaire').value});</script>

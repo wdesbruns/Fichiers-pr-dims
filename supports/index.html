@@ -4,20 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.13"></script>
+<script src="../commun/auth.js?v=2.17"></script>
 <script>calcProteger("../");</script>
-<title>FIP Calculettes — S1 Supports de tuyauterie</title>
+<title>FIP Études — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.13">
+<link rel="stylesheet" href="../commun/calc.css?v=2.17">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.13"></script>
-<script src="../commun/data/tuyauterie.js?v=2.13"></script>
-<script src="../commun/acier.js?v=2.13"></script>
-<script src="../commun/barres3d.js?v=2.13"></script>
-<script src="../commun/coefvent.js?v=2.13"></script>
-<script src="../commun/cahier.js?v=2.13"></script>
+<script src="../commun/data/profils.js?v=2.17"></script>
+<script src="../commun/data/tuyauterie.js?v=2.17"></script>
+<script src="../commun/acier.js?v=2.17"></script>
+<script src="../commun/barres3d.js?v=2.17"></script>
+<script src="../commun/coefvent.js?v=2.17"></script>
+<script src="../commun/cahier.js?v=2.17"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -37,7 +37,7 @@
 </head>
 <body>
 <header>
-  <a href="../accueil.html" class="brand" title="Retour à l'accueil"><img src="../commun/img/picto-fip.png" alt="FIP"><span>FIP<em>Calculettes</em></span></a>
+  <a href="../accueil.html" class="brand" title="Retour à l'accueil"><img src="../commun/img/picto-fip.png" alt="FIP"><span>FIP<em>Études</em></span></a>
   <a href="../accueil.html" class="back">← Accueil</a>
   <div style="flex:1 1 auto">
     <h1><span class="code">S1</span>Supports standards de tuyauterie</h1>
@@ -995,18 +995,22 @@ function importerC1(){
   calc();
 }
 function remplirProfils(sel,i=''){const fa=$('fam'+i).value;$('prof'+i).innerHTML=PROFILS.filter(p=>p.f===fa).sort((a,b)=>a.m-b.m).map(p=>`<option ${p.n===sel?'selected':''}>${p.n}</option>`).join('');}
-const DEFAUTS={sol:{Lm:1.0,pos:[0.8,0.45]},plafond:{Lm:1.0,pos:[0.8,0.45]},mur:{Lm:0.6,pos:[0.15,0.45]},
-  T:{Lm:1.5,Lt:0.8,pos:[-0.2,0.2]},L:{Lm:1.5,Lt:0.5,nc:2,hc:0.5,pos:[0.3,0.3],cons:[1,2]},U:{Lm:1.2,Lt:1.0,pos:[0.3,0.7]},murJ:{Lm:0.8,Lt:0.6,hj:0.6,pos:[0.3,0.6]},Lmur:{Lm:1.2,Lt:1.0,pos:[0.3,0.7]}};
+/* valeurs par défaut de chaque type : vérifiées (taux ≤ taux cible, sans alerte) avec la tuyauterie d'exemple DN100 eau */
+const DEFAUTS={sol:{Lm:1.0,pos:[0.8,0.45],p:['UPN','UPN 100']},plafond:{Lm:1.0,pos:[0.8,0.45],p:['UPN','UPN 100']},mur:{Lm:0.6,pos:[0.15,0.45],p:['UPN','UPN 100']},
+  T:{Lm:1.5,Lt:0.8,pos:[-0.2,0.2],p:['SHS','SHS 120x120x4'],p2:['UPN','UPN 100']},L:{Lm:1.5,Lt:0.5,nc:2,hc:0.5,pos:[0.3,0.3],cons:[1,2],p:['SHS','SHS 120x120x4'],p2:['UPN','UPN 100']},
+  U:{Lm:1.2,Lt:1.0,pos:[0.3,0.7],p:['UPN','UPN 100'],p2:['UPN','UPN 100']},murJ:{Lm:0.8,Lt:0.6,hj:0.6,pos:[0.3,0.6],p:['UPN','UPN 100'],p2:['UPN','UPN 80']},
+  Lmur:{Lm:1.2,Lt:1.0,pos:[0.3,0.7],p:['UPN','UPN 100'],p2:['UPN','UPN 100']}};
 function appliquerDefauts(typ){
   const d=DEFAUTS[typ]; $('Lm').value=d.Lm; if(d.Lt) $('Lt').value=d.Lt; if(d.hj) $('hj').value=d.hj; if(d.nc){$('nc').value=d.nc;$('hc').value=d.hc;}
   tuyaux.forEach((t,i)=>{ if(['sol','plafond'].includes(typ)&&t.fonc==='glissant') t.fonc='guide'; t.pos=i<d.pos.length?d.pos[i]:+(d.pos[d.pos.length-1]+0.25*(i-d.pos.length+1)).toFixed(2); t.cons=d.cons?(d.cons[i]||1):1; });
-  if(TYPES[typ].multi&&!/^U/.test($('fam').value)&&$('fam').value==='L'){ $('fam').value='UPN'; remplirProfils('UPN 100'); }
+  if(d.p){ $('fam').value=d.p[0]; remplirProfils(d.p[1]); } if(d.p2){ $('fam2').value=d.p2[0]; remplirProfils(d.p2[1],'2'); }
+  $('orient').value='0'; if($('off')) $('off').value=0;
 }
 function init(){
   const fams=familles(true);
-  $('fam').innerHTML=fams.map(x=>`<option ${x==='L'?'selected':''}>${x}</option>`).join('');
+  $('fam').innerHTML=fams.map(x=>`<option ${x==='UPN'?'selected':''}>${x}</option>`).join('');
   $('fam2').innerHTML=fams.map(x=>`<option ${x==='UPN'?'selected':''}>${x}</option>`).join('');
-  remplirProfils('L 60x60x6'); remplirProfils('UPN 80','2');
+  remplirProfils('UPN 100'); remplirProfils('UPN 80','2');
   $('fam').onchange=()=>{remplirProfils();calc()}; $('fam2').onchange=()=>{remplirProfils(null,'2');calc()};
   $('opti').onclick=optimiser; $('impC1').onclick=importerC1;
   $('ajout').onclick=()=>{const d=tuyaux[tuyaux.length-1];tuyaux.push({...d,nom:'L'+(tuyaux.length+1),pos:+((+d.pos||0)+0.25).toFixed(2)});cartesTuyaux();calc();};
@@ -1087,10 +1091,10 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.13"></script>
-<script src="../commun/aide.js?v=2.13"></script>
-<script src="aide-s1.js?v=2.13"></script>
-<script src="../commun/export.js?v=2.13"></script>
+<script src="../commun/replier.js?v=2.17"></script>
+<script src="../commun/aide.js?v=2.17"></script>
+<script src="aide-s1.js?v=2.17"></script>
+<script src="../commun/export.js?v=2.17"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>

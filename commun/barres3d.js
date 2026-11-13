@@ -1,6 +1,6 @@
 /* =====================================================================
    CALCUL DE BARRES 3D (méthode des déplacements, élastique linéaire, 1er ordre)
-   FIP Calculettes — supports de tuyauterie, futurs portiques
+   FIP Études — supports de tuyauterie, futurs portiques
    Unités : kN, m, kN/m² (E, G), m² (A), m⁴ (I, J)
    Modèle :
      noeuds  : [{x,y,z}]

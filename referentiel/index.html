@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<script src="../commun/auth.js?v=2.17"></script>
+<script>calcProteger("../");</script>
+<title>FIP Études — Référentiel</title>
+<link rel="icon" href="../commun/img/picto-fip.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../commun/calc.css?v=2.17">
+<script src="fiches.js?v=2.17"></script>
+<style>
+  main{grid-template-columns:minmax(220px,280px) 1fr}
+  nav.toc{position:sticky;top:10px;align-self:start;max-height:calc(100vh - 20px);overflow:auto}
+  nav.toc h3{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:12px 0 4px}
+  nav.toc a{display:block;padding:4px 8px;border-radius:5px;text-decoration:none;color:var(--ink);font-size:13px}
+  nav.toc a:hover,nav.toc a.on{background:#eef4fb;color:var(--fip-bleu)}
+  .fiche .bref{font-size:14px;background:#f4f8fd;border-left:4px solid var(--fip-bleu);padding:8px 12px;border-radius:4px;margin-bottom:8px}
+  .fiche .form{font-family:var(--mono,ui-monospace,monospace);font-size:13px;background:#fbfbf6;border:1px solid #e6e3cf;border-radius:6px;padding:8px 12px;margin:8px 0;line-height:1.7}
+  .fiche p,.fiche li{font-size:13.5px;line-height:1.55}
+  .fiche .pied{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:6px;margin-top:8px}
+  .fiche .pied b{color:var(--ink)}
+  .fiche:target{box-shadow:0 0 0 3px rgba(227,0,9,.35)}
+  .theme{font-size:11px;font-weight:700;color:var(--fip-rouge);text-transform:uppercase;letter-spacing:.06em}
+  @media (max-width:950px){main{grid-template-columns:1fr}nav.toc{position:static;max-height:none}}
+</style>
+</head>
+<body>
+<header>
+  <a href="../accueil.html" class="brand" title="Retour à l'accueil"><img src="../commun/img/picto-fip.png" alt="FIP"><span>FIP<em>Études</em></span></a>
+  <a href="../accueil.html" class="back">← Accueil</a>
+  <div style="flex:1 1 auto">
+    <h1><span class="code">RF</span>Référentiel</h1>
+    <div class="sub">Normes utilisées et notions clés, expliquées simplement : ce qu'il y a derrière les paramètres et les formules des calculettes</div>
+  </div>
+  <a href="../base/" class="noprint"><button class="sec" type="button">🗂 Base de données</button></a>
+  <button onclick="window.print()">🖨️ Imprimer / PDF</button>
+</header>
+<main>
+  <nav class="toc card noprint"><input id="q" placeholder="Rechercher (ex. flambement, vent, pince)" aria-label="Rechercher dans le référentiel"><div id="toc"></div></nav>
+  <section id="res"><div class="msg info">Ces fiches vulgarisent les règles : elles aident à comprendre et à contrôler les résultats, mais ne remplacent pas la lecture des normes. Les références renvoient aux paragraphes à consulter.</div><div id="fiches"></div></section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const sa=t=>String(t).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/<[^>]+>/g,' ');
+function rendre(q=''){
+  const m=sa(q).split(/\s+/).filter(x=>x.length>2), L=FICHES.filter(F=>!m.length||m.every(w=>sa(F.titre+' '+F.bref+' '+F.corps+' '+F.refs+' '+F.theme).includes(w)));
+  const themes=[...new Set(L.map(F=>F.theme))];
+  $('toc').innerHTML=themes.map(t=>`<h3>${t}</h3>`+L.filter(F=>F.theme===t).map(F=>`<a href="#${F.id}">${F.titre}</a>`).join('')).join('')||'<div class="note">Aucune fiche.</div>';
+  $('fiches').innerHTML=L.map(F=>`<article class="card fiche" id="${F.id}"><div class="theme">${F.theme}</div><h2>${F.titre}</h2><div class="bref">${F.bref}</div>${F.corps}
+    <div class="pied"><span><b>Références :</b> ${F.refs}</span>${F.calc?`<span><b>Outils :</b> ${F.calc}</span>`:''}</div></article>`).join('');
+}
+$('q').addEventListener('input',()=>rendre($('q').value));
+rendre();
+if(location.hash){ const el=document.querySelector(location.hash); if(el) setTimeout(()=>el.scrollIntoView({block:'start'}),50); }
+</script>
+<script src="../commun/replier.js?v=2.17"></script>
+</body>
+</html>
