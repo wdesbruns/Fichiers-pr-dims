@@ -9,6 +9,8 @@
    ===================================================================== */
 const AIDE = (() => {
   let cfg = null, panneau = null;
+  const BASE = (document.currentScript && document.currentScript.src.replace(/commun\/aide\.js.*$/, "")) || "../";
+  const urlRef = (id) => BASE + "referentiel/#" + id;
   const css = `
 .aide-q{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-left:4px;border-radius:50%;background:#e7eef8;color:#114088;font:700 10px/1 Inter,Arial,sans-serif;cursor:help;vertical-align:middle;border:1px solid #b9cbe6;flex:none}
 .aide-q:hover{background:#114088;color:#fff}
@@ -27,6 +29,7 @@ const AIDE = (() => {
 .aide-pan input.cherche{width:100%;padding:8px 10px;border:1px solid #cfd4db;border-radius:6px;font:inherit}
 .aide-pan .res{margin-top:8px}.aide-pan .res .it{border-left:3px solid #0098db;background:#f4f8fd;padding:6px 8px;margin:6px 0;border-radius:4px}
 .aide-pan button.montrer{padding:2px 8px;font-size:11px;margin-top:4px}
+.aide-ref{margin-left:6px;text-decoration:none;font-size:13px;vertical-align:middle;letter-spacing:0;text-transform:none}.aide-ref:hover{filter:brightness(1.2)}
 .aide-flash{outline:3px solid #e30009!important;outline-offset:3px;transition:outline-color .4s}
 @media print{.aide-q,.aide-pan,.aide-pop{display:none!important}}`;
   const sansAccent = (t) => String(t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -53,6 +56,12 @@ const AIDE = (() => {
     Object.entries(cfg.bulles || {}).forEach(([id, t]) => { const el = document.getElementById(id); if (!el) return; const l = labelDe(el); if (l && !l.querySelector(".aide-q")) bulle(l, t); });
     Object.entries(cfg.bullesK || {}).forEach(([k, t]) => document.querySelectorAll(`[data-k="${k}"]`).forEach((el) => { const l = labelDe(el); if (l && !l.querySelector(".aide-q")) bulle(l, t); }));
   }
+  function poserLiens() {                                    // 📘 vers le référentiel dans le titre des cartes concernées
+    (cfg.liens || []).forEach(([sel, id, lib]) => document.querySelectorAll(sel).forEach((el) => {
+      const h2 = el.matches("h2") ? el : (el.closest(".card") || el).querySelector("h2"); if (!h2 || h2.querySelector(`.aide-ref[data-r="${id}"]`)) return;
+      const a = document.createElement("a"); a.className = "aide-ref noprint"; a.dataset.r = id; a.href = urlRef(id); a.target = "_blank"; a.rel = "noopener"; a.textContent = "📘"; a.title = "Référentiel : " + (lib || id) + " (nouvel onglet)";
+      a.addEventListener("click", (e) => e.stopPropagation()); h2.appendChild(a); }));
+  }
   function montrer(sel) {
     const el = document.querySelector(sel); if (!el) return;
     const carte = el.closest(".card"); if (carte && carte.classList.contains("replie")) carte.classList.remove("replie");
@@ -77,6 +86,7 @@ const AIDE = (() => {
       <h3>Une question ?</h3><input class="cherche" placeholder="Ex. : que mettre dans la portée ? pourquoi le taux est jaune ?" aria-label="Rechercher dans l'aide"><div class="res"></div>
       ${(cfg.etapes || []).length ? `<h3>Tutoriel pas à pas</h3><ol>${cfg.etapes.map((e) => `<li><b class="t">${e.t}</b>${e.html}${e.cible ? `<div><button class="sec montrer" data-c="${e.cible}">Montrer</button></div>` : ""}</li>`).join("")}</ol>` : ""}
       ${(cfg.faq || []).length ? `<h3>Questions fréquentes</h3>${cfg.faq.map((f) => `<details><summary>${f.q}</summary><div>${f.r}</div></details>`).join("")}` : ""}
+      ${(cfg.liens || []).length ? `<h3>Pour comprendre (Référentiel)</h3><div>${[...new Map(cfg.liens.map((l) => [l[1], l[2] || l[1]])).entries()].map(([id, lib]) => `<a href="${urlRef(id)}" target="_blank" rel="noopener">📘 ${lib}</a>`).join("<br>")}</div>` : ""}
       <h3>À savoir</h3><div class="note">Les « ? » à côté des champs donnent une explication courte. Les résultats sont des prédimensionnements (APS/APD) à faire valider par un ingénieur structure.</div></div>`;
     document.body.appendChild(panneau);
     panneau.querySelector("[data-x]").onclick = () => panneau.classList.remove("on");
@@ -91,8 +101,8 @@ const AIDE = (() => {
     const hd = document.querySelector("header");
     if (hd) { const b = document.createElement("button"); b.type = "button"; b.className = "sec noprint"; b.textContent = "❓ Aide"; b.title = "Tutoriel, questions fréquentes et recherche dans l'aide";
       b.onclick = () => panneau.classList.toggle("on"); const p = hd.querySelector(":scope > button, :scope > a.noprint"); if (p) p.before(b); else hd.appendChild(b); }
-    poserBulles(); let att = false; new MutationObserver(() => { if (att) return; att = true; requestAnimationFrame(() => { att = false; poserBulles(); }); }).observe(document.body, { childList: true, subtree: true });
+    poserBulles(); poserLiens(); let att = false; new MutationObserver(() => { if (att) return; att = true; requestAnimationFrame(() => { att = false; poserBulles(); poserLiens(); }); }).observe(document.body, { childList: true, subtree: true });
     document.addEventListener("click", () => { if (pop) { pop.remove(); pop = null; } });
   }
-  return { init, montrer };
+  return { init, montrer, urlRef };
 })();

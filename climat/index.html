@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.14"></script>
+<script src="../commun/auth.js?v=2.15"></script>
 <script>calcProteger("../");</script>
 <title>FIP Calculettes — C1 Hypothèses climatiques et sismiques</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
@@ -12,10 +12,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../commun/lib/leaflet/leaflet.css">
 <script src="../commun/lib/leaflet/leaflet.js"></script>
-<script src="data/zonage.js?v=2.14"></script>
-<script src="data/communes.js?v=2.14"></script>
-<script src="data/departements.js?v=2.14"></script>
-<script src="../commun/coefvent.js?v=2.14"></script>
+<script src="data/zonage.js?v=2.15"></script>
+<script src="data/communes.js?v=2.15"></script>
+<script src="data/departements.js?v=2.15"></script>
+<script src="../commun/coefvent.js?v=2.15"></script>
 <style>
 :root{
   --fip-bleu:#114088; --fip-bleu-fonce:#0b2d63; --fip-rouge:#e30009; --fip-ciel:#0098db;
@@ -938,12 +938,12 @@ $('versS1').onclick=()=>{
   catch(e){alert('Stockage indisponible sur ce navigateur.');}
 };
 </script>
-<script src="../commun/cahier.js?v=2.14"></script>
+<script src="../commun/cahier.js?v=2.15"></script>
 <script>CAHIER.remplir({affaire:'affaire',auteur:'realise'});</script>
-<script src="../commun/replier.js?v=2.14"></script>
-<script src="../commun/aide.js?v=2.14"></script>
-<script src="aide-c1.js?v=2.14"></script>
-<script src="../commun/export.js?v=2.14"></script>
+<script src="../commun/replier.js?v=2.15"></script>
+<script src="../commun/aide.js?v=2.15"></script>
+<script src="aide-c1.js?v=2.15"></script>
+<script src="../commun/export.js?v=2.15"></script>
 <script>EXPORT.init({code:'C1',titre:'Hypothèses climatiques, sismiques et complexes',
   zones:()=>[...document.querySelectorAll('#syn > .card')].concat(['ventRes','neigeRes','neigeToit','seismeRes','seismeGraph','seismeFa','cpxCouv','cpxBard'].map(id=>document.getElementById(id).closest('.card'))),
   donnees:()=>[document.querySelector('.panneau'),...document.querySelectorAll('main .card')],

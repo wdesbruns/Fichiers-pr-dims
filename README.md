@@ -7,6 +7,8 @@ Portail de calculettes du bureau d'études, aux couleurs FIP (bleu #114088, roug
 index.html                 ← page de connexion (l'adresse à communiquer)
 accueil.html               ← tableau de bord : une tuile par calculette
 supports/                  ← S1 supports de tuyauterie (montant, console, suspente, T, L, U, L mural) – calcul 3D, DDC, vues 2D/3D
+referentiel/               ← RF référentiel vulgarisé (fiches.js) ; ancres #id appelées par les 📘 des calculettes
+base/                      ← BD base de données (profilés, tubes, matériaux, fluides, aciers, ψ, flèches, c_f vent)
 cahier/                    ← CS cahier de supportage : types / configurations (ST-01.1), spéciaux (SPE-1.1), BOM, plans types cotés, DDC ; modèles BOM / simplifié / complet ; export .json
 portee-tuyauterie/         ← T1 portée entre supports (CODETI / EN 13480-3, ASME B31.3)
 poutre/                    ← P1 poutre acier sur deux appuis (EN 1990 combinaisons + EN 1993-1-1)

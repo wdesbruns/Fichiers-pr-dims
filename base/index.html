@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<script src="../commun/auth.js?v=2.15"></script>
+<script>calcProteger("../");</script>
+<title>FIP Calculettes — BD Base de données</title>
+<link rel="icon" href="../commun/img/picto-fip.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../commun/calc.css?v=2.15">
+<script src="../commun/acier.js?v=2.15"></script>
+<script src="../commun/data/profils.js?v=2.15"></script>
+<script src="../commun/data/tuyauterie.js?v=2.15"></script>
+<script src="../commun/coefvent.js?v=2.15"></script>
+<style>
+  main{display:block;max-width:1400px}
+  .onglets{display:flex;gap:2px;border-bottom:2px solid var(--fip-bleu);margin:0 0 14px;flex-wrap:wrap}
+  .onglets button{background:#fff;color:var(--ink);border:1px solid var(--line);border-bottom:0;border-radius:6px 6px 0 0;padding:8px 14px}
+  .onglets button.on{background:var(--fip-bleu);color:#fff;border-color:var(--fip-bleu)}
+  .outils{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-bottom:8px}
+  .outils>div{min-width:160px}
+  table.bd th{position:sticky;top:0;background:#fff;z-index:1;cursor:pointer}
+  table.bd td,table.bd th{white-space:nowrap}
+  table.bd tr.sel td{background:#eef4fb}
+  .tbl{max-height:68vh;overflow:auto;border:1px solid var(--line);border-radius:6px}
+  .detail{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start}
+  .src{font-size:12px;color:var(--muted);margin-top:6px}
+  @media (max-width:950px){.detail{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <a href="../accueil.html" class="brand" title="Retour à l'accueil"><img src="../commun/img/picto-fip.png" alt="FIP"><span>FIP<em>Calculettes</em></span></a>
+  <a href="../accueil.html" class="back">← Accueil</a>
+  <div style="flex:1 1 auto">
+    <h1><span class="code">BD</span>Base de données</h1>
+    <div class="sub">Profilés, tubes, matériaux, fluides, aciers, charges — les données utilisées par toutes les calculettes</div>
+  </div>
+  <a href="../referentiel/" class="noprint"><button class="sec" type="button">📘 Référentiel</button></a>
+  <button onclick="window.print()">🖨️ Imprimer / PDF</button>
+</header>
+<main>
+  <div class="onglets noprint" id="onglets"></div>
+  <section id="res">
+    <div class="card" id="cTable"><h2 id="titre"></h2><div class="outils noprint" id="outils"></div><div class="tbl"><div id="table"></div></div><div class="src" id="source"></div></div>
+    <div class="card" id="cDetail" hidden><h2>Détail</h2><div id="detail"></div></div>
+  </section>
+</main>
+<script>
+const $=id=>document.getElementById(id), f=fmtN, h=escH;
+const nb=(v,d)=>typeof v==='number'?f(v,d):(v??'—');
+let ong='prof', tri={col:null,dir:1}, filtre={fam:'IPE',q:''};
+/* ---------- définitions des tables ---------- */
+const COLS_PROF={
+  I:[['n','Profilé'],['h','h (mm)',1],['b','b (mm)',1],['tw','t_w (mm)',1],['tf','t_f (mm)',1],['r','r (mm)',1],['m','masse (kg/m)',1],['A','A (cm²)',2],['Iy','I_y (cm⁴)',1],['Wely','W_el,y (cm³)',1],['Wply','W_pl,y (cm³)',1],['iy','i_y (cm)',2],['Iz','I_z (cm⁴)',1],['Welz','W_el,z (cm³)',1],['Wplz','W_pl,z (cm³)',1],['iz','i_z (cm)',2],['It','I_t (cm⁴)',2],['Iw','I_w (cm⁶)',0]],
+  L:[['n','Profilé'],['h','h (mm)',1],['b','b (mm)',1],['t','t (mm)',1],['r','r (mm)',1],['m','masse (kg/m)',2],['A','A (cm²)',2],['Iy','I_y (cm⁴)',2],['Iu','I_u (cm⁴)',2],['Iv','I_v (cm⁴)',2],['iv','i_v (cm)',2],['Wu','W_u (cm³)',2],['Wv','W_v (cm³)',2],['ey','e_y (cm)',2],['ez','e_z (cm)',2],['It','I_t (cm⁴)',3]],
+  T:[['n','Profilé'],['h','h (mm)',1],['b','b (mm)',1],['t','t (mm)',1],['m','masse (kg/m)',2],['A','A (cm²)',2],['Iy','I_y (cm⁴)',1],['Wely','W_el,y (cm³)',1],['Wply','W_pl,y (cm³)',1],['iy','i_y (cm)',2],['Iz','I_z (cm⁴)',1],['It','I_t (cm⁴)',1]]};
+const colsProf=fam=>/^LI?$/.test(fam)?COLS_PROF.L:/HS$/.test(fam)?COLS_PROF.T:COLS_PROF.I;
+const SRC_PROF='IPE, HEA, HEB, HEM, tubes : eurocodepy (LGPL-3.0) ; IPN, UPN, UPE : catalogues (classeur poutre-poteau) et dimensions fib structuralcodes ; cornières : dimensions structuralcodes, caractéristiques calculées (axes principaux u, v). Unités : mm, kg/m, cm², cm³, cm⁴, cm⁶. Valeurs à recouper avec le catalogue du fournisseur.';
+const ONGLETS=[
+  {id:'prof',lib:'Profilés acier'},{id:'tubes',lib:'Tubes de tuyauterie'},{id:'mat',lib:'Matériaux tuyauterie'},{id:'fluides',lib:'Fluides'},
+  {id:'acier',lib:'Aciers de construction'},{id:'charges',lib:'Charges d\'exploitation et ψ'},{id:'fleches',lib:'Limites de flèche'},{id:'cf',lib:'Vent : c_f des profilés'}];
+function tableHTML(cols,rows,cle){
+  if(tri.col){ const c=tri.col; rows=rows.slice().sort((a,b)=>{const x=a[c],y=b[c];return (typeof x==='number'&&typeof y==='number'?x-y:String(x).localeCompare(String(y),'fr',{numeric:true}))*tri.dir;}); }
+  return `<table class="bd"><tr>${cols.map(([k,l])=>`<th data-c="${k}" class="${cols.find(c=>c[0]===k)[2]!=null?'n':''}">${l.replace(/_([a-z,]+)/g,'<sub>$1</sub>')}${tri.col===k?(tri.dir>0?' ▲':' ▼'):''}</th>`).join('')}</tr>`+
+    rows.map((r,i)=>`<tr data-i="${h(r[cle]??i)}">${cols.map(([k,,d])=>`<td class="${d!=null?'n':''}">${d!=null?nb(r[k],d):h(r[k]??'—')}</td>`).join('')}</tr>`).join('')+'</table>';
+}
+function rendre(){
+  $('onglets').innerHTML=ONGLETS.map(o=>`<button class="${o.id===ong?'on':''}" data-o="${o.id}">${o.lib}</button>`).join('');
+  $('onglets').querySelectorAll('button').forEach(b=>b.onclick=()=>{ong=b.dataset.o;tri={col:null,dir:1};$('cDetail').hidden=true;location.hash=ong;rendre();});
+  const O=ONGLETS.find(o=>o.id===ong); $('titre').textContent=O.lib; let out='',src='',outils='';
+  if(ong==='prof'){
+    const fams=[...new Set(PROFILS.map(p=>p.f))];
+    outils=`<div><label>Famille</label><select id="fFam">${fams.map(x=>`<option ${x===filtre.fam?'selected':''}>${x}</option>`).join('')}</select></div><div><label>Rechercher</label><input id="fQ" value="${h(filtre.q)}" placeholder="ex. 200"></div><div class="note">Clic sur une ligne : coupe et détail. Clic sur un en-tête : tri.</div>`;
+    const rows=PROFILS.filter(p=>p.f===filtre.fam&&(!filtre.q||p.n.toLowerCase().includes(filtre.q.toLowerCase())));
+    out=tableHTML(colsProf(filtre.fam),rows,'n'); src=SRC_PROF+` — ${rows.length} profilé(s) ; ${PROFILS.length} au total.`;
+  }
+  if(ong==='tubes'){
+    const sch=SCH_ORDER.filter(s=>PIPES.some(p=>p.s[s]!==undefined));
+    const rows=PIPES.map(p=>({dn:'DN'+p.dn,nps:p.nps,od:p.od,...Object.fromEntries(sch.map(s=>[s,p.s[s]]))}));
+    out=tableHTML([['dn','DN'],['nps','NPS'],['od','Ø ext. (mm)',1],...sch.map(s=>[s,'Sch '+s+' (mm)',2])],rows,'dn');
+    src='Épaisseurs nominales (mm) — ASME B36.10M (acier) et B36.19M (inox, suffixe S). Masse linéique du tube : π·(D − e)·e·ρ ; volume intérieur π·(D − 2e)²/4. Données utilisées par T1 et S1.';
+  }
+  if(ong==='mat'){
+    const rows=MATS.map(m=>({n:m.name,fam:m.fam==='A'?'austénitique':'ferritique',rho:m.rho,Rm:m.Rm,...Object.fromEntries(TT.map((t,i)=>['t'+t,m.rp[i]])),...Object.fromEntries(TT.map((t,i)=>['p'+t,m.rp1?m.rp1[i]:null]))}));
+    out=tableHTML([['n','Matériau'],['fam','famille'],['rho','ρ (kg/m³)',0],['Rm','R_m (MPa)',0],...TT.map(t=>['t'+t,`R_p0,2 ${t} °C`,0])],rows,'n')+
+      `<h3>Module d'élasticité E (GPa) selon la température</h3>`+tableHTML([['n','Famille'],...TT.map((t,i)=>['e'+i,`${t} °C`,0])],[{n:'Aciers ferritiques',...Object.fromEntries(E_F.map((e,i)=>['e'+i,e]))},{n:'Aciers austénitiques',...Object.fromEntries(E_A.map((e,i)=>['e'+i,e]))}],'n');
+    src='Limites d\'élasticité à chaud R<sub>p0,2,t</sub> (MPa) et résistance R<sub>m</sub> : normes produit EN 10216-2, -3, -5 et EN 10217 (valeurs minimales). Modules E : valeurs indicatives de T1 (à recouper avec l\'annexe de la norme de calcul de tuyauterie utilisée). Utilisés par T1 pour la contrainte admissible f.';
+  }
+  if(ong==='fluides'){ out=tableHTML([['n','Fluide'],['r','Masse volumique (kg/m³)',0]],FLUIDS.map(x=>({n:x.n,r:x.r})),'n'); src='Valeurs usuelles à température ambiante (sauf indication) ; « saisie » : masse volumique à renseigner dans la calculette.'; }
+  if(ong==='acier'){
+    out=tableHTML([['n','Nuance'],['a','f_y t ≤ 40 mm (MPa)',0],['b','f_y 40 < t ≤ 80 mm (MPa)',0],['c','f_u (MPa)',0]],Object.entries(NUANCES).map(([n,v])=>({n,a:v[0],b:v[1],c:v[2]})),'n')+
+      `<h3>Constantes</h3>`+tableHTML([['n','Grandeur'],['v','Valeur'],['r','Référence']],[{n:'Module d\'élasticité E',v:'210 000 MPa',r:'NF EN 1993-1-1 §3.2.6'},{n:'Module de cisaillement G',v:'81 000 MPa',r:'§3.2.6'},{n:'Poids volumique',v:'≈ 78,5 kN/m³ (7 850 kg/m³)',r:'NF EN 1991-1-1 annexe A'},{n:'γ_M0 / γ_M1 (AN France)',v:'1,00 / 1,00',r:'NF EN 1993-1-1/NA §6.1'},{n:'γ_M2 (boulons, assemblages)',v:'1,25',r:'NF EN 1993-1-8/NA Tab. 2.1'},{n:'Coefficient de dilatation thermique',v:'12·10⁻⁶ /K',r:'§3.2.6'}],'n');
+    src='NF EN 1993-1-1 Tab. 3.1 (aciers laminés EN 10025-2). Résistances des boulons (f<sub>ub</sub>) : 4.6 → 400 MPa, 5.6 → 500 MPa, 8.8 → 800 MPa (NF EN 1993-1-8 Tab. 3.1).';
+  }
+  if(ong==='charges'){
+    out=tableHTML([['n','Catégorie / action'],['a','ψ₀',1],['b','ψ₁',1],['c','ψ₂',1]],[...Object.values(CAT_Q).map(c=>({n:c.n,a:c.psi[0],b:c.psi[1],c:c.psi[2]})),{n:'Neige, altitude ≤ 1000 m',a:0.5,b:0.2,c:0},{n:'Neige, altitude > 1000 m',a:0.7,b:0.5,c:0.2},{n:'Vent',a:0.6,b:0.2,c:0},{n:'Température (hors incendie)',a:0.6,b:0.5,c:0}],'n');
+    src='NF EN 1990 Tableau A1.1 + AN. Les valeurs des charges d\'exploitation q<sub>k</sub> par catégorie sont données par la NF EN 1991-1-1 Tab. 6.2 + AN (voir P1).';
+  }
+  if(ong==='fleches'){ out=tableHTML([['n','Élément'],['a','w_max ≤ L / …',0],['b','w₃ ≤ L / …',0]],UTILISATIONS.map(u=>({n:u.n,a:u.wmax,b:u.w3})),'n'); src='NF EN 1993-1-1/NA §7.2.1, Tableau 7.1 (valeurs limites recommandées, à adapter au projet). Poteaux : déplacement en tête H/150 (bâtiment industriel à parois non fragiles) ou H/250 (§7.2.2 + AN).'; }
+  if(ong==='cf'){ out=tableHTML([['n','Section'],['fig','AN fig.'],['c0','c_x α = 0°',2],['c45','c_x 45°',2],['c90','c_x 90°',2],['cf','c_f retenu (largeur projetée)',2],['fam','Familles']],CV.PROFILS.map(P=>{const r=a=>{const t=P.t.find(x=>x[0]===a);return t?t[1]:null;};return {n:P.lib,fig:P.fig,c0:r(0),c45:r(45),c90:r(90),cf:CV.cfProj(P).cf,fam:P.fam.join(', ')||'—'};}),'n'); src='NF EN 1991-1-4/NA clause 7.7(1), figures 7.39(NA) à 7.50(NA) ; A<sub>ref</sub> = e·ℓ. c<sub>f</sub> retenu : maximum sur α de c<sub>x</sub>·e / largeur projetée (utilisé par S1, ψ<sub>λ</sub> = 1). Tube rond : 1,2 (fig. 7.28, sous-critique).'; }
+  $('outils').innerHTML=outils; $('table').innerHTML=out; $('source').innerHTML=src;
+  $('table').querySelectorAll('th').forEach(th=>th.onclick=()=>{const c=th.dataset.c;tri=tri.col===c?{col:c,dir:-tri.dir}:{col:c,dir:1};rendre();});
+  if($('fFam')) $('fFam').onchange=()=>{filtre.fam=$('fFam').value;tri={col:null,dir:1};rendre();};
+  if($('fQ')) $('fQ').oninput=()=>{filtre.q=$('fQ').value;const pos=$('fQ').selectionStart;rendre();$('fQ').focus();$('fQ').setSelectionRange(pos,pos);};
+  if(ong==='prof') $('table').querySelectorAll('tr[data-i]').forEach(tr=>tr.onclick=()=>{const p=PROFILS.find(x=>x.n===tr.dataset.i);if(!p)return;
+    $('table').querySelectorAll('tr.sel').forEach(x=>x.classList.remove('sel'));tr.classList.add('sel');$('cDetail').hidden=false;
+    const cl=['S235','S275','S355'].map(nu=>`${nu} : classe ${classeSection(p,NUANCES[nu][0],'flexion').cl??'—'} en flexion, ${classeSection(p,NUANCES[nu][0],'compression').cl??'—'} en compression`).join(' · ');
+    $('detail').innerHTML=`<div class="detail"><div>${svgSection(p,200)}</div><div><b>${h(p.n)}</b> — ${f(p.m,2)} kg/m — A = ${f(p.A,2)} cm²<br><span class="note">${cl} (NF EN 1993-1-1 Tab. 5.2)</span><br>${Object.entries(p).filter(([k])=>!['f','s','n','src'].includes(k)).map(([k,v])=>`${k} = ${typeof v==='number'?f(v,3):h(v)}`).join(' · ')}<div class="src">Source : ${h(p.src||'')}.</div></div></div>`;});
+}
+if(location.hash&&ONGLETS.some(o=>o.id===location.hash.slice(1))) ong=location.hash.slice(1);
+rendre();
+</script>
+<script src="../commun/replier.js?v=2.15"></script>
+</body>
+</html>

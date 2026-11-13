@@ -9,16 +9,51 @@
    vignette : petit schéma SVG affiché sur la carte (facultatif)
    marqueur de catégorie : ● ▬ → ■ ◆ … (couleur d'accent FIP)
    ===================================================================== */
-const CALC_VERSION = "v2.14";
+const CALC_VERSION = "v2.15";
 
 const CALC_CATEGORIES = [
   { id: "tuy", nom: "Tuyauterie", sousTitre: "Supportage, portées et descentes de charges · CODETI / EN 13480-3, ASME B31.3", couleur: "#e30009", marqueur: "●" },
   { id: "acier", nom: "Structure acier", sousTitre: "Poutres et poteaux laminés · NF EN 1990 + AN (combinaisons), NF EN 1993-1-1 + AN", couleur: "#e30009", marqueur: "◆" },
   { id: "clim", nom: "Actions climatiques et sismiques", sousTitre: "Vent, neige, séisme, poids des complexes · NF EN 1991-1-3 / 1-4, NF EN 1998-1 + AN, arrêté du 22/10/2010", couleur: "#e30009", marqueur: "▬" },
+  { id: "ress", nom: "Ressources", sousTitre: "Référentiel normatif vulgarisé et bases de données utilisées par les calculettes", couleur: "#e30009", marqueur: "◇" },
   { id: "avenir", nom: "À venir", sousTitre: "Emplacements réservés pour les prochaines calculettes", couleur: "#e30009", marqueur: "■" },
 ];
 
 const CALC_APPS = [
+  {
+    code: "RF",
+    titre: "Référentiel",
+    description: "Normes utilisées et notions clés expliquées simplement : combinaisons, vent, neige, séisme, flambement, déversement, torsion, assemblages, supportage… avec formules, ordres de grandeur et références.",
+    url: "referentiel/",
+    categorie: "ress",
+    normes: ["Eurocodes + AN", "CNC2M", "CODETI"],
+    statut: "ok",
+    vignette: `
+<svg viewBox="0 0 400 195" xmlns="http://www.w3.org/2000/svg" font-family="Inter,Arial,sans-serif">
+  <rect x="70" y="25" width="120" height="150" rx="6" fill="#fff" stroke="#171a1e"/><rect x="200" y="25" width="120" height="150" rx="6" fill="#fff" stroke="#171a1e"/>
+  <line x1="195" y1="25" x2="195" y2="175" stroke="#114088" stroke-width="3"/>
+  ${[0,1,2,3,4,5].map(i=>`<line x1="85" y1="${50+i*18}" x2="${170-(i%3)*15}" y2="${50+i*18}" stroke="#8a929c" stroke-width="3"/>`).join("")}
+  <text x="260" y="70" font-size="20" text-anchor="middle" fill="#114088" font-weight="700">N = χ·A·f</text><text x="260" y="100" font-size="13" text-anchor="middle" fill="#e30009">EN 1993-1-1</text>
+  <text x="260" y="130" font-size="13" text-anchor="middle" fill="#5f6670">§6.3.1</text>
+</svg>`,
+  },
+  {
+    code: "BD",
+    titre: "Base de données",
+    description: "Profilés (IPE, HEA, UPN, cornières, tubes…), tubes de tuyauterie, matériaux et fluides, aciers de construction, coefficients ψ, limites de flèche, coefficients de force du vent.",
+    url: "base/",
+    categorie: "ress",
+    normes: ["catalogues", "ASME B36.10M", "EN 10216"],
+    statut: "ok",
+    vignette: `
+<svg viewBox="0 0 400 195" xmlns="http://www.w3.org/2000/svg" font-family="Inter,Arial,sans-serif">
+  <rect x="50" y="30" width="300" height="140" rx="6" fill="#fff" stroke="#171a1e"/><rect x="50" y="30" width="300" height="24" rx="6" fill="#114088"/>
+  ${[0,1,2,3,4].map(i=>`<line x1="50" y1="${78+i*22}" x2="350" y2="${78+i*22}" stroke="#e1e5ea"/>`).join("")}
+  <line x1="150" y1="54" x2="150" y2="170" stroke="#e1e5ea"/><line x1="250" y1="54" x2="250" y2="170" stroke="#e1e5ea"/>
+  <text x="100" y="47" font-size="11" fill="#fff" text-anchor="middle" font-weight="700">Profilé</text><text x="200" y="47" font-size="11" fill="#fff" text-anchor="middle" font-weight="700">I_y</text><text x="300" y="47" font-size="11" fill="#fff" text-anchor="middle" font-weight="700">kg/m</text>
+  <path d="M85,70 h30 v4 h-13 v20 h13 v4 h-30 v-4 h13 v-20 h-13z" fill="#8a929c"/>
+</svg>`,
+  },
   {
     code: "T1",
     titre: "Portée entre supports de tuyauterie",
