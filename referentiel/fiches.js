@@ -6,7 +6,7 @@ const FICHES = [
 /* ---------------- NORMES ---------------- */
 { id: "normes", theme: "Normes", titre: "Les textes utilisés par les calculettes",
   bref: "Les Eurocodes donnent les règles européennes ; l'Annexe nationale (AN) fixe les valeurs propres à la France. Les deux se lisent toujours ensemble.",
-  corps: `<table><tr><th>Texte</th><th>Sujet</th><th>Calculettes</th></tr>
+  corps: `<table><tr><th>Texte</th><th>Sujet</th><th>Outils</th></tr>
   <tr><td>NF EN 1990 + AN</td><td>Bases de calcul : états limites, combinaisons d'actions, coefficients γ et ψ</td><td>P1, P2, S1</td></tr>
   <tr><td>NF EN 1991-1-1 + AN</td><td>Poids propres, charges d'exploitation des planchers</td><td>P1, C1</td></tr>
   <tr><td>NF EN 1991-1-3 + AN</td><td>Neige (cartes, coefficients de forme)</td><td>C1, S1, P1</td></tr>

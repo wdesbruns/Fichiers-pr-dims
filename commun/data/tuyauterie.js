@@ -1,4 +1,4 @@
-/* Base commune tuyauterie FIP Calculettes (T1 portée, S1 supports…)
+/* Base commune tuyauterie FIP Études (T1 portée, S1 supports…)
    Tubes ASME B36.10M / B36.19M, matériaux EN / ASTM, modules E, fluides.
    Valeurs indicatives à vérifier sur les normes produit. */
 /* =====================================================================

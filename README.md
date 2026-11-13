@@ -1,6 +1,6 @@
-# FIP Calculettes
+# FIP Études
 
-Portail de calculettes du bureau d'études, aux couleurs FIP (bleu #114088, rouge #e30009, ciel #0098db). Site statique, GitHub Pages.
+Portail d'outils du bureau d'études (calculs, chiffrage, documents), aux couleurs FIP (bleu #114088, rouge #e30009, ciel #0098db). Site statique, GitHub Pages.
 
 ## Structure
 ```

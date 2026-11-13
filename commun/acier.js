@@ -1,5 +1,5 @@
 /* =====================================================================
-   MOTEUR ACIER COMMUN — FIP Calculettes (poutre P1 / poteau P2)
+   MOTEUR ACIER COMMUN — FIP Études (poutre P1 / poteau P2)
    NF EN 1990 + AN, NF EN 1991-1-1 + AN, NF EN 1993-1-1 + AN
    Unités internes : kN, m, MPa (N/mm²) ; caractéristiques de section en cm (base PROFILS)
    ===================================================================== */

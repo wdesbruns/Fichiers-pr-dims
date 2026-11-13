@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.16"></script>
+<script src="../commun/auth.js?v=2.17"></script>
 <script>calcProteger("../");</script>
-<title>FIP Calculettes — Référentiel</title>
+<title>FIP Études — Référentiel</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.16">
-<script src="fiches.js?v=2.16"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.17">
+<script src="fiches.js?v=2.17"></script>
 <style>
   main{grid-template-columns:minmax(220px,280px) 1fr}
   nav.toc{position:sticky;top:10px;align-self:start;max-height:calc(100vh - 20px);overflow:auto}
@@ -30,7 +30,7 @@
 </head>
 <body>
 <header>
-  <a href="../accueil.html" class="brand" title="Retour à l'accueil"><img src="../commun/img/picto-fip.png" alt="FIP"><span>FIP<em>Calculettes</em></span></a>
+  <a href="../accueil.html" class="brand" title="Retour à l'accueil"><img src="../commun/img/picto-fip.png" alt="FIP"><span>FIP<em>Études</em></span></a>
   <a href="../accueil.html" class="back">← Accueil</a>
   <div style="flex:1 1 auto">
     <h1><span class="code">RF</span>Référentiel</h1>
@@ -51,12 +51,12 @@ function rendre(q=''){
   const themes=[...new Set(L.map(F=>F.theme))];
   $('toc').innerHTML=themes.map(t=>`<h3>${t}</h3>`+L.filter(F=>F.theme===t).map(F=>`<a href="#${F.id}">${F.titre}</a>`).join('')).join('')||'<div class="note">Aucune fiche.</div>';
   $('fiches').innerHTML=L.map(F=>`<article class="card fiche" id="${F.id}"><div class="theme">${F.theme}</div><h2>${F.titre}</h2><div class="bref">${F.bref}</div>${F.corps}
-    <div class="pied"><span><b>Références :</b> ${F.refs}</span>${F.calc?`<span><b>Calculettes :</b> ${F.calc}</span>`:''}</div></article>`).join('');
+    <div class="pied"><span><b>Références :</b> ${F.refs}</span>${F.calc?`<span><b>Outils :</b> ${F.calc}</span>`:''}</div></article>`).join('');
 }
 $('q').addEventListener('input',()=>rendre($('q').value));
 rendre();
 if(location.hash){ const el=document.querySelector(location.hash); if(el) setTimeout(()=>el.scrollIntoView({block:'start'}),50); }
 </script>
-<script src="../commun/replier.js?v=2.16"></script>
+<script src="../commun/replier.js?v=2.17"></script>
 </body>
 </html>

@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>FIP Calculettes — Accueil</title>
-<script src="commun/auth.js?v=2.16"></script>
+<title>FIP Études — Accueil</title>
+<script src="commun/auth.js?v=2.17"></script>
 <script>calcProteger("");</script>
 <link rel="icon" href="commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="commun/style.css?v=2.16">
-<script src="commun/apps.js?v=2.16"></script>
+<link rel="stylesheet" href="commun/style.css?v=2.17">
+<script src="commun/apps.js?v=2.17"></script>
 <style>
   body{background:#fff}
   .app{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
@@ -67,8 +67,9 @@
 <div class="app">
   <aside class="side">
     <img class="logo" src="commun/img/logo-fip.png" alt="FIP — France Ingénierie Process">
-    <div class="id"><b>FIP <em>Calculettes</em></b><span class="mono" id="ver"></span></div>
-    <a class="nav-actif" href="accueil.html">Choisir une calculette</a>
+    <div class="id"><b>FIP <em>Études</em></b><span class="mono" id="ver"></span></div>
+    <div style="font-size:11.5px;color:#5f6670;margin:-6px 0 10px">Calculs · Chiffrage · Documents</div>
+    <a class="nav-actif" href="accueil.html">Choisir un outil</a>
     <nav id="nav"></nav>
     <div class="bas">
       <span id="qui"></span> · <a href="commun/empreinte.html">Gérer les comptes</a>
@@ -76,7 +77,7 @@
     </div>
   </aside>
   <main>
-    <h1>Choisissez une calculette</h1>
+    <h1>Choisissez un outil</h1>
     <p class="lead">Chaque module applique les codes et normes cités (CODETI, EN 13480, ASME, Eurocodes et annexes nationales françaises), avec les paragraphes de référence rappelés dans les résultats. Vous saisissez à gauche, le schéma se redessine, le verdict s'affiche à droite.</p>
     <div class="etapes">
       <div class="etape"><b class="n">1 · SAISIR</b>Les champs <span class="bleu">bleus</span> sont à renseigner. Les bases de données (tubes, matériaux, fluides) pré-remplissent les valeurs, qui restent modifiables.</div>
@@ -84,13 +85,13 @@
       <div class="etape"><b class="n">3 · JUSTIFIER</b>Le bouton <b>Imprimer / PDF</b> produit une note de calcul avec données, hypothèses, formules et références normatives.</div>
     </div>
     <div id="liste"></div>
-    <footer>Outils d'aide au calcul : les résultats doivent être vérifiés par un ingénieur qualifié. · <span class="mono" id="ver2"></span></footer>
+    <footer>FIP Études – calculs, chiffrage et documents du bureau d'études. Outils d'aide : les résultats doivent être vérifiés par un ingénieur qualifié. · <span class="mono" id="ver2"></span></footer>
   </main>
 </div>
 <script>
   const s=calcSession(); document.getElementById('qui').textContent=s?'Connecté : '+s.u:'';
   document.getElementById('ver').textContent='moteur '+CALC_VERSION;
-  document.getElementById('ver2').textContent='FIP Calculettes '+CALC_VERSION;
+  document.getElementById('ver2').textContent='FIP Études '+CALC_VERSION;
   const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const lien=a=>a.statut==='ok'?esc(a.url)+'?v='+encodeURIComponent(CALC_VERSION):'#';  // version : force le rechargement de la page après une mise à jour
   const cats=CALC_CATEGORIES.map(c=>({...c,apps:CALC_APPS.filter(a=>a.categorie===c.id)})).filter(c=>c.apps.length);
@@ -106,6 +107,6 @@
       <div class="vig ${a.vignette?'':'vide'}">${a.vignette||'＋'}</div></a>`).join('')+
     `</div></section>`).join('');
 </script>
-<script src="commun/replier.js?v=2.16"></script>
+<script src="commun/replier.js?v=2.17"></script>
 </body>
 </html>
