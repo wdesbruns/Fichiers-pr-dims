@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.25"></script>
+<script src="../commun/auth.js?v=2.26"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — CS Cahier de supportage</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.25">
-<script src="../commun/acier.js?v=2.25"></script>
-<script src="../commun/cahier.js?v=2.25"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.26">
+<script src="../commun/acier.js?v=2.26"></script>
+<script src="../commun/cahier.js?v=2.26"></script>
 <style>
   .logoAff{max-height:48px;max-width:160px;border:1px solid var(--line);border-radius:4px;padding:2px;background:#fff}
   .actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.actions button{padding:5px 10px;font-size:12px}
@@ -24,6 +24,9 @@
   td.act{white-space:nowrap}td.act button,.tete button{padding:2px 7px;font-size:11px;margin:1px}
   .b-nc{background:#eef0f3;color:#5f6670}.b-spe{background:#f3ead2;color:#6b5200}
   .fiche{break-before:page}
+  .planche{background:#fff;border:1px solid var(--line);border-radius:6px;margin:0 0 10px;overflow:hidden}.planche svg{display:block;width:100%;height:auto}
+  @page plA3{size:A3 landscape;margin:0} @page plA4{size:A4 landscape;margin:0}
+  @media print{.planche{border:0;border-radius:0;margin:0;break-before:page;break-after:page}.planche.A3{page:plA3}.planche.A4{page:plA4}.planche.A3 svg{width:420mm;height:297mm}.planche.A4 svg{width:297mm;height:210mm}}
   .vuesType{display:grid;grid-template-columns:1.25fr .75fr 1.15fr;gap:8px;align-items:start}
   .vuesType img{width:100%;border:1px solid var(--line);border-radius:6px}
   .vuesType svg{width:100%;height:auto}
@@ -65,7 +68,9 @@
     <label>Modèle</label>
     <select id="niveau"><option value="bom">BOM (nomenclature seule)</option><option value="simple">Cahier simplifié (plans types cotés, quantités, repérage, BOM)</option><option value="complet">Cahier complet (simplifié + vérifications + descentes de charges)</option><option value="perso">Personnalisé</option></select>
     <div class="opts" id="opts"></div>
-    <div class="note">Toujours inclus : identification, listing des repères, BOM générale.</div>
+    <label>Présentation des plans types</label>
+    <select id="plansMode"><option value="schema">Vues schématiques (cotes en lettres, perspective)</option><option value="A3">Dessin industriel – planches A3 paysage</option><option value="A4">Dessin industriel – planches A4 paysage</option></select>
+    <div class="note">Toujours inclus : identification, listing des repères, BOM générale. Dessin industriel : une planche par support type (vues orthogonales à l'échelle, cotes en lettres, tableau des configurations, nomenclature, cartouche), imprimée au format choisi.</div>
     <h3>Réglages</h3>
     <div class="row"><div><label>Préfixe supports types</label><input id="g_prefST" data-g="prefST"></div><div><label>Préfixe supports spéciaux</label><input id="g_prefSPE" data-g="prefSPE"></div></div>
     <div class="row"><div><label>Chevilles par platine (forfait)</label><input id="g_chev" data-g="chev" type="number" min="0" step="1"></div><div><label>Majoration accessoires (%)</label><input id="g_majo" data-g="majo" type="number" min="0" step="1"></div></div>
@@ -95,7 +100,7 @@
   <div class="printhead"><img src="../commun/img/logo-fip.png" alt="FIP"><strong id="phTitre">Cahier de supportage</strong><br><span id="phInfo"></span></div>
   <div class="card noprint" id="cGestion"><h2>Supports du cahier</h2>
     <div class="actions" style="margin-top:0">
-      <a href="../supports/?v=2.25"><button type="button" title="Créer et calculer un support type dans S1, puis « Ajouter au cahier »">➕ Type calculé (S1)</button></a>
+      <a href="../supports/?v=2.26"><button type="button" title="Créer et calculer un support type dans S1, puis « Ajouter au cahier »">➕ Type calculé (S1)</button></a>
       <button class="sec" id="addNC" type="button" title="Réserver un type (quantités, repères) à calculer plus tard dans S1">➕ Type à calculer</button>
       <button class="sec" id="addSPE" type="button" title="Support spécial dessiné à part (AutoCAD, Plant 3D, Advance Steel)">➕ Support spécial</button>
       <button class="sec" id="recalc" type="button">⟳ Recalculer tout</button>
@@ -155,10 +160,11 @@ function cartouche(){
 /* ---------------- contenu (niveau du cahier) ---------------- */
 function afficherOpts(){
   const R=K.rapport; if(!R.sec) R.sec=Object.fromEntries(SECTIONS.map(([k])=>[k,(NIVEAUX[R.niveau]||[]).includes(k)]));
-  $('niveau').value=R.niveau;
+  $('niveau').value=R.niveau; $('plansMode').value=R.plans||'schema';
   $('opts').innerHTML=SECTIONS.map(([k,l])=>`<label><input type="checkbox" data-s="${k}" ${R.sec[k]?'checked':''}> ${l}</label>`).join('');
   document.querySelectorAll('[data-s]').forEach(el=>el.onchange=()=>{ R.sec[el.dataset.s]=el.checked; R.niveau='perso'; $('niveau').value='perso'; enr(); tout(); });
 }
+$('plansMode').onchange=()=>{ K.rapport.plans=$('plansMode').value; K.types.forEach(T=>{ if(T.vues) T.vues.planche=null; }); K.aRecalc=true; enr(); tout(); };
 $('niveau').onchange=()=>{ const R=K.rapport; R.niveau=$('niveau').value; if(NIVEAUX[R.niveau]) R.sec=Object.fromEntries(SECTIONS.map(([k])=>[k,NIVEAUX[R.niveau].includes(k)])); enr(); afficherOpts(); tout(); };
 
 /* ---------------- paramètres communs ---------------- */
@@ -186,7 +192,7 @@ let api=null;
 function moteur(){
   if(api) return Promise.resolve(api);
   return new Promise((ok,ko)=>{ const fr=$('iframeS1'), t0=Date.now();
-    fr.src='../supports/?moteur=1&v=2.25';
+    fr.src='../supports/?moteur=1&v=2.26';
     const att=()=>{ try{ const w=fr.contentWindow; if(w&&w.S1API&&w.document.readyState==='complete'){ api=w.S1API; return ok(api);} }catch(e){ return ko(e); }
       if(Date.now()-t0>20000) return ko(new Error('S1 ne répond pas')); setTimeout(att,150); };
     setTimeout(att,300); });
@@ -196,7 +202,10 @@ async function recalculer(avecImages){
   const A=await moteur(), nTot=L.reduce((s,T)=>s+T.configs.length,0); let i=0;
   for(const T of L){
     A.charger(T.etat); A.appliquerCotes(T.cotes0||{}); T.etat=A.etat(); T.cotesDef=A.cotes(); T.cotes0={...A.cotesValeurs(),...(T.cotes0||{})};
-    T.vues=A.vues(); if(avecImages) IMG[T.id]=await A.perspective();
+    const md=K.rapport.plans||'schema', a=K.affaire, defs=A.cotes();
+    T.vues=A.vues(md==='schema'?{}:{indus:true,format:md,cartouche:{affaire:CAHIER.libAffaire(a)||'',client:[a.client,a.site].filter(Boolean).join(' – '),titre:`Support type ${T.nom}${T.designation?' – '+T.designation:''}`,date:a.date?new Date(a.date).toLocaleDateString('fr-FR'):'',indice:a.indice||'',dessine:a.realise||'',verifie:a.controle||'',plan:[a.doc,T.nom].filter(Boolean).join('-')},
+      tableau:{titre:'Tableau des configurations (cotes en mm)',cols:['Repère',...defs.map(d=>d.l),'Qté'],rows:T.configs.map(c=>[repere(T,c),...defs.map(d=>{ const v=(c.cotes||{})[d.id]??(T.cotes0||{})[d.id]; return v==null?'—':f(v*1000,0); }),String(+c.qte||0)])}});
+    if(avecImages&&md==='schema') IMG[T.id]=await A.perspective();
     for(const c of T.configs){ $('etat').innerHTML=`<div class="msg info">⏳ Calcul ${++i} / ${nTot} : ${h(repere(T,c))}…</div>`;
       A.appliquerCotes({...T.cotes0,...(c.cotes||{})}); c.resume=A.resume(); }
     T.resume=T.configs[0].resume;
@@ -206,7 +215,7 @@ async function recalculer(avecImages){
 const occupe=async(b,fn)=>{ b.disabled=true; try{ await fn(); }catch(e){ alert('Calcul impossible : '+e.message); } finally{ b.disabled=false; } };
 $('recalc').onclick=()=>occupe($('recalc'),()=>recalculer(false));
 $('genFiches').onclick=()=>occupe($('genFiches'),()=>recalculer(true));
-const besoinImages=()=>sec('plans')&&K.types.some(T=>T.kind==='s1'&&T.etat&&!IMG[T.id]);
+const besoinImages=()=>sec('plans')&&K.types.some(T=>T.kind==='s1'&&T.etat&&((K.rapport.plans||'schema')==='schema'?!IMG[T.id]:!T.vues?.planche));
 async function preparer(){ if(K.aRecalc||besoinImages()||K.types.some(T=>T.kind==='s1'&&T.etat&&T.configs.some(c=>!c.resume))) await recalculer(sec('plans')); }
 async function imprimer(){ try{ await preparer(); }catch(e){} setTimeout(()=>window.print(),120); }
 
@@ -217,7 +226,7 @@ function nouveauType(kind){
   K.types.push(T); enr(); tout();
 }
 $('addNC').onclick=()=>nouveauType('s1'); $('addSPE').onclick=()=>nouveauType('spe');
-const lienS1=(T,c)=>`../supports/?cahier=${encodeURIComponent(T.id)}&conf=${encodeURIComponent(c.id)}&v=2.25`;
+const lienS1=(T,c)=>`../supports/?cahier=${encodeURIComponent(T.id)}&conf=${encodeURIComponent(c.id)}&v=2.26`;
 function gestion(){
   if(!K.types.length){ $('rGestion').innerHTML='<div class="msg info">Cahier vide. « ➕ Type calculé (S1) » : créer le support dans S1 puis « Ajouter au cahier ». « ➕ Type à calculer » : réserver un type et ses quantités, à calculer plus tard. « ➕ Support spécial » : support dessiné à part, compté dans la BOM.</div>'; etatRecalc(); return; }
   $('rGestion').innerHTML=K.types.map((T,ti)=>{
@@ -332,11 +341,13 @@ function fiches(){
   const S=K.rapport.sec||{}, avec=S.plans||S.verif||S.ddcType||S.ddcConf||S.ddcCas;
   if(!avec){ $('rTypes').innerHTML=''; return; }
   $('rTypes').innerHTML=K.types.map((T,ti)=>{ const spe=T.kind==='spe', r=resumeT(T), defs=T.cotesDef||[];
-    let s=`<div class="card fiche ${ti?'':'premiere'}"><h2>${spe?'Support spécial':'Support type'} ${h(T.nom)} — ${h(T.designation||r?.typeNom||(spe?'':'non calculé'))}</h2>`;
+    let pre='', s=`<div class="card fiche ${ti?'':'premiere'}"><h2>${spe?'Support spécial':'Support type'} ${h(T.nom)} — ${h(T.designation||r?.typeNom||(spe?'':'non calculé'))}</h2>`;
     if(spe){ s+=`<table><tr><td>Plan</td><td><b>${h(T.plan||'à établir')}</b> (AutoCAD / Plant 3D / Advance Steel)</td></tr><tr><td>Masse unitaire estimée</td><td>${T.masse===''||T.masse==null?'—':f(+T.masse,1)+' kg'}</td></tr></table>`; }
     else if(!r){ s+='<div class="msg info">Type non calculé : ouvrir dans S1 (✎ S1) pour le dimensionner.</div>'; }
     else {
-      if(S.plans) s+=`<div class="vuesType"><div>${T.vues?.face||'<div class="note">Vues non générées.</div>'}</div><div>${T.vues?.cote||''}</div><div>${IMG[T.id]?`<img src="${IMG[T.id]}" alt="Perspective ${h(T.nom)}">`:'<div class="note">Perspective : « 🖼 Générer plans et perspectives ».</div>'}</div></div>`;
+      const md=K.rapport.plans||'schema';
+      if(S.plans&&md!=='schema'){ if(T.vues?.planche) pre=`<div class="planche ${md}">${T.vues.planche}</div>`; else s+=`<div class="msg info">Planche ${md} non générée : « 🖼 Générer plans et perspectives » ou « Recalculer ».</div>`; }
+      else if(S.plans) s+=`<div class="vuesType"><div>${T.vues?.face||'<div class="note">Vues non générées.</div>'}</div><div>${T.vues?.cote||''}</div><div>${IMG[T.id]?`<img src="${IMG[T.id]}" alt="Perspective ${h(T.nom)}">`:'<div class="note">Perspective : « 🖼 Générer plans et perspectives ».</div>'}</div></div>`;
       s+=`<table style="margin-top:6px"><tr><td style="width:22%">Profilés</td><td>${r.barres.map(b=>`${h(b.lib)} : <b>${h(b.profil)}</b>`).join(' · ')} — ${h(r.nuance||'')}</td></tr>
         <tr><td>Tuyauteries</td><td>${(r.tuyaux||[]).map(t=>`${h(t.nom)} : ${h(t.desc)} sur ${h((t.barre||'').toLowerCase())}${t.d?` — étrier M${t.d}`:''}`).join('<br>')}</td></tr></table>`;
     }
@@ -356,7 +367,7 @@ function fiches(){
       if(S.ddcConf) s+=`<h3>Descente de charges par configuration (ELU, par support unitaire)</h3><table class="ddc"><tr><th>Configuration – appui</th><th>Valeur</th>${thC}</tr>`+
         T.configs.filter(c=>c.resume).map(c=>c.resume.appuis.map(a=>`<tr><td>${h(repere(T,c))} – ${h(a.lib)}</td><td>ELU</td>${tdV(a.ELU)}</tr>`+(a.SIS?`<tr><td></td><td>Sismique</td>${tdV(a.SIS)}</tr>`:'')).join('')).join('')+'</table>';
       if(S.ddcType||S.ddcCas||S.ddcConf) s+=`<div class="note">${NOTE_DDC}</div>`; }
-    return s+'</div>'; }).join('');
+    return pre+s+'</div>'; }).join('');
 }
 
 /* ---------------- affichage général ---------------- */
@@ -382,10 +393,10 @@ window.addEventListener('storage',e=>{ if(e.key===CAHIER.CLE){ K=CAHIER.lire(); 
 if(!CAHIER.existe()) enr(); else enr();               // enregistre la migration éventuelle (v1 → v2)
 demarrer();
 </script>
-<script src="../commun/replier.js?v=2.25"></script>
-<script src="../commun/aide.js?v=2.25"></script>
-<script src="aide-cs.js?v=2.25"></script>
-<script src="../commun/export.js?v=2.25"></script>
+<script src="../commun/replier.js?v=2.26"></script>
+<script src="../commun/aide.js?v=2.26"></script>
+<script src="aide-cs.js?v=2.26"></script>
+<script src="../commun/export.js?v=2.26"></script>
 <script>EXPORT.init(CFG);</script>
 </body>
 </html>

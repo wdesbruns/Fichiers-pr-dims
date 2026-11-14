@@ -4,21 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.25"></script>
+<script src="../commun/auth.js?v=2.26"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.25">
+<link rel="stylesheet" href="../commun/calc.css?v=2.26">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.25"></script>
-<script src="../commun/data/tuyauterie.js?v=2.25"></script>
-<script src="../commun/acier.js?v=2.25"></script>
-<script src="../commun/barres3d.js?v=2.25"></script>
-<script src="../commun/dessin.js?v=2.25"></script>
-<script src="../commun/coefvent.js?v=2.25"></script>
-<script src="../commun/cahier.js?v=2.25"></script>
+<script src="../commun/data/profils.js?v=2.26"></script>
+<script src="../commun/data/tuyauterie.js?v=2.26"></script>
+<script src="../commun/acier.js?v=2.26"></script>
+<script src="../commun/barres3d.js?v=2.26"></script>
+<script src="../commun/dessin.js?v=2.26"></script>
+<script src="../commun/coefvent.js?v=2.26"></script>
+<script src="../commun/cahier.js?v=2.26"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -1127,7 +1127,8 @@ function specDessin(D,V,opt={}){
   // --- nomenclature et repères
   let rep=0; const grp=new Map();
   Gm.B.forEach(b=>{ const k=b.p.n+'|'+Math.round(b.L*1000); if(!grp.has(k)) grp.set(k,{b,n:0}); grp.get(k).n++; });
-  [...grp.values()].forEach(({b,n})=>{ rep++; nom.push([rep,n,`${b.lib.replace(/ (gauche|droit|\d+)$/,'')} ${b.p.n}`,$('nuance').value,mm(b.L),f(b.p.m*b.L*n,1)]);
+  const varie=lettres&&opt.tableau&&opt.tableau.rows.length>1;                   // plusieurs configurations : longueurs et masses variables
+  [...grp.values()].forEach(({b,n})=>{ rep++; nom.push([rep,n,`${b.lib.replace(/ (gauche|droit|\d+)$/,'')} ${b.p.n}`,$('nuance').value,varie?'selon config.':mm(b.L),varie?'selon config.':f(b.p.m*b.L*n,1)]);
     const vert=b.vert, incl=!vert&&Math.abs(b.dir[2])>0.05, m=add3(b.A,mul3(b.dir,b.L*(vert?0.4:incl?0.5:0.78)));
     reperes.push(vert?{vue:'face',p:m,n:String(rep),dx:-1,dy:0.35}:incl?{vue:'face',p:m,n:String(rep),dx:Math.abs(b.dir[2]),dy:Math.abs(b.dir[1])}:{vue:'face',p:m,n:String(rep),dx:0.35,dy:1}); });
   const gp=new Map(); pl.forEach(p=>{ const e=p.e||ep, k=p.d.map(v=>Math.round(v*1000)).join('×')+'×'+Math.round(e*1000); p.key=k; gp.set(k,{k,e,d:p.d,n:(gp.get(k)?.n||0)+1}); });
@@ -1145,7 +1146,7 @@ function specDessin(D,V,opt={}){
   const masse=Gm.B.reduce((s,b)=>s+b.p.m*b.L,0)+[...gp.values()].reduce((s,p)=>s+7850*p.d[0]*p.d[1]*p.e*p.n,0);
   const K=opt.cartouche||{affaire:$('affaire').value,client:'',titre:`Support ${$('repere').value||''} – ${TYPES[D.typ].n}`,dessine:$('auteur').value,plan:$('repere').value};
   return {format:opt.format||formatIndus,vues,solides:S,aides,cercles,sols,murs,cotes,reperes,etiquettes:etiq,nomenclature:nom,tableau:opt.tableau||null,cartouche:K,
-    notes:[`Cotes en mm${lettres?' (valeurs : tableau des configurations)':''}. Longueurs entre axes du modèle de calcul : longueurs de débit à confirmer en fabrication.`,`Acier ${$('nuance').value} — masse acier ≈ ${f(masse,1)} kg (hors visserie). Tuyauteries représentées sur ±${Lp*1000} mm.`]};
+    notes:[`Cotes en mm${lettres?' (valeurs : tableau des configurations)':''}. Longueurs entre axes du modèle de calcul : longueurs de débit à confirmer en fabrication.`,`Acier ${$('nuance').value} — masse acier ≈ ${f(masse,1)} kg${varie?' (configuration '+opt.tableau.rows[0][0]+')':''} (hors visserie). Tuyauteries représentées sur ±${Lp*1000} mm.`]};
 }
 function planIndus(D,V,opt){ return DESSIN.planche(specDessin(D,V,opt)); }
 function majIndus(){ if(!modeIndus||!dernier) return; try{ const P=planIndus(dernier.D,dernier.V,{format:formatIndus}); $('vInd').innerHTML=P.svg; $('nInd').innerHTML=`Échelle 1:${P.echelle} sur ${P.format} paysage · projection européenne · faces cachées supprimées. Cartouche provisoire en attendant le cartouche FIP.`; dernier.planche=P; }
@@ -1359,7 +1360,7 @@ function resumeS1(){                                     // résultats synthéti
       cas:Object.fromEntries(['G','T','S','WY','WX','EP','EX','EY'].filter(c=>V.R[c]).map(c=>[c,V.R[c].reactions[E.a.n].map(x=>-x)]))})),
     lignes:V.lignes.map(l=>({n:l.n.replace(/<[^>]+>/g,''),r:l.r})),date:new Date().toISOString()};
 }
-window.S1API={cotes:()=>cotesDef(),cotesValeurs,appliquerCotes:C=>{appliquerCotes(C);cartesTuyaux();calc();},vues:()=>({face:vueFace(dernier.D,dernier.V,{plan:true}),cote:vueCote(dernier.D,dernier.V,{plan:true})}),etat:etatS1,charger:E=>{chargerEtat(E);appliquerParamsAffaire();calc();return true;},resume:resumeS1,
+window.S1API={cotes:()=>cotesDef(),cotesValeurs,appliquerCotes:C=>{appliquerCotes(C);cartesTuyaux();calc();},vues:(o={})=>({face:vueFace(dernier.D,dernier.V,{plan:true}),cote:vueCote(dernier.D,dernier.V,{plan:true}),planche:o.indus?planIndus(dernier.D,dernier.V,{lettres:true,format:o.format,cartouche:o.cartouche,tableau:o.tableau}).svg:null}),etat:etatS1,charger:E=>{chargerEtat(E);appliquerParamsAffaire();calc();return true;},resume:resumeS1,
   perspective:async()=>{await perspective();return $('persp').hidden?'':$('imgPersp').src;}};
 const QS=new URLSearchParams(location.search), ID_CAHIER=QS.get('cahier'), ID_CONF=QS.get('conf');
 function initCahier(){
@@ -1395,10 +1396,10 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.25"></script>
-<script src="../commun/aide.js?v=2.25"></script>
-<script src="aide-s1.js?v=2.25"></script>
-<script src="../commun/export.js?v=2.25"></script>
+<script src="../commun/replier.js?v=2.26"></script>
+<script src="../commun/aide.js?v=2.26"></script>
+<script src="aide-s1.js?v=2.26"></script>
+<script src="../commun/export.js?v=2.26"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
