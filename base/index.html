@@ -4,17 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.23"></script>
+<script src="../commun/auth.js?v=2.24"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — BD Base de données</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.23">
-<script src="../commun/acier.js?v=2.23"></script>
-<script src="../commun/data/profils.js?v=2.23"></script>
-<script src="../commun/data/tuyauterie.js?v=2.23"></script>
-<script src="../commun/coefvent.js?v=2.23"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.24">
+<script src="../commun/acier.js?v=2.24"></script>
+<script src="../commun/data/profils.js?v=2.24"></script>
+<script src="../commun/data/tuyauterie.js?v=2.24"></script>
+<script src="../commun/coefvent.js?v=2.24"></script>
+<script src="../commun/sections.js?v=2.24"></script>
 <style>
   main{display:block;max-width:1400px}
   .onglets{display:flex;gap:2px;border-bottom:2px solid var(--fip-bleu);margin:0 0 14px;flex-wrap:wrap}
@@ -28,7 +29,12 @@
   .tbl{max-height:68vh;overflow:auto;border:1px solid var(--line);border-radius:6px}
   .detail{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start}
   .src{font-size:12px;color:var(--muted);margin-top:6px}
-  @media (max-width:950px){.detail{grid-template-columns:1fr}}
+  .notat{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:18px;align-items:start}
+  .leg{columns:2;column-gap:22px;font-size:12.5px;line-height:1.4}.leg div{break-inside:avoid;padding:3px 0;border-bottom:1px solid var(--line)}
+  .leg b{color:var(--fip-bleu);display:inline-block;min-width:44px}.leg i{color:var(--muted);font-style:normal;display:inline-block;min-width:38px}
+  .detail table td:first-child{white-space:nowrap;font-weight:700;color:var(--fip-bleu)}.detail table td{vertical-align:top;font-size:12.5px}
+  @media (max-width:1200px){.leg{columns:1}}
+  @media (max-width:950px){.detail,.notat{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -45,6 +51,7 @@
 <main>
   <div class="onglets noprint" id="onglets"></div>
   <section id="res">
+    <div class="card" id="cNotat" hidden><h2 id="tNotat">Schéma et notations</h2><div id="notat"></div></div>
     <div class="card" id="cTable"><h2 id="titre"></h2><div class="outils noprint" id="outils"></div><div class="tbl"><div id="table"></div></div><div class="src" id="source"></div></div>
     <div class="card" id="cDetail" hidden><h2>Détail</h2><div id="detail"></div></div>
   </section>
@@ -52,6 +59,11 @@
 <script>
 const $=id=>document.getElementById(id), f=fmtN, h=escH;
 const nb=(v,d)=>typeof v==='number'?f(v,d):(v??'—');
+document.head.insertAdjacentHTML('beforeend',`<style>${SECTIONS.CSS}</style>`);
+/* grandeurs de la famille : colonnes du tableau + grandeurs complémentaires présentes dans les données */
+function grandeursFam(fam){ const ex=PROFILS.find(p=>p.f===fam)||{}, cols=colsProf(fam).map(c=>c[0]).filter(k=>k!=='n');
+  return cols.concat(['Avz','Avy','iu','alpha','pente','ay','az','aLT'].filter(k=>!cols.includes(k)&&ex[k]!=null&&!(k==='pente'&&!ex[k]))).filter(k=>SECTIONS.GLOSS[k]); }
+function tableNotations(keys,p){ return `<table><tr><th>Grandeur</th>${p?'<th class="n">Valeur</th>':''}<th>Unité</th><th>Signification</th></tr>`+keys.map(k=>{const g=SECTIONS.GLOSS[k];return `<tr><td>${g[0]}</td>${p?`<td class="n">${typeof p[k]==='number'?f(p[k],Number.isInteger(p[k])?0:Math.abs(p[k])>=100?1:Math.abs(p[k])>=1?2:3):h(p[k]??'—')}</td>`:''}<td>${g[2]}</td><td>${g[1]}</td></tr>`;}).join('')+'</table>'; }
 let ong='prof', tri={col:null,dir:1}, filtre={fam:'IPE',q:''};
 /* ---------- définitions des tables ---------- */
 const COLS_PROF={
@@ -65,7 +77,7 @@ const ONGLETS=[
   {id:'acier',lib:'Aciers de construction'},{id:'charges',lib:'Charges d\'exploitation et ψ'},{id:'fleches',lib:'Limites de flèche'},{id:'cf',lib:'Vent : c_f des profilés'}];
 function tableHTML(cols,rows,cle){
   if(tri.col){ const c=tri.col; rows=rows.slice().sort((a,b)=>{const x=a[c],y=b[c];return (typeof x==='number'&&typeof y==='number'?x-y:String(x).localeCompare(String(y),'fr',{numeric:true}))*tri.dir;}); }
-  return `<table class="bd"><tr>${cols.map(([k,l])=>`<th data-c="${k}" class="${cols.find(c=>c[0]===k)[2]!=null?'n':''}">${l.replace(/_([a-z,]+)/g,'<sub>$1</sub>')}${tri.col===k?(tri.dir>0?' ▲':' ▼'):''}</th>`).join('')}</tr>`+
+  return `<table class="bd"><tr>${cols.map(([k,l])=>`<th data-c="${k}" class="${cols.find(c=>c[0]===k)[2]!=null?'n':''}">${l.replace(/_([a-z,]+)/g,'<sub>$1</sub>')}${ong==='prof'?SECTIONS.bulle(k):''}${tri.col===k?(tri.dir>0?' ▲':' ▼'):''}</th>`).join('')}</tr>`+
     rows.map((r,i)=>`<tr data-i="${h(r[cle]??i)}">${cols.map(([k,,d])=>`<td class="${d!=null?'n':''}">${d!=null?nb(r[k],d):h(r[k]??'—')}</td>`).join('')}</tr>`).join('')+'</table>';
 }
 function rendre(){
@@ -76,7 +88,9 @@ function rendre(){
     const fams=[...new Set(PROFILS.map(p=>p.f))];
     outils=`<div><label>Famille</label><select id="fFam">${fams.map(x=>`<option ${x===filtre.fam?'selected':''}>${x}</option>`).join('')}</select></div><div><label>Rechercher</label><input id="fQ" value="${h(filtre.q)}" placeholder="ex. 200"></div><div class="note">Clic sur une ligne : coupe et détail. Clic sur un en-tête : tri.</div>`;
     const rows=PROFILS.filter(p=>p.f===filtre.fam&&(!filtre.q||p.n.toLowerCase().includes(filtre.q.toLowerCase())));
-    out=tableHTML(colsProf(filtre.fam),rows,'n'); src=SRC_PROF+` — ${rows.length} profilé(s) ; ${PROFILS.length} au total.`;
+    out=tableHTML(colsProf(filtre.fam),rows,'n'); src=SRC_PROF+` — ${rows.length} profilé(s) ; ${PROFILS.length} au total. Survoler ou toucher un « ? » pour la signification d'une grandeur.`;
+    $('tNotat').textContent=`Schéma et notations — ${filtre.fam}`;
+    $('notat').innerHTML=`<div class="notat"><div>${SECTIONS.schema(filtre.fam)}<div class="note" style="text-align:center">Schéma de principe (non à l'échelle). Axes : y-y fort, z-z faible${/^LI?$/.test(filtre.fam)?', u-u et v-v principaux (NF EN 1993-1-1 fig. 1.1)':' (NF EN 1993-1-1 §1.7, fig. 1.1)'}.</div></div><div class="leg">${grandeursFam(filtre.fam).map(k=>{const g=SECTIONS.GLOSS[k];return `<div><b>${g[0]}</b><i>${g[2]}</i>${g[1]}</div>`;}).join('')}</div></div>`;
   }
   if(ong==='tubes'){
     const sch=SCH_ORDER.filter(s=>PIPES.some(p=>p.s[s]!==undefined));
@@ -102,18 +116,19 @@ function rendre(){
   }
   if(ong==='fleches'){ out=tableHTML([['n','Élément'],['a','w_max ≤ L / …',0],['b','w₃ ≤ L / …',0]],UTILISATIONS.map(u=>({n:u.n,a:u.wmax,b:u.w3})),'n'); src='NF EN 1993-1-1/NA §7.2.1, Tableau 7.1 (valeurs limites recommandées, à adapter au projet). Poteaux : déplacement en tête H/150 (bâtiment industriel à parois non fragiles) ou H/250 (§7.2.2 + AN).'; }
   if(ong==='cf'){ out=tableHTML([['n','Section'],['fig','AN fig.'],['c0','c_x α = 0°',2],['c45','c_x 45°',2],['c90','c_x 90°',2],['cf','c_f retenu (largeur projetée)',2],['fam','Familles']],CV.PROFILS.map(P=>{const r=a=>{const t=P.t.find(x=>x[0]===a);return t?t[1]:null;};return {n:P.lib,fig:P.fig,c0:r(0),c45:r(45),c90:r(90),cf:CV.cfProj(P).cf,fam:P.fam.join(', ')||'—'};}),'n'); src='NF EN 1991-1-4/NA clause 7.7(1), figures 7.39(NA) à 7.50(NA) ; A<sub>ref</sub> = e·ℓ. c<sub>f</sub> retenu : maximum sur α de c<sub>x</sub>·e / largeur projetée (utilisé par S1, ψ<sub>λ</sub> = 1). Tube rond : 1,2 (fig. 7.28, sous-critique).'; }
+  $('cNotat').hidden=ong!=='prof';
   $('outils').innerHTML=outils; $('table').innerHTML=out; $('source').innerHTML=src;
-  $('table').querySelectorAll('th').forEach(th=>th.onclick=()=>{const c=th.dataset.c;tri=tri.col===c?{col:c,dir:-tri.dir}:{col:c,dir:1};rendre();});
+  $('table').querySelectorAll('th').forEach(th=>th.onclick=e=>{if(e.target.closest('.qm'))return;const c=th.dataset.c;tri=tri.col===c?{col:c,dir:-tri.dir}:{col:c,dir:1};rendre();});
   if($('fFam')) $('fFam').onchange=()=>{filtre.fam=$('fFam').value;tri={col:null,dir:1};rendre();};
   if($('fQ')) $('fQ').oninput=()=>{filtre.q=$('fQ').value;const pos=$('fQ').selectionStart;rendre();$('fQ').focus();$('fQ').setSelectionRange(pos,pos);};
   if(ong==='prof') $('table').querySelectorAll('tr[data-i]').forEach(tr=>tr.onclick=()=>{const p=PROFILS.find(x=>x.n===tr.dataset.i);if(!p)return;
     $('table').querySelectorAll('tr.sel').forEach(x=>x.classList.remove('sel'));tr.classList.add('sel');$('cDetail').hidden=false;
     const cl=['S235','S275','S355'].map(nu=>`${nu} : classe ${classeSection(p,NUANCES[nu][0],'flexion').cl??'—'} en flexion, ${classeSection(p,NUANCES[nu][0],'compression').cl??'—'} en compression`).join(' · ');
-    $('detail').innerHTML=`<div class="detail"><div>${svgSection(p,200)}</div><div><b>${h(p.n)}</b> — ${f(p.m,2)} kg/m — A = ${f(p.A,2)} cm²<br><span class="note">${cl} (NF EN 1993-1-1 Tab. 5.2)</span><br>${Object.entries(p).filter(([k])=>!['f','s','n','src'].includes(k)).map(([k,v])=>`${k} = ${typeof v==='number'?f(v,3):h(v)}`).join(' · ')}<div class="src">Source : ${h(p.src||'')}.</div></div></div>`;});
+    $('detail').innerHTML=`<div class="detail"><div style="width:300px">${SECTIONS.schema(p.f,p)}<div class="note" style="text-align:center">Schéma de principe, cotes du profilé en mm (e<sub>y</sub>, e<sub>z</sub> en cm).</div></div><div><b>${h(p.n)}</b> — ${f(p.m,2)} kg/m — A = ${f(p.A,2)} cm²<br><span class="note">${cl} (NF EN 1993-1-1 Tab. 5.2)</span><div style="margin-top:6px">${tableNotations(Object.keys(SECTIONS.GLOSS).filter(k=>p[k]!=null&&!(p.t!=null&&['tw','tf'].includes(k))&&!(k==='pente'&&!p[k])&&!(k==='Iw'&&!p[k])),p)}</div><div class="src">Source : ${h(p.src||'')}.</div></div></div>`;});
 }
 if(location.hash&&ONGLETS.some(o=>o.id===location.hash.slice(1))) ong=location.hash.slice(1);
 rendre();
 </script>
-<script src="../commun/replier.js?v=2.23"></script>
+<script src="../commun/replier.js?v=2.24"></script>
 </body>
 </html>
