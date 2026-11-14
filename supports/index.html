@@ -4,20 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.24"></script>
+<script src="../commun/auth.js?v=2.25"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.24">
+<link rel="stylesheet" href="../commun/calc.css?v=2.25">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.24"></script>
-<script src="../commun/data/tuyauterie.js?v=2.24"></script>
-<script src="../commun/acier.js?v=2.24"></script>
-<script src="../commun/barres3d.js?v=2.24"></script>
-<script src="../commun/coefvent.js?v=2.24"></script>
-<script src="../commun/cahier.js?v=2.24"></script>
+<script src="../commun/data/profils.js?v=2.25"></script>
+<script src="../commun/data/tuyauterie.js?v=2.25"></script>
+<script src="../commun/acier.js?v=2.25"></script>
+<script src="../commun/barres3d.js?v=2.25"></script>
+<script src="../commun/dessin.js?v=2.25"></script>
+<script src="../commun/coefvent.js?v=2.25"></script>
+<script src="../commun/cahier.js?v=2.25"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -198,8 +199,10 @@
   <div class="card" id="rHero"></div>
   <div class="card"><h2>Alertes de conception</h2><div id="rAlertes"></div></div>
   <div class="card"><h2>Vues du support</h2>
-    <div class="vues noprint"><button id="b2d" class="on">Vues 2D</button><button id="b3d">Vue 3D</button></div>
+    <div class="vues noprint"><button id="b2d" class="on">Vues 2D</button><button id="b3d">Vue 3D</button><button id="bInd" title="Planche de plan : vues orthogonales à l'échelle, cotation ISO, nomenclature, cartouche">📐 Dessin industriel</button>
+      <span id="optInd" style="display:none;margin-left:8px"><select id="fmtInd" style="width:auto"><option value="A3">A3 paysage</option><option value="A4">A4 paysage</option></select> <button id="prInd" type="button">🖨 Planche à l'échelle</button></span></div>
     <div id="p2d"><div class="vue2d"><div id="vFace"></div><div id="vCote"></div></div></div>
+    <div id="pInd" style="display:none"><div id="vInd" style="border:1px solid var(--line);border-radius:6px;overflow:hidden"></div><div class="note" id="nInd"></div></div>
     <div id="p3d" class="noprint" style="display:none"><div id="v3d"><span class="aide">Glisser pour tourner · molette / pincer pour zoomer · flèches : charges G (rouge), vent (bleu), frottement (orange)</span></div></div>
   </div>
   <div class="card" id="persp" hidden><h2>Perspective</h2><img id="imgPersp" alt="Perspective du support" style="width:100%;max-width:760px;display:block;margin:auto;border:1px solid var(--line);border-radius:6px"><div class="note" style="text-align:center">Vue isométrique : charges G (rouge), vent (bleu), frottement / dilatation (orange) · X axe des tuyaux, Z vertical</div></div>
@@ -599,6 +602,7 @@ function calc(){
   try{ diagrammes(D,V); }catch(e){ $('rDiag').innerHTML=`<div class="msg warn">Diagrammes indisponibles : ${escH(e.message)}</div>`; }
   ddc(V,env); $('rFix').innerHTML=tableFix(D,V); charges(V,D); $('rEntraxes').innerHTML=tableEntraxes(D,V); donneesCalc(D,V); combos(V); notes(D,V);
   if(vue3dActive) majVue3D();
+  if(modeIndus) majIndus();
   planifierPerspective();
 }
 
@@ -852,6 +856,10 @@ function alertes(D,V){
   const tmin=num('rTmin',4), garde=num('rGarde',150), elanc=num('rElanc',200), lCons=num('rConsole',1.2), lMont=num('rMontant',2.5), dnB=num('rBerceau',250), bord=num('rBord',50), tors=num('rTors',30)/100;
   const Gm=V.Gm;
   V.PB.forEach(P=>{ if(P.R.cl===4) add('bloq',`Section de classe 4 – ${escH(P.b.lib)}`,`${escH(P.b.p.n)} : parois trop élancées, résistance non couverte par l'outil.`,'NF EN 1993-1-1 Tab. 5.2',P.b.role); });
+  // fixations de platine sous le profilé (accès écrou / soudure) : axe ≥ nu du profilé + 1,5·d dans au moins une direction
+  if($('fix').value!=='crap') Gm.appuis.filter(a=>['sol','plafond','mur'].includes(a.k)).forEach(a=>{ const b=Gm.B.find(b=>[b.A,b.B].some(P=>Math.hypot(...P.map((v,i)=>v-a.pt[i]))<1e-6)); if(!b) return;
+    const a1=num('fa1',120), a2=num('fa2',120), d=$('fix').value==='tige'?+$('tD').value:12, c=1.5*d, e1=b.ext([1,0,0])*1000, e2=b.ext(a.k==='mur'?[0,0,1]:[0,1,0])*1000;
+    if(a1/2<e1/2+c&&a2/2<e2/2+c) add('warn',`Fixations sous le profilé – ${escH(b.lib)}`,`Entraxes a<sub>1</sub> × a<sub>2</sub> = ${f(a1,0)} × ${f(a2,0)} mm pour un ${escH(b.p.n)} de ${f(e1,0)} × ${f(e2,0)} mm d'emprise : les fixations tombent sous le profilé ou contre ses parois (serrage et soudure impossibles). Prendre a ≥ emprise + 3·d, soit a<sub>1</sub> ≥ ${f(e1+2*c,0)} mm ou a<sub>2</sub> ≥ ${f(e2+2*c,0)} mm, et une platine plus grande.`,'Règle de l\'art – accessibilité des fixations (voir le dessin industriel, vue de dessus)',b.role); });
   for(const t of Gm.T){
     const b=Gm.B[t.bi], p=b.p, horiz=!b.vert, lu=largeurUtile(p,horiz,b);
     const d=diamEtrier(t), d0=d+(d<=14?1:d<=24?2:3), need=2.4*d0, dn=t.mode==='base'?+t.dn:null, nom=`${escH(t.nom)} (${t.mode==='base'?'DN'+t.dn:'Ø'+t.P.De}) sur ${escH(b.lib.toLowerCase())}`;
@@ -1032,6 +1040,120 @@ function vueCote(D,V,opt={}){                             // plan X–Z
 }
 
 /* =====================================================================
+   DESSIN INDUSTRIEL (option) — planche A3/A4 paysage : vues de face, de côté, de dessus,
+   cotation, repères, nomenclature, cartouche (moteur : commun/dessin.js)
+   ===================================================================== */
+function secProfil(p,mir){                                   // contour de section (y, z) local, comme formeProfil (m)
+  const h=(p.h||100)/1000, b=(p.b||p.h||100)/1000, tw=(p.tw||p.t||5)/1000, tf=(p.tf||p.t||8)/1000;
+  if(/^LI?$/.test(p.f)){ const g=geoCorniere(p); return {o:[[0,0],[g.Lf,0],[g.Lf,-g.t],[g.t,-g.t],[g.t,-g.Lb],[0,-g.Lb]].map(([a,q])=>[a-g.sc,q-g.qc])}; }
+  if(/^U/.test(p.f)){ const k=mir?-1:1; return {o:[[-b/2,-h/2],[b/2,-h/2],[b/2,-h/2+tf],[-b/2+tw,-h/2+tf],[-b/2+tw,h/2-tf],[b/2,h/2-tf],[b/2,h/2],[-b/2,h/2]].map(([y,z])=>[k*y,z])}; }
+  if(p.f==='CHS') return {o:DESSIN.cercle(h/2,36),h:DESSIN.cercle(h/2-tw,36)};
+  if(/HS$/.test(p.f)) return {o:[[-b/2,-h/2],[b/2,-h/2],[b/2,h/2],[-b/2,h/2]],h:[[-b/2+tw,-h/2+tw],[b/2-tw,-h/2+tw],[b/2-tw,h/2-tw],[-b/2+tw,h/2-tw]]};
+  return {o:secPts(p)};
+}
+const boiteAA=(x0,x1,y0,y1,z0,z1,opt)=>DESSIN.prisme([x0,(y0+y1)/2,(z0+z1)/2],[1,0,0],[0,1,0],[0,0,1],x1-x0,[[-(y1-y0)/2,-(z1-z0)/2],[(y1-y0)/2,-(z1-z0)/2],[(y1-y0)/2,(z1-z0)/2],[-(y1-y0)/2,(z1-z0)/2]],null,opt);
+let modeIndus=false, formatIndus='A3';
+function specDessin(D,V,opt={}){
+  const Gm=V.Gm, lettres=!!opt.lettres, mm=v=>f(v*1000,0), lc=(l,v)=>lettres?l:mm(v);
+  const S=[], aides=[], cercles=[], sols=[], murs=[], cotes=[], reperes=[], etiq=[], nom=[];
+  const mural=['mur','murJ'].includes(D.typ), fixM=$('fix').value, tige=fixM==='tige'&&mural, crap=fixM==='crap'&&D.typ==='plafond';
+  const vCote=mural?'droite':'gauche';
+  const vues=mural?[{id:'droite',col:0,lig:0},{id:'face',col:1,lig:0},{id:'dessus',col:1,lig:1,option:true}]:[{id:'face',col:0,lig:0},{id:'gauche',col:1,lig:0},{id:'dessus',col:0,lig:1,option:true}];
+  // --- barres, coupées sur les faces des barres voisines et sur les platines
+  const proche=(P,Q)=>Math.hypot(...P.map((v,i)=>v-Q[i]))<1e-6, surAxe=(o,P)=>{ const v=P.map((x,i)=>x-o.A[i]), s=v[0]*o.dir[0]+v[1]*o.dir[1]+v[2]*o.dir[2]; return s>-1e-6&&s<o.L+1e-6&&Math.hypot(...v.map((x,i)=>x-s*o.dir[i]))<1e-6?s:null; };
+  const ext={}, coupe=(bi,fin)=>{ const b=Gm.B[bi], P=fin?b.B:b.A, loin=fin?b.dir.map(v=>-v):b.dir;            // loin : de l'extrémité vers l'intérieur de la barre
+    for(const [oi,o] of Gm.B.entries()){ if(oi===bi) continue; const s=surAxe(o,P); if(s===null) continue;
+      const coin=(s<1e-6||s>o.L-1e-6);
+      if(coin&&(b.role==='t'||(!b.vert&&o.vert))){ const n=o.bord(o.vert?[0,1,0]:[0,0,1]); ext[bi+(fin?'B':'A')]=Math.max(o.ext(b.dir),0)/2; return null; }   // barre horizontale prolongée jusqu'au nu extérieur
+      let n=loin.map((v,i)=>v-(loin[0]*o.dir[0]+loin[1]*o.dir[1]+loin[2]*o.dir[2])*o.dir[i]); const ln=Math.hypot(...n); if(ln<1e-6) continue; n=n.map(v=>v/ln);
+      const e=o.bord(n).hi; return {p:P.map((v,i)=>v+n[i]*e),n}; }
+    const a=Gm.appuis.find(a=>proche(a.pt,P)); if(a&&a.k==='murPied') return {p:P,n:[0,1,0]};
+    return null; };
+  Gm.B.forEach((b,bi)=>{ const R=Barres3D.repere([{x:b.A[0],y:b.A[1],z:b.A[2]},{x:b.B[0],y:b.B[1],z:b.B[2]}],{i:0,j:1,vz:b.vz,beta:0}).R, sp=secProfil(b.p,/^U/.test(b.p.f)&&miroirU(b,Gm.T.some(t=>t.bi===bi)));
+    const c0=coupe(bi,false), c1=coupe(bi,true), eA=ext[bi+'A']||0, eB=ext[bi+'B']||0;
+    S.push(DESSIN.prisme(b.A.map((v,i)=>v-b.dir[i]*eA),R[0],R[1],R[2],b.L+eA+eB,sp.o,sp.h||null,{c0,c1})); });
+  const ys=Gm.B.flatMap(b=>[b.A[1],b.B[1]]), zs=Gm.B.flatMap(b=>[b.A[2],b.B[2]]), y0=Math.min(...ys), y1=Math.max(...ys), z0=Math.min(...zs), z1=Math.max(...zs);
+  // --- platines et fixations
+  const a1=Math.max(num('fa1',120),20)/1000, a2=Math.max(num('fa2',120),20)/1000, dF=fixM==='tige'?+$('tD').value:12, ep=0.012, cx=Math.max(a1+0.08,0.15), cz=Math.max(a2+0.08,0.15);
+  const pl=[], trou=(c,n)=>cercles.push({c,r:(dF+1)/2000,n,style:'fort',croix:true});
+  Gm.appuis.forEach(a=>{ const P=a.pt;
+    if(a.k==='sol'){ S.push(boiteAA(P[0]-cx/2,P[0]+cx/2,P[1]-cz/2,P[1]+cz/2,P[2]-ep,P[2])); pl.push({k:a.k,d:[cx,cz]}); [-1,1].forEach(i=>[-1,1].forEach(j=>trou([P[0]+i*a1/2,P[1]+j*a2/2,P[2]],[0,0,1])));
+      sols.push({a:[P[0]-0.3,P[1]-cz/2-0.12,P[2]-ep],b:[P[0]+0.3,P[1]+cz/2+0.12,P[2]-ep],mat:[P[0],P[1],P[2]-0.2],vues:['face','gauche','droite']}); }
+    if(a.k==='plafond'&&!crap){ S.push(boiteAA(P[0]-cx/2,P[0]+cx/2,P[1]-cz/2,P[1]+cz/2,P[2],P[2]+ep)); pl.push({k:a.k,d:[cx,cz]}); [-1,1].forEach(i=>[-1,1].forEach(j=>trou([P[0]+i*a1/2,P[1]+j*a2/2,P[2]+ep],[0,0,1])));
+      sols.push({a:[P[0]-0.3,P[1]-cz/2-0.12,P[2]+ep],b:[P[0]+0.3,P[1]+cz/2+0.12,P[2]+ep],mat:[P[0],P[1],P[2]+0.2],vues:['face','gauche','droite']}); }
+    if(a.k==='mur'){ S.push(boiteAA(-cx/2,cx/2,-ep,0,P[2]-cz/2,P[2]+cz/2)); pl.push({k:a.k,d:[cx,cz]}); [-1,1].forEach(i=>[-1,1].forEach(j=>trou([i*a1/2,0,P[2]+j*a2/2],[0,1,0])));
+      if(tige){ const e=Math.max(num('eMur',200),20)/1000, zA=Math.min(z0,P[2]-cz/2)-0.15, zB=Math.max(z1,P[2]+cz/2)+0.1;
+        murs.push({rect:[[0,-ep-e,zA],[0,-ep,zA],[0,-ep,zB],[0,-ep-e,zB]],vues:['face']},{rect:[[-0.3,-ep-e,0],[0.3,-ep-e,0],[0.3,-ep,0],[-0.3,-ep,0]],vues:['dessus']});
+        S.push(boiteAA(-cx/2,cx/2,-2*ep-e,-ep-e,P[2]-cz/2,P[2]+cz/2));
+        [-1,1].forEach(i=>[-1,1].forEach(j=>S.push(DESSIN.cylindre([i*a1/2,0.03,P[2]+j*a2/2],[i*a1/2,-2*ep-e-0.03,P[2]+j*a2/2],dF/2000,0)))); }
+      else { sols.push({a:[0,-ep,Math.min(z0,P[2]-cz/2)-0.15],b:[0,-ep,Math.max(z1,P[2]+cz/2)+0.1],mat:[0,-0.2,P[2]],vues:['face']},{a:[-0.3,-ep,0],b:[0.3,-ep,0],mat:[0,-0.2,0],vues:['dessus']}); } }
+    if(a.k==='murPied'){ const c=0.14; S.push(boiteAA(P[0]-c/2,P[0]+c/2,P[1]-0.01,P[1],P[2]-c/2,P[2]+c/2)); pl.push({k:a.k,d:[c,c],e:0.01}); }
+    if(a.k==='murArt'){ const c=0.16; S.push(boiteAA(P[0]-c/2,P[0]+c/2,P[1],P[1]+0.01,P[2]-c/2,P[2]+c/2)); pl.push({k:a.k,d:[c,c],e:0.01});
+      sols.push({a:[0,P[1]+0.01,z0-0.05],b:[0,P[1]+0.01,z1+0.15],mat:[0,P[1]+0.3,z1],vues:['face']},{a:[-0.3,P[1]+0.01,z1],b:[0.3,P[1]+0.01,z1],mat:[0,P[1]+0.3,z1],vues:['dessus']}); } });
+  if(crap){ const {g,crap:cp}=crapPoints(), h=g.p.h/1000, s=secPts(g.p), mm3=(o,ex,ey,ez,L,sec)=>DESSIN.prisme(o,ex,ey,ez,L,sec,null);
+    S.push(mm3(g.up.map((u,i)=>u*(g.tp+h/2)-g.ex[i]*0.5),g.ex,g.ey,g.up,1.0,s));
+    S.push(DESSIN.prisme(g.ex.map(v=>-v*cx/2),g.ex,g.ey,g.up,cx,[[-cz/2,0],[cz/2,0],[cz/2,g.tp],[-cz/2,g.tp]],null)); pl.push({k:'plafond',d:[cx,cz]});
+    cp.forEach(c=>S.push(boiteAA(c[0]-0.0175,c[0]+0.0175,c[1]-0.0175,c[1]+0.0175,c[2]-0.0175,c[2]+0.0175))); }
+  // --- tuyaux, calorifuge, étriers
+  const Lp=0.3;
+  Gm.T.forEach((t,i)=>{ const r=t.P.De/2000, en=(t.P.en||Math.max(t.P.De*0.05,3))/1000, c=t.c, b=Gm.B[t.bi], up=b.vert?[0,1,0]:[0,0,1];
+    cercles.push({c:[c[0]+Lp,c[1],c[2]],r,n:[1,0,0],style:'fantome',croix:true},{c:[c[0]+Lp,c[1],c[2]],r:r-en,n:[1,0,0],style:'fantome'});
+    [-1,1].forEach(sg=>{ aides.push({type:'fantome',pts:[[c[0]-Lp,c[1],c[2]+sg*r],[c[0]+Lp,c[1],c[2]+sg*r]],vues:['gauche','droite']},{type:'fantome',pts:[[c[0]-Lp,c[1]+sg*r,c[2]],[c[0]+Lp,c[1]+sg*r,c[2]]],vues:['dessus']}); });
+    aides.push({type:'axe',pts:[[c[0]-Lp-0.03,c[1],c[2]],[c[0]+Lp+0.03,c[1],c[2]]]});
+    if(t.P.ecal){ const rc=t.P.Dc/2000; cercles.push({c:[c[0]+Lp,c[1],c[2]],r:rc,n:[1,0,0],style:'tirets'});
+      [-1,1].forEach(sg=>{ aides.push({type:'tirets',pts:[[c[0]-Lp,c[1],c[2]+sg*rc],[c[0]+Lp,c[1],c[2]+sg*rc]],vues:['gauche','droite']},{type:'tirets',pts:[[c[0]-Lp,c[1]+sg*rc,c[2]],[c[0]+Lp,c[1]+sg*rc,c[2]]],vues:['dessus']}); }); }
+    // étrier (U-bolt) : demi-cercle côté opposé à la barre + branches jusqu'à la sous-face de la barre
+    const de=diamEtrier(t)/1000, re=r+de/2, side=b.vert?[0,0,1]:[0,1,0], base=add3(t.pt,mul3(up,(b.vert?b.bord([0,1,0]):b.bord([0,0,1])).lo-0.02)), arc=[];
+    for(let k=0;k<=18;k++){ const a=Math.PI*k/18, p=add3(c,add3(mul3(side,re*Math.cos(a)),mul3(up,re*Math.sin(a)))); arc.push([c[0]+Lp,p[1],p[2]]); }
+    const pied=s=>{const q=add3(base,mul3(side,s*re));return [c[0]+Lp,q[1],q[2]];};
+    aides.push({type:'fort',pts:[pied(1),...arc,pied(-1)],vues:['face']});
+    etiq.push({vue:'face',p:[c[0]+Lp,c[1]+r*0.7,c[2]+r*0.7],txt:`${t.nom||'L'+(i+1)} – ${t.mode==='base'?'DN'+t.dn+' ':''}Ø${f(t.P.De,1)}${t.P.ecal?' + calo. '+t.P.ecal:''}`,dx:10,dy:-8-6*i}); });
+  // --- cotes (vue de face)
+  const v=Gm.B.find(b=>b.vert), hz=Gm.B.find(b=>!b.vert);
+  if(v){ const zz=[v.A[2],v.B[2]].sort((a,b)=>a-b); cotes.push({vue:'face',a:[0,v.A[1],zz[0]],b:[0,v.A[1],zz[1]],cote:'gauche',niv:0,txt:lc('H',zz[1]-zz[0])}); }
+  if(hz){ const yy=[hz.A[1],hz.B[1]].sort((a,b)=>a-b); cotes.push({vue:'face',a:[0,yy[0],hz.A[2]],b:[0,yy[1],hz.A[2]],cote:'bas',niv:0,txt:lc('L',yy[1]-yy[0])}); }
+  if(D.typ==='murJ'){ const j=Gm.B[1]; cotes.push({vue:'face',a:[0,0,j.A[2]],b:[0,0,0],cote:'gauche',niv:0,txt:lc('h',-j.A[2])},{vue:'face',a:[0,0,0],b:[0,j.B[1],0],cote:'bas',niv:1,txt:lc('b',j.B[1])}); }
+  if(D.typ==='L'&&D.off>0){ const b1=Gm.B[1],m=Gm.B[0]; cotes.push({vue:'face',a:[0,0,m.B[2]],b:[0,0,b1.A[2]],cote:'gauche',niv:1,txt:lc('o',D.off)}); }
+  if(D.typ==='L'&&D.nc>1){ const b1=Gm.B[1],b2=Gm.B[2]; cotes.push({vue:'face',a:[0,b1.B[1],b2.A[2]],b:[0,b1.B[1],b1.A[2]],cote:'droite',niv:0,txt:lc('h',b1.A[2]-b2.A[2])}); }
+  const nh={}, nv={};
+  Gm.T.forEach((t,i)=>{ const b=Gm.B[t.bi], lib=lc('a'+(i+1),Math.abs(+t.pos||0));
+    if(b.vert){ const zr=D.typ==='plafond'?0:b.A[2], n=nv[t.bi]=(nv[t.bi]??-1)+1; cotes.push({vue:'face',a:[0,t.c[1],zr],b:[0,t.c[1],t.c[2]],cote:'droite',niv:n+(D.typ==='L'&&D.nc>1?1:0),txt:lib}); }
+    else { const yr=D.typ==='T'?0:b.A[1], n=nh[t.bi]=(nh[t.bi]??-1)+1; cotes.push({vue:'face',a:[0,yr,t.c[2]],b:[0,t.c[1],t.c[2]],cote:'haut',niv:n,txt:lib}); } });
+  // cotes de platine (vue où elle est vue de face)
+  const pm=Gm.appuis.find(a=>['sol','plafond','mur'].includes(a.k));
+  if(pm&&!crap){ const P=pm.pt, vueP=pm.k==='mur'?vCote:'dessus', Z=pm.k==='mur'?P[2]:0;
+    if(pm.k==='mur'){ cotes.push({vue:vueP,a:[-a1/2,0,P[2]-cz/2],b:[a1/2,0,P[2]-cz/2],cote:'bas',niv:0,txt:lettres?'a₁':mm(a1)},{vue:vueP,a:[-cx/2,0,P[2]-cz/2],b:[cx/2,0,P[2]-cz/2],cote:'bas',niv:1,txt:mm(cx)}); }
+    else { cotes.push({vue:'dessus',a:[-a1/2,P[1]+cz/2,P[2]],b:[a1/2,P[1]+cz/2,P[2]],cote:'droite',niv:0,txt:lettres?'a₁':mm(a1)},{vue:'dessus',a:[-cx/2,P[1]+cz/2,P[2]],b:[cx/2,P[1]+cz/2,P[2]],cote:'droite',niv:1,txt:mm(cx)}); } }
+  // --- nomenclature et repères
+  let rep=0; const grp=new Map();
+  Gm.B.forEach(b=>{ const k=b.p.n+'|'+Math.round(b.L*1000); if(!grp.has(k)) grp.set(k,{b,n:0}); grp.get(k).n++; });
+  [...grp.values()].forEach(({b,n})=>{ rep++; nom.push([rep,n,`${b.lib.replace(/ (gauche|droit|\d+)$/,'')} ${b.p.n}`,$('nuance').value,mm(b.L),f(b.p.m*b.L*n,1)]);
+    const vert=b.vert, incl=!vert&&Math.abs(b.dir[2])>0.05, m=add3(b.A,mul3(b.dir,b.L*(vert?0.4:incl?0.5:0.78)));
+    reperes.push(vert?{vue:'face',p:m,n:String(rep),dx:-1,dy:0.35}:incl?{vue:'face',p:m,n:String(rep),dx:Math.abs(b.dir[2]),dy:Math.abs(b.dir[1])}:{vue:'face',p:m,n:String(rep),dx:0.35,dy:1}); });
+  const gp=new Map(); pl.forEach(p=>{ const e=p.e||ep, k=p.d.map(v=>Math.round(v*1000)).join('×')+'×'+Math.round(e*1000); p.key=k; gp.set(k,{k,e,d:p.d,n:(gp.get(k)?.n||0)+1}); });
+  [...gp.values()].forEach(p=>{ rep++; p.rep=rep; nom.push([rep,p.n,`Platine ${p.k}`,$('nuance').value,'—',f(7850*p.d[0]*p.d[1]*p.e*p.n,1)]); });
+  const repPl=k=>String((gp.get((pl.find(p=>p.k===k)||{}).key)||{}).rep||'');
+  if(pm&&!crap){ const P=pm.pt; reperes.push({vue:'face',p:pm.k==='mur'?[0,-ep/2,P[2]-cz/2]:[0,P[1]-cz/2,P[2]+(pm.k==='sol'?-ep/2:ep/2)],n:repPl(pm.k),dx:pm.k==='mur'?1:-1,dy:pm.k==='plafond'?-1:1}); }
+  Gm.appuis.filter(a=>a.k==='murPied'||a.k==='murArt').forEach(a=>reperes.push({vue:'face',p:[0,a.pt[1]+(a.k==='murArt'?0.005:-0.005),a.pt[2]-0.07],n:repPl(a.k),dx:a.k==='murArt'?1:-1,dy:1}));
+  const nP=pl.filter(p=>!p.e).length;
+  if(nP){ rep++; const L=fixM==='tige'?`Tige filetée M${dF} cl. ${$('tCl').value} L = ${mm(Math.max(num('eMur',200),20)/1000+2*ep+0.07)} + écrous, rondelles`:crap?`Crapaud (${$('crType').value==='maison'?'maison, boulon précontraint':'catalogue'})`:`Cheville d'ancrage (choix fournisseur – efforts : note de calcul)`;
+    nom.push([rep,4*nP,L,fixM==='tige'?'cl. '+$('tCl').value:'—','—','—']);
+    if(pm&&!crap){ const P=pm.pt; reperes.push(pm.k==='mur'?{vue:vCote,p:[a1/2,0,P[2]+a2/2],n:String(rep),dx:-1,dy:-1}:{vue:'dessus',p:[a1/2,P[1]-a2/2,P[2]],n:String(rep),dx:-1,dy:1}); } if(tige) { rep++; nom.push([rep,nP,`Contre-plaque ${mm(cx)}×${mm(cz)}×${Math.round(ep*1000)}`,$('nuance').value,'—',f(7850*cx*cz*ep*nP,1)]); } }
+  const ge=new Map(); Gm.T.forEach(t=>{ const d=diamEtrier(t), k=`Étrier (U-bolt) M${d} pour Ø${f(t.P.De,1)}`; ge.set(k,(ge.get(k)||0)+1); });
+  [...ge.entries()].forEach(([k,n])=>{ rep++; nom.push([rep,n,k+' + écrous','acier galva.','—','—']); });
+  if(Gm.T[0]) reperes.push({vue:'face',p:[0,Gm.T[0].c[1]-Gm.T[0].P.De/2000*0.7-diamEtrier(Gm.T[0])/2000,Gm.T[0].c[2]+Gm.T[0].P.De/2000*0.7],n:String(rep),dx:-1,dy:-0.6});
+  const masse=Gm.B.reduce((s,b)=>s+b.p.m*b.L,0)+[...gp.values()].reduce((s,p)=>s+7850*p.d[0]*p.d[1]*p.e*p.n,0);
+  const K=opt.cartouche||{affaire:$('affaire').value,client:'',titre:`Support ${$('repere').value||''} – ${TYPES[D.typ].n}`,dessine:$('auteur').value,plan:$('repere').value};
+  return {format:opt.format||formatIndus,vues,solides:S,aides,cercles,sols,murs,cotes,reperes,etiquettes:etiq,nomenclature:nom,tableau:opt.tableau||null,cartouche:K,
+    notes:[`Cotes en mm${lettres?' (valeurs : tableau des configurations)':''}. Longueurs entre axes du modèle de calcul : longueurs de débit à confirmer en fabrication.`,`Acier ${$('nuance').value} — masse acier ≈ ${f(masse,1)} kg (hors visserie). Tuyauteries représentées sur ±${Lp*1000} mm.`]};
+}
+function planIndus(D,V,opt){ return DESSIN.planche(specDessin(D,V,opt)); }
+function majIndus(){ if(!modeIndus||!dernier) return; try{ const P=planIndus(dernier.D,dernier.V,{format:formatIndus}); $('vInd').innerHTML=P.svg; $('nInd').innerHTML=`Échelle 1:${P.echelle} sur ${P.format} paysage · projection européenne · faces cachées supprimées. Cartouche provisoire en attendant le cartouche FIP.`; dernier.planche=P; }
+  catch(e){ $('vInd').innerHTML=`<div class="msg warn">Dessin indisponible : ${escH(e.message)}</div>`; } }
+function imprimerPlanche(P){ const [W,H]=DESSIN.FORMATS[P.format], w=window.open('','_blank'); if(!w) return;
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escH($('repere').value||'Planche')}</title><style>@page{size:${P.format} landscape;margin:0}html,body{margin:0}svg{width:${W}mm;height:${H}mm;display:block}</style></head><body>${P.svg.replace('style="width:100%;background:#fff"','')}</body></html>`);
+  w.document.close(); setTimeout(()=>w.print(),300); }
+/* =====================================================================
    VUE 3D (Three.js, chargée à la demande)
    ===================================================================== */
 let vue3dActive=false, V3=null;
@@ -1196,8 +1318,11 @@ function init(){
   document.querySelectorAll('input[name=type]').forEach(r=>r.onchange=()=>{appliquerDefauts(typeSup());cartesTuyaux();calc();});
   $('nc').addEventListener('change',()=>{cartesTuyaux();});
   document.querySelectorAll('#form > .card input:not([data-k]), #form > .card select:not([data-k])').forEach(el=>{if(!['fam','fam2'].includes(el.id))el.addEventListener('input',calc)});
-  $('b2d').onclick=()=>{vue3dActive=false;$('p2d').style.display='';$('p3d').style.display='none';$('b2d').classList.add('on');$('b3d').classList.remove('on');};
-  $('b3d').onclick=()=>{vue3dActive=true;$('p2d').style.display='none';$('p3d').style.display='';$('b3d').classList.add('on');$('b2d').classList.remove('on');majVue3D().catch(e=>{$('v3d').insertAdjacentHTML('beforeend',`<div class="msg warn" style="margin:10px">Vue 3D indisponible : ${escH(e.message)}</div>`);});};
+  const modeVue=m=>{ vue3dActive=m==='3d'; modeIndus=m==='ind'; $('p2d').style.display=m==='2d'?'':'none'; $('p3d').style.display=m==='3d'?'':'none'; $('pInd').style.display=m==='ind'?'':'none'; $('optInd').style.display=m==='ind'?'':'none';
+    [['b2d','2d'],['b3d','3d'],['bInd','ind']].forEach(([id,k])=>$(id).classList.toggle('on',k===m)); if(m==='ind') majIndus(); };
+  $('b2d').onclick=()=>modeVue('2d'); $('bInd').onclick=()=>modeVue('ind');
+  $('fmtInd').onchange=()=>{ formatIndus=$('fmtInd').value; majIndus(); }; $('prInd').onclick=()=>{ if(dernier&&dernier.planche) imprimerPlanche(dernier.planche); };
+  $('b3d').onclick=()=>{modeVue('3d');majVue3D().catch(e=>{$('v3d').insertAdjacentHTML('beforeend',`<div class="msg warn" style="margin:10px">Vue 3D indisponible : ${escH(e.message)}</div>`);});};
   majFormulaire(); cartesTuyaux(); calc();
   initCahier();
 }
@@ -1270,10 +1395,10 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.24"></script>
-<script src="../commun/aide.js?v=2.24"></script>
-<script src="aide-s1.js?v=2.24"></script>
-<script src="../commun/export.js?v=2.24"></script>
+<script src="../commun/replier.js?v=2.25"></script>
+<script src="../commun/aide.js?v=2.25"></script>
+<script src="aide-s1.js?v=2.25"></script>
+<script src="../commun/export.js?v=2.25"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>

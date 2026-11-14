@@ -2,7 +2,7 @@
    NOTATIONS DES PROFILÉS : glossaire des grandeurs + schémas cotés par famille
    FIP Études — notations NF EN 1993-1-1 §1.7 et fig. 1.1 (axes y-y fort, z-z faible ; u-u, v-v principaux des cornières)
    ===================================================================== */
-const SECTIONS = (() => {
+const NOTPROF = (() => {
   /* clé : [symbole HTML, signification, unité] */
   const GLOSS = {
     h: ["h", "Hauteur totale de la section (tube rond : diamètre extérieur D)", "mm"],
