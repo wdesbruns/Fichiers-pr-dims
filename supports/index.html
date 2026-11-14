@@ -4,21 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.26"></script>
+<script src="../commun/auth.js?v=2.27"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.26">
+<link rel="stylesheet" href="../commun/calc.css?v=2.27">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.26"></script>
-<script src="../commun/data/tuyauterie.js?v=2.26"></script>
-<script src="../commun/acier.js?v=2.26"></script>
-<script src="../commun/barres3d.js?v=2.26"></script>
-<script src="../commun/dessin.js?v=2.26"></script>
-<script src="../commun/coefvent.js?v=2.26"></script>
-<script src="../commun/cahier.js?v=2.26"></script>
+<script src="../commun/data/profils.js?v=2.27"></script>
+<script src="../commun/data/tuyauterie.js?v=2.27"></script>
+<script src="../commun/acier.js?v=2.27"></script>
+<script src="../commun/barres3d.js?v=2.27"></script>
+<script src="../commun/dessin.js?v=2.27"></script>
+<script src="../commun/coefvent.js?v=2.27"></script>
+<script src="../commun/cahier.js?v=2.27"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -1145,7 +1145,15 @@ function specDessin(D,V,opt={}){
   if(Gm.T[0]) reperes.push({vue:'face',p:[0,Gm.T[0].c[1]-Gm.T[0].P.De/2000*0.7-diamEtrier(Gm.T[0])/2000,Gm.T[0].c[2]+Gm.T[0].P.De/2000*0.7],n:String(rep),dx:-1,dy:-0.6});
   const masse=Gm.B.reduce((s,b)=>s+b.p.m*b.L,0)+[...gp.values()].reduce((s,p)=>s+7850*p.d[0]*p.d[1]*p.e*p.n,0);
   const K=opt.cartouche||{affaire:$('affaire').value,client:'',titre:`Support ${$('repere').value||''} – ${TYPES[D.typ].n}`,dessine:$('auteur').value,plan:$('repere').value};
-  return {format:opt.format||formatIndus,vues,solides:S,aides,cercles,sols,murs,cotes,reperes,etiquettes:etiq,nomenclature:nom,tableau:opt.tableau||null,cartouche:K,
+  // --- vues interrompues : plus grande plage sans détail le long d'une barre droite (pas de barre inclinée qui la traverse)
+  const interruptions=[]; [[2,[0,0,1]],[1,[0,1,0]]].forEach(([i,ax])=>{
+    const F=[...Gm.B.flatMap(b=>[b.A[i],b.B[i]]),...Gm.T.flatMap(t=>{ const r=t.P.Dc/2000+diamEtrier(t)/1000+0.03; return [t.c[i]-r,t.c[i]+r]; }),...Gm.appuis.flatMap(a=>[a.pt[i]-Math.max(cx,cz)/2-0.02,a.pt[i]+Math.max(cx,cz)/2+0.02])].sort((a,b)=>a-b);
+    let best=null; for(let k=0;k<F.length-1;k++){ const lo=F[k], hi=F[k+1]; if(hi-lo<0.45) continue;
+      const porte=Gm.B.some(b=>Math.abs(b.dir[i])>0.99&&Math.min(b.A[i],b.B[i])<=lo+1e-6&&Math.max(b.A[i],b.B[i])>=hi-1e-6), incl=Gm.B.some(b=>Math.abs(b.dir[i])>0.05&&Math.abs(b.dir[i])<0.99&&Math.min(b.A[i],b.B[i])<hi&&Math.max(b.A[i],b.B[i])>lo);
+      if(porte&&!incl&&(!best||hi-lo>best[1]-best[0])) best=[lo,hi]; }
+    if(best) interruptions.push({ax,a:best[0]+0.12,b:best[1]-0.12}); });
+  const iso={w:mural?[1,1,1]:[1,-1,1],solides:Gm.T.map(t=>{ const r=t.P.De/2000, c=t.c; return DESSIN.cylindre([c[0]-Lp,c[1],c[2]],[c[0]+Lp,c[1],c[2]],r,r-(t.P.en||Math.max(t.P.De*0.05,3))/1000,{trait:0.25}); })};
+  return {format:opt.format||formatIndus,vues,solides:S,interruptions:opt.interrompre===false?[]:interruptions,iso:opt.perspective===false?null:iso,aides,cercles,sols,murs,cotes,reperes,etiquettes:etiq,nomenclature:nom,tableau:opt.tableau||null,cartouche:K,
     notes:[`Cotes en mm${lettres?' (valeurs : tableau des configurations)':''}. Longueurs entre axes du modèle de calcul : longueurs de débit à confirmer en fabrication.`,`Acier ${$('nuance').value} — masse acier ≈ ${f(masse,1)} kg${varie?' (configuration '+opt.tableau.rows[0][0]+')':''} (hors visserie). Tuyauteries représentées sur ±${Lp*1000} mm.`]};
 }
 function planIndus(D,V,opt){ return DESSIN.planche(specDessin(D,V,opt)); }
@@ -1396,10 +1404,10 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.26"></script>
-<script src="../commun/aide.js?v=2.26"></script>
-<script src="aide-s1.js?v=2.26"></script>
-<script src="../commun/export.js?v=2.26"></script>
+<script src="../commun/replier.js?v=2.27"></script>
+<script src="../commun/aide.js?v=2.27"></script>
+<script src="aide-s1.js?v=2.27"></script>
+<script src="../commun/export.js?v=2.27"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>

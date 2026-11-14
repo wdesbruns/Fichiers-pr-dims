@@ -105,7 +105,12 @@ const DESSIN = (() => {
     const lignesNotes = [], ncN = Math.max(30, Math.floor((bloc.x0 - zx0 - 6) / 1.35));      // notes coupées à la largeur disponible
     (spec.notes || []).forEach((n) => { let l = ""; String(n).split(" ").forEach((m) => { if ((l + " " + m).trim().length > ncN) { lignesNotes.push(l.trim()); l = m; } else l += " " + m; }); if (l.trim()) lignesNotes.push(l.trim()); });
     const hNotes = lignesNotes.length ? lignesNotes.length * 3.4 + 4 : 0;
-    const essai = (liste) => {
+    /* vues interrompues : intervalles [a, b] supprimés le long d'un axe du modèle, remplacés par une bande de 7 mm (lignes de rupture) */
+    const mkMap = (ints, gm) => { const L = ints.slice().sort((p, q) => q[0] - p[0]); return (t) => L.reduce((t, [a, b]) => (t <= a ? t : t >= b ? t - (b - a) + gm : a + (t - a) / (b - a) * gm), t); };
+    const intsVue = (V, axe) => (spec.interruptions || []).filter((I) => !I.vues || I.vues.includes(V.id)).flatMap((I) => { const c = dot(I.ax, V[axe]); return Math.abs(c) > 0.99 ? [c > 0 ? [I.a, I.b] : [-I.b, -I.a]] : []; });
+    const mapper = (V, k, coupes) => { const gm = 7 / k; V.iu = coupes ? intsVue(V, "u") : []; V.iv = coupes ? intsVue(V, "v") : []; V.mu = mkMap(V.iu, gm); V.mv = mkMap(V.iv, gm);
+      V.u0 = V.mu(V.r.u0); V.u1 = V.mu(V.r.u1); V.v0 = V.mv(V.r.v0); V.v1 = V.mv(V.r.v1); };
+    const essai = (liste, coupes = false) => {
       const vues = liste.map((v) => ({ ...VUES[v.id], ...v }));
       const tousPts = spec.solides.flatMap((S) => S.faces.flatMap((f) => f.rings.flat())).concat((spec.aides || []).flatMap((a) => a.pts)).concat((spec.sols || []).flatMap((s) => [s.a, s.b]));
       vues.forEach((V) => { const pv = tousPts.filter((p) => true); const us = pv.map((p) => dot(p, V.u)), vs = pv.map((p) => dot(p, V.v));
@@ -114,13 +119,15 @@ const DESSIN = (() => {
       const cols = [...new Set(vues.map((v) => v.col))].sort(), ligs = [...new Set(vues.map((v) => v.lig))].sort();
       cols.forEach((c) => { const L = vues.filter((v) => v.col === c), a = Math.min(...L.map((v) => v.u0)), b = Math.max(...L.map((v) => v.u1)); L.forEach((v) => { v.u0 = a; v.u1 = b; }); });
       ligs.forEach((r) => { const L = vues.filter((v) => v.lig === r), a = Math.min(...L.map((v) => v.v0)), b = Math.max(...L.map((v) => v.v1)); L.forEach((v) => { v.v0 = a; v.v1 = b; }); });
+      vues.forEach((V) => { V.r = { u0: V.u0, u1: V.u1, v0: V.v0, v1: V.v1 }; });
       // marges de cotation (mm planche) selon les cotes demandées
       const MG = (V, cote) => 10 + 8 * (1 + Math.max(-1, ...(spec.cotes || []).filter((c) => c.vue === V.id && c.cote === cote).map((c) => c.niv || 0)));
       vues.forEach((V) => { V.mg = { g: MG(V, "gauche"), d: MG(V, "droite"), h: MG(V, "haut") + 6, b: MG(V, "bas") }; });
       // choix de l'échelle normalisée et placement
-      let ech = null, place = null;
+      let ech = null, place = null, grille = null;
       for (const e of ECHELLES) {
         const k = 1000 / e, wc = {}, hl = {};
+        vues.forEach((V) => mapper(V, k, coupes));
         cols.forEach((c) => { wc[c] = Math.max(...vues.filter((v) => v.col === c).map((v) => (v.u1 - v.u0) * k + v.mg.g + v.mg.d)); });
         ligs.forEach((r) => { hl[r] = Math.max(...vues.filter((v) => v.lig === r).map((v) => (v.v1 - v.v0) * k + v.mg.h + v.mg.b)); });
         const W = cols.reduce((s, c) => s + wc[c], 0), H = ligs.reduce((s, r) => s + hl[r], 0);
@@ -130,20 +137,24 @@ const DESSIN = (() => {
         const rects = vues.map((V) => ({ V, x: x0[V.col] + V.mg.g, y: y0[V.lig] + V.mg.h, w: (V.u1 - V.u0) * k, h: (V.v1 - V.v0) * k }));
         const chev = rects.some((r) => r.x - r.V.mg.g < bloc.x1 && r.x + r.w + r.V.mg.d > bloc.x0 && r.y - r.V.mg.h < bloc.y1 && r.y + r.h + r.V.mg.b > bloc.y0);
         if (chev) continue;
-        ech = e; place = rects; break;
+        ech = e; place = rects; grille = { x0, y0, wc, hl, cols, ligs }; break;
       }
-      return { ech, place };
+      return { ech, place, grille };
     };
-    let { ech, place } = essai(spec.vues);
-    if (spec.vues.some((v) => v.option)) { const r = essai(spec.vues.filter((v) => !v.option)); if (r.ech && (!ech || r.ech * 2 < ech)) ({ ech, place } = r); }   // vue de dessus abandonnée seulement si elle coûte plus d'un facteur 2 d'échelle
+    // choix : vues complètes ; interrompues si l'échelle y gagne ; vue de dessus abandonnée seulement si elle coûte plus d'un facteur 2
+    const coupes = !!(spec.interruptions && spec.interruptions.length);
+    let best = essai(spec.vues, false);
+    if (coupes) { const r = essai(spec.vues, true); if (r.ech && (!best.ech || r.ech < best.ech)) best = r; }
+    if (spec.vues.some((v) => v.option)) { const L = spec.vues.filter((v) => !v.option); let r = essai(L, false); if (coupes) { const r2 = essai(L, true); if (r2.ech && (!r.ech || r2.ech < r.ech)) r = r2; } if (r.ech && (!best.ech || r.ech * 2 < best.ech)) best = r; }
+    let { ech, place, grille } = best;
     const vues = place ? place.map((r) => r.V) : spec.vues.map((v) => ({ ...VUES[v.id], ...v }));
-    if (!ech) { ech = 100; const k = 10; vues.forEach((V) => { V.mg = V.mg || { g: 18, d: 18, h: 24, b: 18 }; if (V.u0 == null) { V.u0 = 0; V.u1 = 1; V.v0 = 0; V.v1 = 1; } }); place = vues.map((V, i) => ({ V, x: zx0 + 20 + i * 120, y: zy0 + 20, w: (V.u1 - V.u0) * k, h: (V.v1 - V.v0) * k })); }
+    if (!ech) { ech = 100; const k = 10; vues.forEach((V) => { V.mg = V.mg || { g: 18, d: 18, h: 24, b: 18 }; if (V.u0 == null) { V.u0 = 0; V.u1 = 1; V.v0 = 0; V.v1 = 1; } V.mu = V.mu || ((t) => t); V.mv = V.mv || ((t) => t); V.iu = V.iu || []; V.iv = V.iv || []; }); place = vues.map((V, i) => ({ V, x: zx0 + 20 + i * 120, y: zy0 + 20, w: (V.u1 - V.u0) * k, h: (V.v1 - V.v0) * k })); }
     const k = 1000 / ech;
     let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PW} ${PH}" class="planche" style="width:100%;background:#fff" font-family="${F}">`;
     s += `<rect x="0" y="0" width="${PW}" height="${PH}" fill="#fff"/><rect x="${zx0}" y="${zy0}" width="${zx1 - zx0}" height="${zy1 - zy0}" fill="none" stroke="#000" stroke-width="0.7"/>`;
     [[PW / 2, 0, PW / 2, zy0], [PW / 2, PH, PW / 2, zy1], [0, PH / 2, zx0, PH / 2], [PW, PH / 2, zx1, PH / 2]].forEach(([a, b, c, d]) => { s += `<line x1="${a}" y1="${b}" x2="${c}" y2="${d}" stroke="#000" stroke-width="0.7"/>`; });   // repères de centrage
     place.forEach(({ V, x, y, w, h }) => {
-      const X = (u) => x + (u - V.u0) * k, Y = (v) => y + (V.v1 - v) * k, P = (p) => [X(dot(p, V.u)), Y(dot(p, V.v))], dans = (o) => !o.vues || o.vues.includes(V.id);
+      const X = (u) => x + (V.mu(u) - V.u0) * k, Y = (v) => y + (V.v1 - V.mv(v)) * k, P = (p) => [X(dot(p, V.u)), Y(dot(p, V.v))], dans = (o) => !o.vues || o.vues.includes(V.id);
       let g = "";
       // ouvrage : murs (hachures béton) puis sols
       (spec.murs || []).filter(dans).forEach((m) => { const Q = m.rect.map(P), xs = Q.map((q) => q[0]), ys = Q.map((q) => q[1]), a = Math.min(...xs), b = Math.max(...xs), c = Math.min(...ys), d = Math.max(...ys);
@@ -157,6 +168,15 @@ const DESSIN = (() => {
       (spec.cercles || []).filter(dans).forEach((c) => { const n = c.n || [1, 0, 0]; if (Math.abs(dot(n, V.w)) < 0.9) return; const [cx, cy] = P(c.c), r = c.r * k;
         g += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" ${STY[c.style] || STY.fin}/>`;
         if (c.croix) g += `<line x1="${cx - r - 2}" y1="${cy}" x2="${cx + r + 2}" y2="${cy}" ${STY.axe}/><line x1="${cx}" y1="${cy - r - 2}" x2="${cx}" y2="${cy + r + 2}" ${STY.axe}/>`; });
+      // lignes de rupture (trait fin avec zigzag, ISO 128) : bande blanche par pièce traversant l'intervalle
+      const zig = (x1, y1, x2, y2) => { const L = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / L, uy = (y2 - y1) / L, nx = -uy, ny = ux, m = L / 2, P2 = (t, o) => `${(x1 + ux * t + nx * o).toFixed(2)},${(y1 + uy * t + ny * o).toFixed(2)}`;
+        return `<polyline points="${[P2(0, 0), P2(m - 1.6, 0), P2(m - 0.8, 1.8), P2(m + 0.8, -1.8), P2(m + 1.6, 0), P2(L, 0)].join(" ")}" fill="none" ${STY.fin}/>`; };
+      [["u", V.iu], ["v", V.iv]].forEach(([axe, L]) => L.forEach(([a, b]) => spec.solides.forEach((S) => {
+        let o0 = Infinity, o1 = -Infinity; const oth = axe === "u" ? V.v : V.u, ax = V[axe];
+        S.faces.forEach((f) => { const t = f.rings[0].map((p) => dot(p, ax)); if (Math.min(...t) < a && Math.max(...t) > b) f.rings[0].forEach((p) => { const o = dot(p, oth); o0 = Math.min(o0, o); o1 = Math.max(o1, o); }); });
+        if (o0 > o1) return;
+        if (axe === "u") { const xa = X(a), xb = X(b), ya = Y(o1) - 2.5, yb = Y(o0) + 2.5; g += `<rect x="${xa + 0.15}" y="${ya}" width="${xb - xa - 0.3}" height="${yb - ya}" fill="#fff"/>` + zig(xa, ya, xa, yb) + zig(xb, ya, xb, yb); }
+        else { const ya = Y(b), yb = Y(a), xa = X(o0) - 2.5, xb = X(o1) + 2.5; g += `<rect x="${xa}" y="${ya + 0.15}" width="${xb - xa}" height="${yb - ya - 0.3}" fill="#fff"/>` + zig(xa, ya, xb, ya) + zig(xa, yb, xb, yb); } })));
       // cotes
       const niv = { gauche: 0, droite: 0, haut: 0, bas: 0 };
       (spec.cotes || []).filter((c) => c.vue === V.id).forEach((c) => { const a = P(c.a), b = P(c.b), n = c.niv || 0, pos = { gauche: x - 10 - 8 * n, droite: x + w + 10 + 8 * n, haut: y - 10 - 8 * n, bas: y + h + 10 + 8 * n }[c.cote];
@@ -171,6 +191,21 @@ const DESSIN = (() => {
       g += txt(x + w / 2, y + h + V.mg.b + 1, V.titre, { a: "middle", h: 3.5, b: 1 });
       s += `<g>${g}</g>`;
     });
+    // perspective isométrique (sans échelle) dans la plus grande zone libre
+    if (spec.iso) {
+      const w = nrm(spec.iso.w || [1, -1, 1]), u = nrm(cross([0, 0, 1], w)), v = cross(w, u), Vi = { id: "iso", u, v, w };   // u × v = w (repère direct, observateur côté w)
+      const sols = spec.solides.concat(spec.iso.solides || []), pts = sols.flatMap((S) => S.faces.flatMap((f) => f.rings.flat())), us = pts.map((p) => dot(p, u)), vs = pts.map((p) => dot(p, v));
+      const du = Math.max(...us) - Math.min(...us), dv = Math.max(...vs) - Math.min(...vs);
+      const occ = place.map((r) => [r.x - r.V.mg.g, r.y - r.V.mg.h, r.x + r.w + r.V.mg.d, r.y + r.h + r.V.mg.b + 6]);
+      const gR = Math.max(...occ.map((o) => o[2])), gB = Math.max(...occ.map((o) => o[3]));
+      const cand = [[gR + 4, zy0 + 4, zx1 - 4, bloc.y0 - 4], [zx0 + 4, gB + 2, bloc.x0 - 4, zy1 - hNotes - 2]];
+      if (grille) grille.cols.forEach((c) => grille.ligs.forEach((r) => { if (!place.some((p) => p.V.col === c && p.V.lig === r)) cand.push([grille.x0[c] + 2, grille.y0[r] + 2, zx1 - 4, bloc.y0 - 4]); }));
+      const libre = (R) => !occ.some((o) => o[0] < R[2] && o[2] > R[0] && o[1] < R[3] && o[3] > R[1]) && !(bloc.x0 < R[2] && bloc.x1 > R[0] && bloc.y0 < R[3] && bloc.y1 > R[1]);
+      let mieux = null;
+      cand.forEach((R) => { if (R[2] - R[0] < 50 || R[3] - R[1] < 50 || !libre(R)) return; const ki = Math.min((R[2] - R[0] - 10) / du, (R[3] - R[1] - 16) / dv); if (!mieux || ki > mieux.ki) mieux = { R, ki }; });
+      if (mieux) { const { R, ki } = mieux, kk = Math.min(ki, k * 1.5), cx = (R[0] + R[2]) / 2, cy = (R[1] + R[3] - 8) / 2, um = (Math.max(...us) + Math.min(...us)) / 2, vm = (Math.max(...vs) + Math.min(...vs)) / 2;
+        s += `<g>${rendreVue(Vi, sols, (a) => cx + (a - um) * kk, (b) => cy - (b - vm) * kk)}${txt(cx, cy + dv * kk / 2 + 8, "PERSPECTIVE (sans échelle)", { a: "middle", b: 1 })}</g>`; }
+    }
     // tableau des configurations
     let yb = bloc.y0;
     const ligne = (x1, y1, x2, y2, l = TFin) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#000" stroke-width="${l}"/>`;
