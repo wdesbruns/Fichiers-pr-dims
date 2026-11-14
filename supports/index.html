@@ -4,20 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.22"></script>
+<script src="../commun/auth.js?v=2.23"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.22">
+<link rel="stylesheet" href="../commun/calc.css?v=2.23">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.22"></script>
-<script src="../commun/data/tuyauterie.js?v=2.22"></script>
-<script src="../commun/acier.js?v=2.22"></script>
-<script src="../commun/barres3d.js?v=2.22"></script>
-<script src="../commun/coefvent.js?v=2.22"></script>
-<script src="../commun/cahier.js?v=2.22"></script>
+<script src="../commun/data/profils.js?v=2.23"></script>
+<script src="../commun/data/tuyauterie.js?v=2.23"></script>
+<script src="../commun/acier.js?v=2.23"></script>
+<script src="../commun/barres3d.js?v=2.23"></script>
+<script src="../commun/coefvent.js?v=2.23"></script>
+<script src="../commun/cahier.js?v=2.23"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -31,6 +31,7 @@
   #v3d{width:100%;height:420px;border:1px solid var(--line);border-radius:6px;background:linear-gradient(#f7f9fc,#e9eef5);position:relative;touch-action:none}
   #v3d .aide{position:absolute;left:8px;bottom:6px;font-size:11px;color:var(--muted)}
   .vue2d{display:grid;grid-template-columns:1.3fr 1fr;gap:10px}
+  .dgCtl{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:flex-end;margin-bottom:8px}.dgCtl .vues{margin:0;flex-wrap:wrap}.dgSel{min-width:240px;flex:1 1 260px}.dgSel select{width:100%}
   @media (max-width:950px){.vue2d{grid-template-columns:1fr}}
   table.ddc td.n{min-width:62px}
 </style>
@@ -204,6 +205,12 @@
   <div class="card" id="persp" hidden><h2>Perspective</h2><img id="imgPersp" alt="Perspective du support" style="width:100%;max-width:760px;display:block;margin:auto;border:1px solid var(--line);border-radius:6px"><div class="note" style="text-align:center">Vue isométrique : charges G (rouge), vent (bleu), frottement / dilatation (orange) · X axe des tuyaux, Z vertical</div></div>
   <div class="card"><h2>Vérifications (taux = sollicitation / résistance)</h2><div id="rRatios"></div></div>
   <div class="card"><h2>Synthèse par barre</h2><div id="rBarres"></div></div>
+  <div class="card"><h2>Diagrammes des efforts (N, V, M) et déformée</h2>
+    <div class="dgCtl noprint"><div class="vues" id="dgK"></div>
+      <div class="dgSel"><label>Combinaison ELU</label><select id="dgC"></select></div>
+      <div class="dgSel"><label>Combinaison ELS (déformée)</label><select id="dgE"></select></div>
+      <div class="vues" id="dgV" title="Vue de la déformée"></div></div>
+    <div class="vue2d"><div id="vDiag"></div><div id="vDef"></div></div><div id="rDiag"></div></div>
   <div class="card"><h2>Descente de charges sur l'ouvrage (platines / fixations)</h2><div id="rDDC"></div></div>
   <div class="card"><h2>Fixations sur l'ouvrage (efforts par fixation)</h2><div id="rFix"></div></div>
   <div class="card"><h2>Charges des tuyauteries par cas</h2><div id="rCharges"></div></div>
@@ -589,9 +596,97 @@ function calc(){
   $('rRatios').innerHTML=barresRatios(V.lignes,D.cible)+`<div class="note">${V.res.length} combinaisons ELU vérifiées (dont ${V.res.filter(r=>r.c.type==='Sismique').length} sismiques) sur ${V.Gm.B.length} barre(s), sections aux extrémités et au milieu de chaque tronçon.</div>`;
   $('rBarres').innerHTML=`<table><tr><th>Barre</th><th>Profilé</th><th class="n">L (m)</th><th class="n">L<sub>cr</sub> (m)</th><th class="n">Section</th><th class="n">Cisaill.</th><th class="n">Stabilité</th><th class="n">Gauchis.</th><th class="n">Déplac.</th><th></th></tr>`+
     V.PB.map(P=>`<tr><td>${escH(P.b.lib)}</td><td>${escH(P.b.p.n)} (cl. ${P.R.cl})</td><td class="n">${f(P.b.L,2)}</td><td class="n">${f(P.St.Lcr,2)}</td><td class="n">${f(P.rS*100,0)} %</td><td class="n">${f(P.rV*100,0)} %</td><td class="n">${f(P.rB*100,0)} %</td><td class="n">${P.gw?f(P.rW*100,0)+' %':'—'}</td><td class="n">${f(P.rD*100,0)} %</td><td>${badgeTaux(P.max,D.cible)}</td></tr>`).join('')+`</table><div class="note">Gauchissement : part σ<sub>w</sub>/f<sub>y</sub> incluse dans les taux de section et de stabilité (profilés I et U ; négligeable pour cornières et tubes).</div>`;
+  try{ diagrammes(D,V); }catch(e){ $('rDiag').innerHTML=`<div class="msg warn">Diagrammes indisponibles : ${escH(e.message)}</div>`; }
   ddc(V,env); $('rFix').innerHTML=tableFix(D,V); charges(V,D); $('rEntraxes').innerHTML=tableEntraxes(D,V); donneesCalc(D,V); combos(V); notes(D,V);
   if(vue3dActive) majVue3D();
   planifierPerspective();
+}
+
+/* =====================================================================
+   DIAGRAMMES N, V, M ET DÉFORMÉE (plan Y–Z du support, x = 0)
+   Efforts : effort de la partie aval sur la partie amont (N > 0 traction).
+   « Dans le plan » = plan Y–Z de la vue de face ; « hors plan » = selon X (axe des tuyaux).
+   Déformée : interpolation d'Hermite des déplacements nodaux + flèche locale des charges réparties.
+   ===================================================================== */
+const fz=v=>Math.abs(v)<0.005?'0,00':f(v,2);
+const DG_K=[['N','N','Effort normal N','kN'],['Vp','V','Effort tranchant dans le plan (Y–Z)','kN'],['Mp','M','Moment dans le plan (autour de X)','kN·m'],
+  ['Vh','V<sub>x</sub>','Effort tranchant hors plan (selon X)','kN'],['Mh','M<sub>h</sub>','Moment hors plan','kN·m'],['T','T','Moment de torsion','kN·m']];
+let dgEtat={k:'Mp',c:null,e:null,v:'auto'};                           // c, e : nom de la combinaison choisie (null = dimensionnante)
+function dgCombo(V,b,fn){ let o=null; for(const [c,k] of Object.entries(b)){ if(!V.R[c]||!k) continue; const v=fn(V.R[c]); o=o?o.map((x,i)=>x+k*v[i]):Array.from(v,x=>k*x); } return o; }
+function dgEfforts(V,b,k,s){                                  // composantes de lecture dans le repère du support
+  const F=dgCombo(V,b,r=>Barres3D.interne(r.elems[k],s))||[0,0,0,0,0,0], el=V.R[Object.keys(V.R)[0]].elems[k], R=el.R;
+  const Fg=[0,1,2].map(i=>F[0]*R[0][i]+F[1]*R[1][i]+F[2]*R[2][i]), Mg=[0,1,2].map(i=>F[3]*R[0][i]+F[4]*R[1][i]+F[5]*R[2][i]);
+  const d=R[0], n=[0,-d[2],d[1]], dot=(a,c)=>a[0]*c[0]+a[1]*c[1]+a[2]*c[2];
+  return {N:F[0],Vp:dot(Fg,n),Mp:Mg[0],Vh:Fg[0],Mh:dot(Mg,n),T:F[3],loc:F,n};
+}
+function dgDepl(V,b,k,s){                                     // déplacement global (m) à l'abscisse s de l'élément k
+  const el0=V.R[Object.keys(V.R)[0]].elems[k], L=el0.L, x=s/L, R=el0.R, e=V.Gm.barres[k];
+  const ug=dgCombo(V,b,r=>el0.dofs.map(I=>r.U[I]))||Array(12).fill(0), ql=dgCombo(V,b,r=>r.elems[k].ql)||[0,0,0];
+  const ul=[0,1,2,3].flatMap(j=>[0,1,2].map(i=>R[i][0]*ug[3*j]+R[i][1]*ug[3*j+1]+R[i][2]*ug[3*j+2]));
+  const N1=1-3*x*x+2*x**3,N2=L*(x-2*x*x+x**3),N3=3*x*x-2*x**3,N4=L*(-x*x+x**3), p=s*s*(L-s)**2/24;
+  const u=(1-x)*ul[0]+x*ul[6], v=N1*ul[1]+N2*ul[5]+N3*ul[7]+N4*ul[11]+ql[1]*p/(e.E*e.Iz), w=N1*ul[2]-N2*ul[4]+N3*ul[8]-N4*ul[10]+ql[2]*p/(e.E*e.Iy);
+  return [0,1,2].map(i=>u*R[0][i]+v*R[1][i]+w*R[2][i]);
+}
+function dgDefaut(V){ let i=0,m=-1; V.res.forEach((r,j)=>{ const t=Math.max(r.rS,r.rB); if(t>m){m=t;i=j;} }); return i; }
+function dgStructure(Gm,X,Y){
+  let s=Gm.B.map(b=>`<line x1="${X(b.A[1])}" y1="${Y(b.A[2])}" x2="${X(b.B[1])}" y2="${Y(b.B[2])}" stroke="#9aa3ad" stroke-width="2.2"/>`).join('');
+  Gm.appuis.forEach(a=>{ const x=X(a.pt[1]),y=Y(a.pt[2]); s+=a.c.slice(3).every(v=>v===1)?`<rect x="${x-6}" y="${y-6}" width="12" height="12" fill="#171a1e"/>`:`<circle cx="${x}" cy="${y}" r="5" fill="#fff" stroke="#171a1e" stroke-width="1.6"/>`; });
+  return s;
+}
+function diagrammes(D,V){
+  const i1=V.ELU.findIndex(c=>c.nom===dgEtat.c), i2=V.CAR.findIndex(c=>c.nom===dgEtat.e), ci=i1>=0?i1:dgDefaut(V), ce=i2>=0?i2:Math.max(V.CAR.indexOf(V.eD.c),0);
+  const cE=V.ELU[ci], cS=V.CAR[ce], txt=c=>c.nom.replace(/<[^>]+>/g,''), Gm=V.Gm, K=DG_K.find(k=>k[0]===dgEtat.k);
+  $('dgK').innerHTML=DG_K.map(k=>`<button type="button" data-k="${k[0]}" class="${k[0]===dgEtat.k?'on':''}" title="${k[2]}">${k[1]}${/h$/.test(k[0])?' hors plan':k[0]==='T'?'':' plan'}</button>`).join('');
+  $('dgC').innerHTML=V.ELU.map((c,i)=>`<option value="${i}" ${i===ci?'selected':''}>${i===dgDefaut(V)?'★ dimensionnante — ':''}${txt(c)}</option>`).join('');
+  $('dgE').innerHTML=V.CAR.map((c,i)=>`<option value="${i}" ${i===ce?'selected':''}>${c===V.eD.c?'★ dimensionnante — ':''}${txt(c)}</option>`).join('');
+  // ---- échantillonnage des efforts par barre logique
+  const NS=12, par=Gm.B.map(()=>[]);
+  Gm.elemBarre.forEach((eb,k)=>{ for(let j=0;j<=NS;j++){ const s=eb.L*j/NS, E=dgEfforts(V,cE.b,k,s), b=Gm.B[eb.bi], x=eb.s0+s; par[eb.bi].push({x,P:[b.A[1]+b.dir[1]*x,b.A[2]+b.dir[2]*x],E}); } });
+  const vmax=Math.max(1e-9,...par.flat().map(q=>Math.abs(q.E[K[0]])));
+  const size=Math.max(...Gm.B.flatMap(b=>[Math.abs(b.B[1]-b.A[1]),Math.abs(b.B[2]-b.A[2])]),0.3), sc=0.2*size/vmax;
+  const off=(q,v)=>[q.P[0]+q.E.n[1]*v*sc,q.P[1]+q.E.n[2]*v*sc];
+  const pts=[]; Gm.B.forEach(b=>pts.push([b.A[1],b.A[2]],[b.B[1],b.B[2]])); par.flat().forEach(q=>pts.push(off(q,q.E[K[0]])));
+  const W=480,H=430, c=cadre(pts,W,H,52), X=c.X, Y=c.Y;
+  let s=`<svg viewBox="0 0 ${W} ${H}" style="width:100%"><text x="6" y="16" font-size="12" font-weight="700" fill="#114088">${K[2]} (${K[3]})</text><text x="6" y="31" font-size="10.5" fill="#5f6670">${escH(cE.type==='Sismique'?'Sismique':'ELU')} : ${escH(txt(cE))}</text>`;
+  par.forEach(L=>{ if(!L.length) return; L.sort((a,b)=>a.x-b.x);
+    const poly=L.map(q=>off(q,q.E[K[0]])), coul=K[0][0]==='N'?'#7b3fa0':K[0][0]==='V'?'#2a9d3a':K[0]==='T'?'#d9822b':'#e30009';
+    s+=`<polygon points="${[L[0].P,...poly,L[L.length-1].P].map(p=>X(p[0])+','+Y(p[1])).join(' ')}" fill="${coul}" fill-opacity=".14" stroke="none"/><polyline points="${poly.map(p=>X(p[0])+','+Y(p[1])).join(' ')}" fill="none" stroke="${coul}" stroke-width="1.6"/>`;
+    // valeurs : extrémités et extremum intérieur
+    const idx=[0,L.length-1]; let im=0; L.forEach((q,i)=>{ if(Math.abs(q.E[K[0]])>Math.abs(L[im].E[K[0]])) im=i; }); if(!idx.includes(im)) idx.push(im);
+    const vus=[]; idx.forEach(i=>{ const q=L[i], v=q.E[K[0]]; if(Math.abs(v)<0.02*vmax) return; const p=off(q,v), xx=X(p[0]), yy=Y(p[1]); if(vus.some(u=>Math.hypot(u[0]-xx,u[1]-yy)<22)) return; vus.push([xx,yy]);
+      s+=`<circle cx="${xx}" cy="${yy}" r="2.4" fill="${coul}"/><text x="${xx>W-70?xx-4:xx+4}" text-anchor="${xx>W-70?'end':'start'}" y="${yy-4}" font-size="11" font-weight="${i===im?700:500}" fill="#171a1e" paint-order="stroke" stroke="#fff" stroke-width="3">${fz(v)}</text>`; }); });
+  s+=dgStructure(Gm,X,Y)+scu2D(W-62,H-28,'Y','Z','X',0)+`</svg>`;
+  $('vDiag').innerHTML=s;
+  // ---- déformée (ELS caractéristique)
+  const dp=[]; Gm.elemBarre.forEach((eb,k)=>{ const b=Gm.B[eb.bi]; for(let j=0;j<=NS;j++){ const t=eb.L*j/NS, x=eb.s0+t; dp.push({k,bi:eb.bi,P:[b.A[1]+b.dir[1]*x,b.A[2]+b.dir[2]*x],u:dgDepl(V,cS.b,k,t)}); } });
+  const uX=Math.max(...dp.map(q=>Math.abs(q.u[0]))), uP=Math.max(...dp.map(q=>Math.hypot(q.u[1],q.u[2])));
+  const obl=dgEtat.v==='obl'||(dgEtat.v==='auto'&&uX>uP), ko=0.38;                       // oblique : X dessiné vers le bas à gauche (vers l'observateur)
+  $('dgV').innerHTML=[['auto','Auto'],['face','Face Y–Z'],['obl','Oblique 3D']].map(([k,l])=>`<button type="button" data-v="${k}" class="${dgEtat.v===k?'on':''}">${k==='auto'?l+' ('+(obl?'oblique':'face')+')':l}</button>`).join('');
+  const pr=P=>obl?[P[1]-ko*P[0],P[2]-ko*P[0]]:[P[1],P[2]], P3=b=>a=>[0,1,2].map(i=>b.A[i]+b.dir[i]*a);
+  dp.forEach(q=>{ const b=Gm.B[q.bi]; q.P3=[0,q.P[0],q.P[1]]; });
+  const umax=Math.max(1e-12,...dp.map(q=>{ const a=pr(q.u); return Math.hypot(a[0],a[1]); })), amp0=0.12*size/umax, amp=[1,2,5].flatMap(a=>[1,10,100,1000,1e4].map(m=>a*m)).filter(a=>a<=amp0).pop()||1;
+  const P2=q=>pr(q.P3.map((v,i)=>v+amp*q.u[i])), pts2=[]; Gm.B.forEach(b=>pts2.push(pr(b.A),pr(b.B))); dp.forEach(q=>pts2.push(P2(q)));
+  const c2=cadre(pts2,W,H,52), X2=c2.X, Y2=c2.Y;
+  let t=`<svg viewBox="0 0 ${W} ${H}" style="width:100%"><text x="6" y="16" font-size="12" font-weight="700" fill="#114088">Déformée ELS ${obl?'– vue oblique ':''}(déplacements × ${amp})</text><text x="6" y="31" font-size="10.5" fill="#5f6670">ELS caractéristique : ${escH(txt(cS))}</text>`;
+  t+=Gm.B.map(b=>{const a=pr(b.A),c=pr(b.B);return `<line x1="${X2(a[0])}" y1="${Y2(a[1])}" x2="${X2(c[0])}" y2="${Y2(c[1])}" stroke="#9aa3ad" stroke-width="2.2" stroke-dasharray="${obl?'5 3':''}"/>`;}).join('');
+  Gm.appuis.forEach(a=>{ const p=pr(a.pt),x=X2(p[0]),y=Y2(p[1]); t+=a.c.slice(3).every(v=>v===1)?`<rect x="${x-6}" y="${y-6}" width="12" height="12" fill="#171a1e"/>`:`<circle cx="${x}" cy="${y}" r="5" fill="#fff" stroke="#171a1e" stroke-width="1.6"/>`; });
+  Gm.elemBarre.forEach((eb,k)=>{ t+=`<polyline points="${dp.filter(q=>q.k===k).map(q=>{const p=P2(q);return X2(p[0])+','+Y2(p[1]);}).join(' ')}" fill="none" stroke="#114088" stroke-width="2.2"/>`; });
+  // valeurs aux points d'appui des tuyaux et aux extrémités libres (déplacements totaux, mm)
+  const lab=[...Gm.T.map(q=>({n:q.n,l:q.nom||'tuyau'})),...Gm.pointes.map(p=>({n:p.n,l:'extrémité'}))], vus=[];
+  const Ud=n=>dgCombo(V,cS.b,r=>r.depl(n))||[0,0,0];
+  let dmx={d:-1}; lab.forEach(q=>{ const u=Ud(q.n), d=Math.hypot(u[0],u[1],u[2])*1000; if(d>dmx.d) dmx={...q,u,d}; });
+  lab.forEach(q=>{ const nd=Gm.noeuds[q.n], u=Ud(q.n), d=Math.hypot(u[0],u[1],u[2])*1000, p=pr([nd.x+amp*u[0],nd.y+amp*u[1],nd.z+amp*u[2]]), xx=X2(p[0]), yy=Y2(p[1]); if(vus.some(v=>Math.hypot(v[0]-xx,v[1]-yy)<24)) return; vus.push([xx,yy]);
+    const dr=xx>W-120; t+=`<circle cx="${xx}" cy="${yy}" r="3" fill="${q.n===dmx.n?'#e30009':'#114088'}"/><text x="${dr?xx-5:xx+5}" text-anchor="${dr?'end':'start'}" y="${yy-5}" font-size="11" font-weight="${q.n===dmx.n?700:500}" paint-order="stroke" stroke="#fff" stroke-width="3">${escH(q.l)} : ${f(d,2)} mm</text>`; });
+  t+=(obl?(()=>{const ox=W-62,oy=H-28,L=26,ar=(dx,dy,c,l)=>`<line x1="${ox}" y1="${oy}" x2="${ox+dx}" y2="${oy+dy}" stroke="${c}" stroke-width="2"/><text x="${ox+dx+(dx<0?-10:3)}" y="${oy+dy+(dy>0?10:-3)}" fill="${c}" font-size="10.5" font-weight="700">${l}</text>`;
+      return `<g>${ar(L,0,SCU_C.Y,'Y')}${ar(0,-L,SCU_C.Z,'Z')}${ar(-L*0.7,L*0.7,SCU_C.X,'X')}</g>`;})():scu2D(W-62,H-28,'Y','Z','X',0))+`</svg>`;
+  $('vDef').innerHTML=t;
+  // ---- tableau des maxima par barre (repère local du profilé)
+  const loc=['N','V<sub>y</sub>','V<sub>z</sub>','T','M<sub>y</sub>','M<sub>z</sub>'];
+  let h=`<table><tr><th>Barre (${escH(txt(cE))})</th>${loc.map((l,i)=>`<th class="n">|${l}|<sub>max</sub> (${i<3?'kN':'kN·m'})</th>`).join('')}</tr>`;
+  par.forEach((L,bi)=>{ if(!L.length) return; h+=`<tr><td>${escH(Gm.B[bi].lib)} – ${escH(Gm.B[bi].p.n)}</td>`+[0,1,2,3,4,5].map(i=>{ const q=L.reduce((a,b)=>Math.abs(b.E.loc[i])>Math.abs(a.E.loc[i])?b:a); return Math.abs(q.E.loc[i])<0.005?'<td class="n">0,00</td>':`<td class="n">${f(q.E.loc[i],2)}<div class="note">x = ${f(q.x,2)} m</div></td>`; }).join('')+'</tr>'; });
+  h+=`</table><div class="msg info" style="margin-top:6px"><b>Déplacement maximal ELS</b> : ${dmx.d>=0?`${escH(dmx.l)} — ${f(dmx.d,2)} mm (u<sub>X</sub> = ${f(dmx.u[0]*1000,2)} ; u<sub>Y</sub> = ${f(dmx.u[1]*1000,2)} ; u<sub>Z</sub> = ${f(dmx.u[2]*1000,2)} mm)`:'—'} · limite ${f(V.eD.lim,2)} mm.</div>
+   <div class="note">★ = combinaison dimensionnante (taux de section ou de stabilité maximal pour l'ELU ; déplacement maximal pour l'ELS). Repère local : x le long de la barre (de son origine vers son extrémité), y et z axes de la section (M<sub>y</sub> autour de y, axe de la résistance M<sub>y,Rk</sub>). Efforts de la partie aval sur la partie amont, N &gt; 0 en traction. Le diagramme représente les composantes dans le plan Y–Z de la vue de face ou hors de ce plan (selon X, axe des tuyaux : vent longitudinal, frottement, dilatation). Déformée : 1<sup>er</sup> ordre, platines selon le modèle retenu ; la composante u<sub>X</sub> n'est pas visible sur cette vue mais est comptée dans les valeurs affichées.</div>`;
+  $('rDiag').innerHTML=h;
 }
 /* ---------- fixations des platines (4 fixations en rectangle a1 × a2) ---------- */
 const AS_T={10:58,12:84.3,16:157,20:245,24:353}, FUB={'4.6':400,'5.6':500,'8.8':800};
@@ -824,6 +919,7 @@ function notes(D,V){
    <li>Vérifications NF EN 1993-1-1 : section (critère linéaire §6.2.1(7)), cisaillement + torsion de Saint-Venant (gauchissement négligé), stabilité simplifiée (k = 1 + 0,6·λ̄·n). Cornières : axes principaux, élastique, sans déversement. Tubes : courbe c (formés à froid, prudent).</li>
    <li>Gauchissement (profilés I et U) : bi-moment B = T·a·tanh(L<sub>e</sub>/a) avec gauchissement bloqué à l'encastrement (L<sub>e</sub> = L pour un porte-à-faux, L/2 entre appuis), σ<sub>w</sub> = B·ω/I<sub>w</sub>, ajouté aux taux de section et de stabilité (prudent, U traité comme un I). Raideur : pour une barre I / U encastrée (platine soudée), le modèle prend I<sub>t,eff</sub> = I<sub>t</sub>·L/(L − a·tanh(L/a)) (gauchissement bloqué à l'encastrement, libre à l'autre extrémité : prudent) ; les autres barres gardent la seule raideur de Saint-Venant.</li>
    <li>Platines semi-rigides par défaut (S<sub>j</sub> = 10·EI/L) : hypothèse prudente pour les déplacements. Taux au-delà du taux cible signalés en jaune (non bloquant) ; l'optimisation vise le taux cible.</li>
+   <li>Diagrammes N, V, M et déformée : 1<sup>er</sup> ordre, déformée par interpolation d’Hermite des déplacements nodaux + flèche locale des charges réparties.</li>
    <li>Non traités : platine, chevilles (ETE fabricant), soudures, étriers, effets du 2<sup>nd</sup> ordre, séisme vertical, déversement des cornières.</li></ul>`;
 }
 
@@ -1083,6 +1179,10 @@ function appliquerDefauts(typ){
   $('orient').value='0'; if($('off')) $('off').value=0;
 }
 function init(){
+  $('dgV').addEventListener('click',e=>{ const b=e.target.closest('button[data-v]'); if(!b) return; dgEtat.v=b.dataset.v; if(dernier) diagrammes(dernier.D,dernier.V); });
+  $('dgK').addEventListener('click',e=>{ const b=e.target.closest('button[data-k]'); if(!b) return; dgEtat.k=b.dataset.k; if(dernier) diagrammes(dernier.D,dernier.V); });
+  $('dgC').addEventListener('change',e=>{ e.stopPropagation(); const i=+$('dgC').value; dgEtat.c=i===dgDefaut(dernier.V)?null:dernier.V.ELU[i].nom; diagrammes(dernier.D,dernier.V); });
+  $('dgE').addEventListener('change',e=>{ e.stopPropagation(); const i=+$('dgE').value; dgEtat.e=dernier.V.CAR[i]===dernier.V.eD.c?null:dernier.V.CAR[i].nom; diagrammes(dernier.D,dernier.V); });
   const fams=familles(true);
   $('fam').innerHTML=fams.map(x=>`<option ${x==='UPN'?'selected':''}>${x}</option>`).join('');
   $('fam2').innerHTML=fams.map(x=>`<option ${x==='UPN'?'selected':''}>${x}</option>`).join('');
@@ -1170,10 +1270,10 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.22"></script>
-<script src="../commun/aide.js?v=2.22"></script>
-<script src="aide-s1.js?v=2.22"></script>
-<script src="../commun/export.js?v=2.22"></script>
+<script src="../commun/replier.js?v=2.23"></script>
+<script src="../commun/aide.js?v=2.23"></script>
+<script src="aide-s1.js?v=2.23"></script>
+<script src="../commun/export.js?v=2.23"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
