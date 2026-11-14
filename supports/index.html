@@ -4,20 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.19"></script>
+<script src="../commun/auth.js?v=2.20"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.19">
+<link rel="stylesheet" href="../commun/calc.css?v=2.20">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.19"></script>
-<script src="../commun/data/tuyauterie.js?v=2.19"></script>
-<script src="../commun/acier.js?v=2.19"></script>
-<script src="../commun/barres3d.js?v=2.19"></script>
-<script src="../commun/coefvent.js?v=2.19"></script>
-<script src="../commun/cahier.js?v=2.19"></script>
+<script src="../commun/data/profils.js?v=2.20"></script>
+<script src="../commun/data/tuyauterie.js?v=2.20"></script>
+<script src="../commun/acier.js?v=2.20"></script>
+<script src="../commun/barres3d.js?v=2.20"></script>
+<script src="../commun/coefvent.js?v=2.20"></script>
+<script src="../commun/cahier.js?v=2.20"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -791,7 +791,8 @@ function alertes(D,V){
     if(o.I&&o.I.v>1) add('bloq',`Tiges filetées insuffisantes – ${lib}`,`Interaction traction + cisaillement ${f(o.I.v*100,0)} % : augmenter le diamètre, la classe ou l'entraxe.`,'NF EN 1993-1-8 Tab. 3.4');
     if(o.rT>1) add('bloq',`Crapauds : traction dépassée – ${lib}`,o.maison?`Traction du boulon ${f(o.M.T,2)} kN &gt; F<sub>t,Rd</sub> = ${f(o.M.FtRd,1)} kN.`:`${f(o.T.v,2)} kN par crapaud &gt; ${f(num('crT',5),2)} kN (catalogue).`,o.maison?'NF EN 1993-1-8 Tab. 3.4':'Catalogue fabricant');
     if(o.rS>1) add('bloq',`Crapauds : risque de glissement – ${lib}`,o.maison?`${f(o.M.Sl,2)} kN par crapaud le long du profilé &gt; F<sub>s,Rd</sub> = ${f(o.M.FsRd,2)} kN. Augmenter le boulon, traiter les surfaces ou prévoir une butée.`:`${f(o.S.v,2)} kN par crapaud le long du profilé &gt; ${f(num('crV',0.8),2)} kN (catalogue)${o.th?` ; inclinaison θ = ${f(o.th*180/Math.PI,0)}° défavorable`:''}. Prévoir une butée soudée ou boulonnée, ou des crapauds anti-glissement.`,o.maison?'NF EN 1993-1-8 §3.9.1':'Catalogue fabricant'); });
-  if(D.typ==='murJ'&&D.pt&&(D.pt.h>D.pm.h||(D.pt.b||0)>(D.pm.b||0)+1e-9)) add('bloq',`Jambe de force plus grande que la console`,`${escH(D.pt.n)} (h = ${f(D.pt.h,0)}, b = ${f(D.pt.b,0)} mm) &gt; console ${escH(D.pm.n)} (h = ${f(D.pm.h,0)}, b = ${f(D.pm.b,0)} mm) : la jambe ne peut pas être soudée sur la console. Prendre une jambe de dimensions inférieures ou égales à celles de la console.`,'Règle de conception (assemblage soudé)','t');
+  if(D.typ==='murJ'&&D.pt){ const bc=V.Gm.B[0], bj=V.Gm.B[1], lc=bc.ext([1,0,0])*1000, lj=bj.ext([1,0,0])*1000, pos=$('orient').value==='0'?'sur chant':'à plat';
+    if(lj>lc+0.5) add('bloq',`Jambe de force plus large que la console`,`Largeur perpendiculaire au plan du support (profilés ${pos}) : jambe ${escH(D.pt.n)} = ${f(lj,0)} mm &gt; console ${escH(D.pm.n)} = ${f(lc,0)} mm. La jambe doit tenir dans la largeur de la console pour être soudée : prendre une jambe moins large (ou une console plus large).`,'Règle de conception (assemblage soudé)','t'); }
   if(D.typ==='murJ'){ const bj=num('Lt',0.6), L=D.Lm, Js=Gm.B[1], ang=Math.atan2(D.hj,Math.min(bj,L))*180/Math.PI;
     if(bj>L+1e-9) add('bloq','Jambe de force attachée au-delà du bout de la console',`b = ${f(bj,2)} m &gt; L = ${f(L,2)} m : géométrie impossible (calcul fait avec b = L). Prendre 0,5·L ≤ b ≤ L.`,'Règle de conception','t');
     else if(bj<0.5*L-1e-9) add('warn','Jambe de force attachée trop près du mur',`b = ${f(bj,2)} m &lt; 0,5·L = ${f(0.5*L,2)} m : la jambe soulage peu la console (porte-à-faux de ${f(L-bj,2)} m au-delà). Prendre 0,5·L ≤ b ≤ L.`,'Règle de conception','t');
@@ -1046,7 +1047,7 @@ function optimiser(){
       const LM=lst($('fam').value), LT=lst($('fam2').value);
       let best=null;
       for(const t of LT){ if(best&&t.m*1>=best.masse) break;
-        for(const m of LM){ if(D0.typ==='murJ'&&(t.h>m.h||(t.b||0)>(m.b||0))) continue; const D={...D0,pm:m,pt:t}; if(!toutOK(D)) continue;
+        for(const m of LM){ if(D0.typ==='murJ'){ const w=p=>/^LI?$/.test(p.f)?Math.max(p.b,p.h):$('orient').value==='0'?p.b:p.h; if(w(t)>w(m)) continue; } const D={...D0,pm:m,pt:t}; if(!toutOK(D)) continue;
           const V=verifier(D), masse=V.Gm.B.reduce((s,b)=>s+b.p.m*b.L,0); if(!best||masse<best.masse) best={m,t,masse}; break; } }
       if(best){ sol=best; $('prof').value=best.m.n; $('prof2').value=best.t.n; }
     }
@@ -1165,10 +1166,10 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.19"></script>
-<script src="../commun/aide.js?v=2.19"></script>
-<script src="aide-s1.js?v=2.19"></script>
-<script src="../commun/export.js?v=2.19"></script>
+<script src="../commun/replier.js?v=2.20"></script>
+<script src="../commun/aide.js?v=2.20"></script>
+<script src="aide-s1.js?v=2.20"></script>
+<script src="../commun/export.js?v=2.20"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
