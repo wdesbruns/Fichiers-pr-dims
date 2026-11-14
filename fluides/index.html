@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.21"></script>
+<script src="../commun/auth.js?v=2.22"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — H1 Propriétés des fluides</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.21">
-<script src="../commun/acier.js?v=2.21"></script>
-<script src="../commun/fluides.js?v=2.21"></script>
-<script src="../commun/cahier.js?v=2.21"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.22">
+<script src="../commun/acier.js?v=2.22"></script>
+<script src="../commun/fluides.js?v=2.22"></script>
+<script src="../commun/cahier.js?v=2.22"></script>
 <style>.graphes{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}</style>
 </head>
 <body>
@@ -121,8 +121,8 @@ $('fluide').addEventListener('change',changeFluide);
 changeFluide();
 </script>
 <script>CAHIER.remplir({affaire:'affaire'});</script>
-<script src="../commun/replier.js?v=2.21"></script>
-<script src="../commun/aide.js?v=2.21"></script>
+<script src="../commun/replier.js?v=2.22"></script>
+<script src="../commun/aide.js?v=2.22"></script>
 <script>AIDE.init({titre:"Aide – H1 Propriétés des fluides",
   intro:"Choisir le fluide et la température de calcul : H1 donne la masse volumique, les viscosités et la pression de vapeur, utiles pour les pertes de charge (AFT Fathom, calculs manuels), le NPSH des pompes et la masse des tuyauteries.",
   etapes:[{t:"Choisir le fluide",html:"Eau, éthanol, hydrocarbures (essence, naphta, kérosène, gazole, fioul, brut), émulseur, ou fluide saisi.",cible:"#fluide"},
@@ -134,7 +134,7 @@ changeFluide();
     {q:"Viscosité dynamique ou cinématique ?",r:"Dynamique μ (mPa·s = cP) : frottement interne. Cinématique ν = μ/ρ (mm²/s = cSt) : utilisée dans le nombre de Reynolds Re = V·D/ν. Les fiches pétrolières donnent souvent ν à 40 °C."}],
   bulles:{t:"Température du fluide en °C.",alt:"Altitude du site : sert à calculer la pression atmosphérique (NPSH, ébullition).",fluide:"Fluide transporté."},
   liens:[["#rNotes","fluides","Propriétés des fluides"]]});</script>
-<script src="../commun/export.js?v=2.21"></script>
+<script src="../commun/export.js?v=2.22"></script>
 <script>EXPORT.init({code:'H1',titre:'Propriétés des fluides',zones:()=>[...document.querySelectorAll('#res > .card')],donnees:()=>[document.getElementById('form')],nom:()=>document.getElementById('repere').value||document.getElementById('fluide').value});</script>
 </body>
 </html>

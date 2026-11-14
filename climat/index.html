@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.21"></script>
+<script src="../commun/auth.js?v=2.22"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — C1 Hypothèses climatiques et sismiques</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
@@ -12,10 +12,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../commun/lib/leaflet/leaflet.css">
 <script src="../commun/lib/leaflet/leaflet.js"></script>
-<script src="data/zonage.js?v=2.21"></script>
-<script src="data/communes.js?v=2.21"></script>
-<script src="data/departements.js?v=2.21"></script>
-<script src="../commun/coefvent.js?v=2.21"></script>
+<script src="data/zonage.js?v=2.22"></script>
+<script src="data/communes.js?v=2.22"></script>
+<script src="data/departements.js?v=2.22"></script>
+<script src="../commun/coefvent.js?v=2.22"></script>
 <style>
 :root{
   --fip-bleu:#114088; --fip-bleu-fonce:#0b2d63; --fip-rouge:#e30009; --fip-ciel:#0098db;
@@ -283,7 +283,7 @@ svg text{font-family:inherit}
     </div>
     <div>
       <div class="card"><h2>Action sismique — arrêté du 22/10/2010 + NF EN 1998-1 + AN</h2><div id="seismeRes"></div></div>
-      <div class="card"><h2>Spectres de réponse (η = 1, amortissement 5 %)</h2><div id="seismeGraph"></div></div>
+      <div class="card"><h2>Spectres de réponse horizontal et vertical (η = 1, amortissement 5 %)</h2><div id="seismeGraph"></div></div>
       <div class="card"><h2>Éléments non structuraux — F<sub>a</sub> = S<sub>a</sub>·W<sub>a</sub>·γ<sub>a</sub>/q<sub>a</sub> (EN 1998-1 §4.3.5.2)</h2><div id="seismeFa"></div></div>
     </div>
   </div></section>
@@ -357,6 +357,8 @@ const NEIGE={A1:[.45,null],A2:[.45,1],B1:[.55,1],B2:[.55,1.35],C1:[.65,null],C2:
 const NEIGE_ORDRE=Object.keys(NEIGE);
 const AGR={1:.4,2:.7,3:1.1,4:1.6,5:3}, ALEA={1:'Très faible',2:'Faible',3:'Modéré',4:'Moyen',5:'Fort'};
 const GAMMA_I={I:.8,II:1,III:1.2,IV:1.4};
+/* Spectre vertical : [a_vg/a_g, T_B, T_C, T_D] — arrêté du 22/10/2010 art. 4 (valeurs à confirmer sur le texte consolidé) ; S = 1 (EN 1998-1 §3.2.2.3) */
+const VERT={met:[0.8,0.03,0.20,2.5],z5:[0.9,0.15,0.40,2.0]};
 const SOLS={A:[[1,.03,.2,2.5],[1,.15,.4,2]],B:[[1.35,.05,.25,2.5],[1.2,.15,.5,2]],C:[[1.5,.06,.4,2],[1.15,.2,.6,2]],D:[[1.6,.1,.6,1.5],[1.35,.2,.8,2]],E:[[1.8,.08,.45,1.25],[1.4,.15,.5,2]]};
 const EXIG={1:['Aucune exigence','Aucune exigence','Aucune exigence','Aucune exigence'],
  2:['Aucune exigence','Aucune exigence','Eurocode 8 (NF EN 1998-1 + AN)','Eurocode 8 (NF EN 1998-1 + AN)'],
@@ -515,13 +517,15 @@ function calcSeisme(zs,Wcouv,Wbard){
   const spec=([S_,TB,TC,TD])=>({S_,TB,TC,TD,Se:T=>T<=TB?ag*S_*(1+T/TB*1.5):T<=TC?ag*S_*2.5:T<=TD?ag*S_*2.5*TC/T:ag*S_*2.5*TC*TD/(T*T),
     Sd:T=>T<=TB?ag*S_*(2/3+T/TB*(2.5/q-2/3)):T<=TC?ag*S_*2.5/q:T<=TD?Math.max(ag*S_*2.5/q*TC/T,beta*ag):Math.max(ag*S_*2.5/q*TC*TD/(T*T),beta*ag)});
   const sp=sol==='DE'?(()=>{const a=spec(SOLS.D[z5]),b=spec(SOLS.E[z5]);return {S_:Math.max(a.S_,b.S_),TB:Math.min(a.TB,b.TB),TC:Math.max(a.TC,b.TC),TD:Math.max(a.TD,b.TD),Se:T=>Math.max(a.Se(T),b.Se(T)),Sd:T=>Math.max(a.Sd(T),b.Sd(T)),env:[a,b]};})():spec(SOLS[sol][z5]);
-  const {S_,TB,TC,TD,Se,Sd}=sp, avg=(z5?0.9:0.8)*ag;
+  const {S_,TB,TC,TD,Se,Sd}=sp, [rv,TBv,TCv,TDv]=z5?VERT.z5:VERT.met, avg=rv*ag, qv=Math.min(q,1.5);
+  const Sve=T=>T<=TBv?avg*(1+T/TBv*2):T<=TCv?avg*3:T<=TDv?avg*3*TCv/T:avg*3*TCv*TDv/(T*T);                     // EN 1998-1 éq. (3.8) à (3.11), η = 1
+  const Sdv=T=>T<=TBv?avg*(2/3+T/TBv*(2.5/qv-2/3)):T<=TCv?avg*2.5/qv:T<=TDv?Math.max(avg*2.5/qv*TCv/T,beta*avg):Math.max(avg*2.5/qv*TCv*TDv/(T*T),beta*avg); // §3.2.2.5(5), S = 1
   const Ct=OSSATURES.find(o=>o[0]===$('ossature').value)[1], H=num('H'), T1=Ct*Math.pow(H,.75);
   const lam=($('niv').value==='Oui'&&T1<=2*TC)?.85:1, m=num('masse'), Fb=Sd(T1)*m*lam;
   const domaine=T1<=Math.min(4*TC,2)?'T1 ≤ min(4TC ; 2 s) : critère §4.3.3.2.1 respecté':'T1 > min(4TC ; 2 s) : méthode des forces latérales non applicable';
   const fa=['bard','couv'].map((k,i)=>{const zH=num('fa_zH_'+k,1),TaT=num('fa_TaT_'+k,1),qa=num('fa_qa_'+k,2),ga=num('fa_ga_'+k,1),W=i?Wcouv:Wbard;
     const Sa=Math.max(alpha*S_,alpha*S_*(3*(1+zH)/(1+Math.pow(1-TaT,2))-.5));return{k,W,zH,TaT,qa,ga,Sa,Fa:Sa*W*ga/qa}});
-  return{zs,agR,cat,gI,ag,alpha,sol,S:S_,TB,TC,TD,env:sp.env,avg,q,beta,Se,Sd,Sepal:ag*S_*2.5,Sdpal:ag*S_*2.5/q,Ct,H,T1,lam,m,Fb,domaine,fa,
+  return{zs,agR,cat,gI,ag,alpha,sol,S:S_,TB,TC,TD,env:sp.env,avg,rv,TBv,TCv,TDv,qv,Sve,Sdv,q,beta,Se,Sd,Sepal:ag*S_*2.5,Sdpal:ag*S_*2.5/q,Ct,H,T1,lam,m,Fb,domaine,fa,
     exig:EXIG[zs][['I','II','III','IV'].indexOf(cat)]};
 }
 function calcComplexe(k){
@@ -693,6 +697,10 @@ function renderSeisme(Z,E){
    +ligne('Palier élastique S<sub>e</sub> = a<sub>g</sub>·S·2,5',f(E.Sepal,3),'m/s²','§3.2.2.2, éq. (3.3)')
    +ligne('q / β',`${f(E.q,2)} / ${f(E.beta,1)}`,'','§3.2.2.5')
    +ligne('Palier de calcul S<sub>d</sub> = a<sub>g</sub>·S·2,5/q',`${f(E.Sdpal,3)} (${f(E.Sdpal/9.81,3)} g)`,'m/s²','§3.2.2.5, éq. (3.14)',1)
+   +ligne('<b>Spectre vertical</b> : a<sub>vg</sub> = '+f(E.rv,1)+'·a<sub>g</sub>',f(E.avg,3),'m/s²','Arrêté art. 4 ; EN 1998-1 §3.2.2.3')
+   +ligne('Vertical : T<sub>Bv</sub> / T<sub>Cv</sub> / T<sub>Dv</sub> (S = 1)',`${f(E.TBv,2)} / ${f(E.TCv,2)} / ${f(E.TDv,2)}`,'s','Arrêté art. 4 (à confirmer)')
+   +ligne('Vertical : palier élastique S<sub>ve</sub> = 3,0·a<sub>vg</sub>',f(3*E.avg,3),'m/s²','EN 1998-1 éq. (3.8) à (3.11)')
+   +ligne(`Vertical : palier de calcul S<sub>vd</sub> = 2,5·a<sub>vg</sub>/q<sub>v</sub> (q<sub>v</sub> = ${f(E.qv,1)} ≤ 1,5)`,f(2.5*E.avg/E.qv,3),'m/s²','EN 1998-1 §3.2.2.5(5) et (6)',1)
    +ligne('C<sub>t</sub> / H',`${f(E.Ct,3)} / ${f(E.H,1)} m`,'','§4.3.3.2.2 (4.6)')
    +ligne('T<sub>1</sub> = C<sub>t</sub>·H<sup>3/4</sup>',f(E.T1,3),'s','§4.3.3.2.2, éq. (4.6)')
    +ligne('S<sub>d</sub>(T<sub>1</sub>) / λ',`${f(E.Sd(E.T1),3)} / ${f(E.lam,2)}`,'m/s²','§3.2.2.5 ; §4.3.3.2.2(1)')
@@ -700,7 +708,7 @@ function renderSeisme(Z,E){
    +ligne('F<sub>b</sub>/(m·g)',f(E.Fb/(E.m*9.81),4),'','')+'</table>';
   h+=`<div class="msg ${E.domaine.includes('non')?'bad':'ok'}">${esc(E.domaine)} (régularité §4.2.3 non vérifiée ici)</div>`;
   const g25=0.25*9.81, vReq=E.avg>g25;
-  h+=`<div class="msg ${vReq?'warn':'ok'}"><b>Composante verticale</b> : a<sub>vg</sub> = ${E.zs===5?'0,9':'0,8'}·a<sub>g</sub> = ${f(E.avg,2)} m/s² ${vReq?'&gt;':'≤'} 0,25·g = ${f(g25,2)} m/s². ${vReq?'À prendre en compte pour les éléments horizontaux de portée ≥ 20 m, les consoles de plus de 5 m, les éléments précontraints, les poutres portant des poteaux et les structures isolées à la base.':'Non requise (en France métropolitaine, zone 4 comprise, a<sub>vg</sub> reste inférieur à 0,25·g ; seule la zone 5 – Antilles – peut la rendre nécessaire).'} <span class="note">— NF EN 1998-1 §4.3.3.5.2(1) ; a<sub>vg</sub>/a<sub>g</sub> : arrêté du 22/10/2010 art. 4</span></div>`;
+  h+=`<div class="msg ${vReq?'warn':'ok'}"><b>Composante verticale</b> : a<sub>vg</sub> = ${E.zs===5?'0,9':'0,8'}·a<sub>g</sub> = ${f(E.avg,2)} m/s² ${vReq?'&gt;':'≤'} 0,25·g = ${f(g25,2)} m/s². ${vReq?'Calcul de structure : spectre vertical à appliquer aux éléments horizontaux de portée ≥ 20 m, aux consoles de plus de 5 m, aux éléments précontraints, aux poutres portant des poteaux et aux structures isolées à la base (spectre ci-dessous). Supports de tuyauterie courants : non concernés.':'Non requise par §4.3.3.5.2(1) (en France métropolitaine, zone 4 comprise, a<sub>vg</sub> reste inférieur à 0,25·g ; seule la zone 5 – Antilles – peut la rendre nécessaire). Le spectre vertical est donné ci-dessous pour information ou pour une analyse plus complète.'} <span class="note">— NF EN 1998-1 §4.3.3.5.2(1) ; a<sub>vg</sub>/a<sub>g</sub> : arrêté du 22/10/2010 art. 4</span></div>`;
   h+=`<div class="msg ${E.exig.startsWith('Aucune')?'ok':'warn'}"><b>Exigence réglementaire</b> (zone ${E.zs}, catégorie ${E.cat}) : ${esc(E.exig)} <span class="note">— arrêté du 22/10/2010, art. 3-4, à vérifier sur la version consolidée</span></div>`;
   $('seismeRes').innerHTML=h;
   $('seismeGraph').innerHTML=graphSpectre(E);
@@ -715,13 +723,16 @@ function renderSeisme(Z,E){
 }
 function graphSpectre(E){
   const W=560,Hh=300,m={l:52,r:16,t:14,b:38}, Tm=4, N=200, pts=[...Array(N+1)].map((_,i)=>i*Tm/N);
-  const ym=Math.ceil(E.Sepal/9.81*1.1*10)/10||.1, X=t=>m.l+t/Tm*(W-m.l-m.r), Y=v=>Hh-m.b-v/ym*(Hh-m.t-m.b);
+  const ym=Math.ceil(Math.max(E.Sepal,3*E.avg)/9.81*1.1*10)/10||.1, X=t=>m.l+t/Tm*(W-m.l-m.r), Y=v=>Hh-m.b-v/ym*(Hh-m.t-m.b);
   let s=`<svg viewBox="0 0 ${W} ${Hh}" style="width:100%;max-width:600px">`;
   for(let t=0;t<=Tm;t+=.5) s+=`<line x1="${X(t)}" y1="${m.t}" x2="${X(t)}" y2="${Hh-m.b}" stroke="#e1e3e7"/><text x="${X(t)}" y="${Hh-m.b+14}" font-size="10" text-anchor="middle" fill="#5f6670">${f(t,1)}</text>`;
   for(let i=0;i<=5;i++){const v=ym*i/5;s+=`<line x1="${m.l}" y1="${Y(v)}" x2="${W-m.r}" y2="${Y(v)}" stroke="#e1e3e7"/><text x="${m.l-6}" y="${Y(v)+3}" font-size="10" text-anchor="end" fill="#5f6670">${f(v,2)}</text>`}
   s+=`<polyline fill="none" stroke="#0098db" stroke-width="2" points="${pts.map(t=>X(t)+','+Y(E.Se(t)/9.81)).join(' ')}"/>`;
   s+=`<polyline fill="none" stroke="#114088" stroke-width="2.4" points="${pts.map(t=>X(t)+','+Y(E.Sd(t)/9.81)).join(' ')}"/>`;
+  s+=`<polyline fill="none" stroke="#d9822b" stroke-width="1.8" stroke-dasharray="5 3" points="${pts.map(t=>X(t)+','+Y(E.Sve(t)/9.81)).join(' ')}"/><polyline fill="none" stroke="#a35200" stroke-width="2" stroke-dasharray="2 2" points="${pts.map(t=>X(t)+','+Y(E.Sdv(t)/9.81)).join(' ')}"/>`;
   if(E.T1<=Tm){const x=X(E.T1),y=Y(E.Sd(E.T1)/9.81);s+=`<line x1="${x}" y1="${Hh-m.b}" x2="${x}" y2="${y}" stroke="#e30009" stroke-dasharray="4 3"/><circle cx="${x}" cy="${y}" r="4.5" fill="#e30009"/><text x="${x+7}" y="${y-7}" font-size="11" fill="#e30009" font-weight="700">T₁ = ${f(E.T1,2)} s</text>`}
+  s+=`<rect x="${W-190}" y="${m.t+44}" width="172" height="40" fill="#fff" stroke="#e1e3e7"/><line x1="${W-182}" y1="${m.t+57}" x2="${W-160}" y2="${m.t+57}" stroke="#d9822b" stroke-width="1.8" stroke-dasharray="5 3"/><text x="${W-154}" y="${m.t+61}" font-size="11">S<tspan font-size="8" dy="2">ve</tspan><tspan dy="-2">(T)/g vertical élast.</tspan></text>
+   <line x1="${W-182}" y1="${m.t+74}" x2="${W-160}" y2="${m.t+74}" stroke="#a35200" stroke-width="2" stroke-dasharray="2 2"/><text x="${W-154}" y="${m.t+78}" font-size="11">S<tspan font-size="8" dy="2">vd</tspan><tspan dy="-2">(T)/g vertical calcul</tspan></text>`;
   s+=`<rect x="${W-190}" y="${m.t+4}" width="172" height="40" fill="#fff" stroke="#e1e3e7"/><line x1="${W-182}" y1="${m.t+17}" x2="${W-160}" y2="${m.t+17}" stroke="#0098db" stroke-width="2"/><text x="${W-154}" y="${m.t+21}" font-size="11">S<tspan font-size="8" dy="2">e</tspan><tspan dy="-2">(T)/g élastique</tspan></text>
    <line x1="${W-182}" y1="${m.t+34}" x2="${W-160}" y2="${m.t+34}" stroke="#114088" stroke-width="2.4"/><text x="${W-154}" y="${m.t+38}" font-size="11">S<tspan font-size="8" dy="2">d</tspan><tspan dy="-2">(T)/g calcul (q = ${f(E.q,1)})</tspan></text>
    <text x="${(W+m.l)/2}" y="${Hh-6}" font-size="11" text-anchor="middle">T [s]</text><text x="12" y="${Hh/2}" font-size="11" transform="rotate(-90 12 ${Hh/2})" text-anchor="middle">S/g</text></svg>`;
@@ -847,7 +858,8 @@ function renderSyn(Z,V,N,E,cc,cb,CVH={},cp={tot:0}){
     r('Zone de sismicité',E.zs,'','Décret n°2010-1255',Z.ss)+r('Aléa sismique',ALEA[E.zs],'','Décret n°2010-1255 (art. R.563-4 C. env.)')+r('Catégorie d\'importance / γ<sub>I</sub>',`${E.cat} / ${f(E.gI,1)}`,'','Arrêté art. 1-2')
     +r('a<sub>gR</sub>',f(E.agR,2),'m/s²','Arrêté art. 4')+r('a<sub>g</sub> = γ<sub>I</sub>·a<sub>gR</sub>',f(E.ag,3),'m/s²','EN 1998-1 §3.2.1','',1)+r('Classe de sol / S',`${E.sol} / ${f(E.S,2)}`,'','EN 1998-1 Tab. 3.1-3.2')
     +r('T<sub>B</sub> / T<sub>C</sub> / T<sub>D</sub>',`${f(E.TB,2)} / ${f(E.TC,2)} / ${f(E.TD,2)}`,'s','Arrêté art. 4')+r('Coefficient de comportement q',f(E.q,2),'','EN 1998-1 §3.2.2.5')
-    +r('Palier du spectre de calcul S<sub>d</sub>',f(E.Sdpal,3),'m/s²','§3.2.2.5, éq. (3.14)','',1)+r('Période fondamentale estimée T<sub>1</sub>',f(E.T1,3),'s','§4.3.3.2.2',E.domaine)
+    +r('Palier du spectre de calcul S<sub>d</sub>',f(E.Sdpal,3),'m/s²','§3.2.2.5, éq. (3.14)','',1)
+    +r('Spectre vertical : a<sub>vg</sub> / T<sub>Bv</sub>–T<sub>Cv</sub>–T<sub>Dv</sub>',`${f(E.avg,3)} m/s² / ${f(E.TBv,2)}–${f(E.TCv,2)}–${f(E.TDv,2)} s`,'','Arrêté 22/10/2010 art. 4 ; EN 1998-1 §3.2.2.3',E.avg>0.25*9.81?'requis (structure)':'non requis §4.3.3.5.2')+r(`Palier vertical de calcul S<sub>vd</sub> (q<sub>v</sub> = ${f(E.qv,1)})`,f(2.5*E.avg/E.qv,3),'m/s²','§3.2.2.5(5)','')+r('Période fondamentale estimée T<sub>1</sub>',f(E.T1,3),'s','§4.3.3.2.2',E.domaine)
     +r('Effort tranchant à la base F<sub>b</sub> (indicatif)',f(E.Fb,1),'kN','§4.3.3.2.2, éq. (4.5)')+r('Force sismique sur le bardage F<sub>a</sub>',f(E.fa[0].Fa,4),'kN/m²','§4.3.5.2, éq. (4.24)')
     +r('Force sismique sur la couverture F<sub>a</sub>',f(E.fa[1].Fa,4),'kN/m²','§4.3.5.2, éq. (4.24)')+r('Exigence réglementaire',E.exig,'','Arrêté art. 3-4','',1));
   if($('nCouv').checked||$('nBard').checked||$('nPlan').checked) h+=T('Complexes et planchers – charges (EN 1991-1-1)',
@@ -856,7 +868,7 @@ function renderSyn(Z,V,N,E,cc,cb,CVH={},cp={tot:0}){
     +($('nPlan').checked?r(`Plancher « ${esc($('plNom').value)} » – charges permanentes G<sub>k</sub>`,`${f(cp.tot,3)} kN/m² = ${f(cp.tot*100,1)}`,'daN/m²','EN 1991-1-1 §5.2','',1)
       +r('Plancher – charge d\'exploitation q<sub>k</sub> / Q<sub>k</sub>',`${f(num('plq',0)+(+$('plCl').value),2)} kN/m² / ${f(num('plQ',0),1)} kN`,'','EN 1991-1-1 §6.3.1.2 + AN','',1):''));
   h+=(CVH.prof||'')+(CVH.bat||'')+(CVH.ti||'')+(CVH.mi||'');
-  if(V&&E) h+=`<div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><h2>Profil q<sub>p</sub>(z)</h2>${graphVent(V)}</div><div><h2>Spectres de réponse</h2>${graphSpectre(E)}</div></div>`;
+  if(V&&E) h+=`<div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><h2>Profil q<sub>p</sub>(z)</h2>${graphVent(V)}</div><div><h2>Spectres de réponse (H et V)</h2>${graphSpectre(E)}</div></div>`;
   h+=`<div class="note">Zones issues de la base de zonage du classeur « ${esc(ZONAGE.source)} » (vent/neige : par canton ; séisme : par commune), à confirmer sur les textes en vigueur. Outil d'aide : les résultats doivent être vérifiés par l'ingénieur ; il ne dispense pas de la lecture des textes. Non traités : accumulations de neige (obstacles, noues, acrotères), procédure 2 d'orographie (obstacle isolé : valeur à saisir), cas cycloniques des DROM.</div>`;
   $('syn').innerHTML=h;
   $('phInfo').innerHTML=`Affaire : ${esc($('affaire').value)||'—'} · ${esc($('phase').value)||''} · Date : ${dt||new Date().toLocaleDateString('fr-FR')} · Rédacteur : ${esc($('auteur').value)||'—'}`;
@@ -989,12 +1001,12 @@ $('versS1').onclick=()=>{
   catch(e){alert('Stockage indisponible sur ce navigateur.');}
 };
 </script>
-<script src="../commun/cahier.js?v=2.21"></script>
+<script src="../commun/cahier.js?v=2.22"></script>
 <script>CAHIER.remplir({affaire:'affaire',auteur:'realise'});</script>
-<script src="../commun/replier.js?v=2.21"></script>
-<script src="../commun/aide.js?v=2.21"></script>
-<script src="aide-c1.js?v=2.21"></script>
-<script src="../commun/export.js?v=2.21"></script>
+<script src="../commun/replier.js?v=2.22"></script>
+<script src="../commun/aide.js?v=2.22"></script>
+<script src="aide-c1.js?v=2.22"></script>
+<script src="../commun/export.js?v=2.22"></script>
 <script>EXPORT.init({code:'C1',titre:'Hypothèses climatiques, sismiques et complexes',
   zones:()=>[...document.querySelectorAll('#syn > .card')].concat(['ventRes','neigeRes','neigeToit','seismeRes','seismeGraph','seismeFa'].concat([['cpxCouv','nCouv'],['cpxBard','nBard'],['cpxPlan','nPlan']].filter(([,c])=>document.getElementById(c).checked).map(([z])=>z)).map(id=>document.getElementById(id).closest('.card'))),
   donnees:()=>[document.querySelector('.panneau'),...document.querySelectorAll('main .card')],
