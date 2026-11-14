@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.20"></script>
+<script src="../commun/auth.js?v=2.21"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — C1 Hypothèses climatiques et sismiques</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
@@ -12,10 +12,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../commun/lib/leaflet/leaflet.css">
 <script src="../commun/lib/leaflet/leaflet.js"></script>
-<script src="data/zonage.js?v=2.20"></script>
-<script src="data/communes.js?v=2.20"></script>
-<script src="data/departements.js?v=2.20"></script>
-<script src="../commun/coefvent.js?v=2.20"></script>
+<script src="data/zonage.js?v=2.21"></script>
+<script src="data/communes.js?v=2.21"></script>
+<script src="data/departements.js?v=2.21"></script>
+<script src="../commun/coefvent.js?v=2.21"></script>
 <style>
 :root{
   --fip-bleu:#114088; --fip-bleu-fonce:#0b2d63; --fip-rouge:#e30009; --fip-ciel:#0098db;
@@ -268,9 +268,10 @@ svg text{font-family:inherit}
     <div class="card">
       <h2>Données séisme</h2>
       <div class="row">
-        <div><label>Catégorie d'importance</label><select id="catI"><option>I</option><option selected>II</option><option>III</option><option>IV</option></select></div>
-        <div><label>Classe de sol</label><select id="sol"><option>A</option><option selected>B</option><option>C</option><option>D</option><option>E</option></select></div>
+        <div><label>Catégorie d'importance du bâtiment</label><select id="catI"><option value="I">I – γI 0,8 : sans activité humaine de longue durée</option><option value="II" selected>II – γI 1,0 : courant (industrie, bureaux ≤ 300 pers., ≤ 28 m)</option><option value="III">III – γI 1,2 : ERP cat. 1 à 3, &gt; 300 pers., &gt; 28 m, scolaire</option><option value="IV">IV – γI 1,4 : stratégique (secours, défense, énergie, eau potable)</option></select></div>
+        <div><label>Classe de sol</label><select id="sol"><option value="A">A – rocher (vs,30 &gt; 800 m/s)</option><option value="B" selected>B – dépôts raides, sables / argiles très denses (360 à 800 m/s)</option><option value="C">C – dépôts profonds moyennement denses (180 à 360 m/s)</option><option value="D">D – sols lâches à moyennement denses (&lt; 180 m/s)</option><option value="E">E – alluvions superficielles (5 à 20 m) sur rocher</option><option value="DE">Inconnue : enveloppe des classes D et E (sans étude de sol)</option></select></div>
       </div>
+      <div class="msg info small" id="seismeAide">Catégorie d'importance (arrêté du 22/10/2010, art. 2) : I bâtiments sans activité humaine nécessitant un séjour de longue durée ; II habitations individuelles, ERP de 4<sup>e</sup>-5<sup>e</sup> catégorie, bâtiments d'habitation, de bureaux ou industriels recevant au plus 300 personnes et de hauteur ≤ 28 m ; III ERP de 1<sup>re</sup> à 3<sup>e</sup> catégorie, bâtiments &gt; 28 m ou recevant plus de 300 personnes, établissements scolaires et sanitaires ; IV bâtiments indispensables à la sécurité civile, à la défense, au maintien de l'ordre, aux communications, à la production d'énergie ou d'eau potable. Classe de sol : sans étude de sol, retenir l'enveloppe D/E — E donne le plus grand coefficient de sol S (plateau du spectre et éléments non structuraux), mais D, avec un palier T<sub>C</sub> plus long, gouverne pour les périodes plus longues ; S1 et S2 (sols liquéfiables, argiles molles) imposent une étude spécifique.</div>
       <div class="row">
         <div><label>Coefficient de comportement q</label><input id="qcomp" type="number" step="0.1" value="2"></div>
         <div><label>Masse sismique m (t)</label><input id="masse" type="number" step="1" value="100"></div>
@@ -278,7 +279,7 @@ svg text{font-family:inherit}
       <label>Type d'ossature (estimation de T<sub>1</sub>)</label><select id="ossature"></select>
       <label>Bâtiment de plus de 2 niveaux ?</label><select id="niv"><option>Non</option><option>Oui</option></select>
       <label>Forçage de la zone de sismicité (facultatif)</label><select id="fSeisme"><option value="">— base de zonage —</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
-      <div class="note">Catégorie : arrêté du 22/10/2010, art. 2. Classe de sol : NF EN 1998-1 §3.1.2, Tab. 3.1 (étude de sol). q : §4.3.3.4 et chapitres matériaux, à justifier. Masse : combinaison G + ψ<sub>2</sub>·Q.</div>
+      <div class="note">Catégorie : arrêté du 22/10/2010, art. 2. Classe de sol : NF EN 1998-1 §3.1.2, Tab. 3.1 (étude de sol). q : §4.3.3.4 et chapitres matériaux, à justifier (ossature acier peu dissipative, classe DCL : q = 1,5 en général, NF EN 1998-1 §6.1.2, Tab. 6.1 + AN). Masse : combinaison G + ψ<sub>2</sub>·Q.</div>
     </div>
     <div>
       <div class="card"><h2>Action sismique — arrêté du 22/10/2010 + NF EN 1998-1 + AN</h2><div id="seismeRes"></div></div>
@@ -510,15 +511,17 @@ function calcNeige(zn){
 }
 function calcSeisme(zs,Wcouv,Wbard){
   const agR=AGR[zs], cat=$('catI').value, gI=GAMMA_I[cat], ag=gI*agR, alpha=ag/9.81;
-  const sol=$('sol').value, [S_,TB,TC,TD]=SOLS[sol][zs===5?1:0], q=num('qcomp',1.5), beta=.2;
-  const Se=T=>T<=TB?ag*S_*(1+T/TB*1.5):T<=TC?ag*S_*2.5:T<=TD?ag*S_*2.5*TC/T:ag*S_*2.5*TC*TD/(T*T);
-  const Sd=T=>T<=TB?ag*S_*(2/3+T/TB*(2.5/q-2/3)):T<=TC?ag*S_*2.5/q:T<=TD?Math.max(ag*S_*2.5/q*TC/T,beta*ag):Math.max(ag*S_*2.5/q*TC*TD/(T*T),beta*ag);
+  const sol=$('sol').value, q=num('qcomp',1.5), beta=.2, z5=zs===5?1:0;
+  const spec=([S_,TB,TC,TD])=>({S_,TB,TC,TD,Se:T=>T<=TB?ag*S_*(1+T/TB*1.5):T<=TC?ag*S_*2.5:T<=TD?ag*S_*2.5*TC/T:ag*S_*2.5*TC*TD/(T*T),
+    Sd:T=>T<=TB?ag*S_*(2/3+T/TB*(2.5/q-2/3)):T<=TC?ag*S_*2.5/q:T<=TD?Math.max(ag*S_*2.5/q*TC/T,beta*ag):Math.max(ag*S_*2.5/q*TC*TD/(T*T),beta*ag)});
+  const sp=sol==='DE'?(()=>{const a=spec(SOLS.D[z5]),b=spec(SOLS.E[z5]);return {S_:Math.max(a.S_,b.S_),TB:Math.min(a.TB,b.TB),TC:Math.max(a.TC,b.TC),TD:Math.max(a.TD,b.TD),Se:T=>Math.max(a.Se(T),b.Se(T)),Sd:T=>Math.max(a.Sd(T),b.Sd(T)),env:[a,b]};})():spec(SOLS[sol][z5]);
+  const {S_,TB,TC,TD,Se,Sd}=sp, avg=(z5?0.9:0.8)*ag;
   const Ct=OSSATURES.find(o=>o[0]===$('ossature').value)[1], H=num('H'), T1=Ct*Math.pow(H,.75);
   const lam=($('niv').value==='Oui'&&T1<=2*TC)?.85:1, m=num('masse'), Fb=Sd(T1)*m*lam;
   const domaine=T1<=Math.min(4*TC,2)?'T1 ≤ min(4TC ; 2 s) : critère §4.3.3.2.1 respecté':'T1 > min(4TC ; 2 s) : méthode des forces latérales non applicable';
   const fa=['bard','couv'].map((k,i)=>{const zH=num('fa_zH_'+k,1),TaT=num('fa_TaT_'+k,1),qa=num('fa_qa_'+k,2),ga=num('fa_ga_'+k,1),W=i?Wcouv:Wbard;
     const Sa=Math.max(alpha*S_,alpha*S_*(3*(1+zH)/(1+Math.pow(1-TaT,2))-.5));return{k,W,zH,TaT,qa,ga,Sa,Fa:Sa*W*ga/qa}});
-  return{zs,agR,cat,gI,ag,alpha,sol,S:S_,TB,TC,TD,q,beta,Se,Sd,Sepal:ag*S_*2.5,Sdpal:ag*S_*2.5/q,Ct,H,T1,lam,m,Fb,domaine,fa,
+  return{zs,agR,cat,gI,ag,alpha,sol,S:S_,TB,TC,TD,env:sp.env,avg,q,beta,Se,Sd,Sepal:ag*S_*2.5,Sdpal:ag*S_*2.5/q,Ct,H,T1,lam,m,Fb,domaine,fa,
     exig:EXIG[zs][['I','II','III','IV'].indexOf(cat)]};
 }
 function calcComplexe(k){
@@ -685,8 +688,8 @@ function renderSeisme(Z,E){
    +ligne('Catégorie d\'importance / γ<sub>I</sub>',`${E.cat} / ${f(E.gI,1)}`,'','Arrêté art. 2 ; EN 1998-1 §4.2.5')
    +ligne('a<sub>g</sub> = γ<sub>I</sub>·a<sub>gR</sub>',f(E.ag,3),'m/s²','EN 1998-1 §3.2.1(3)',1)
    +ligne('a<sub>g</sub>/g',f(E.alpha,4),'','§3.2.2.5, §4.3.5.2')
-   +ligne('Classe de sol / S',`${E.sol} / ${f(E.S,2)}`,'','Arrêté art. 4 ; EN 1998-1 Tab. 3.2')
-   +ligne('T<sub>B</sub> / T<sub>C</sub> / T<sub>D</sub>',`${f(E.TB,2)} / ${f(E.TC,2)} / ${f(E.TD,2)}`,'s','Arrêté art. 4')
+   +ligne('Classe de sol / S',E.env?`enveloppe D/E / ${f(E.S,2)} (D : ${f(E.env[0].S_,2)} ; E : ${f(E.env[1].S_,2)})`:`${E.sol} / ${f(E.S,2)}`,'','Arrêté art. 4 ; EN 1998-1 Tab. 3.2')
+   +ligne('T<sub>B</sub> / T<sub>C</sub> / T<sub>D</sub>',E.env?`D : ${f(E.env[0].TB,2)} / ${f(E.env[0].TC,2)} / ${f(E.env[0].TD,2)} ; E : ${f(E.env[1].TB,2)} / ${f(E.env[1].TC,2)} / ${f(E.env[1].TD,2)}`:`${f(E.TB,2)} / ${f(E.TC,2)} / ${f(E.TD,2)}`,'s','Arrêté art. 4'+(E.env?' (spectre = maximum des deux)':''))
    +ligne('Palier élastique S<sub>e</sub> = a<sub>g</sub>·S·2,5',f(E.Sepal,3),'m/s²','§3.2.2.2, éq. (3.3)')
    +ligne('q / β',`${f(E.q,2)} / ${f(E.beta,1)}`,'','§3.2.2.5')
    +ligne('Palier de calcul S<sub>d</sub> = a<sub>g</sub>·S·2,5/q',`${f(E.Sdpal,3)} (${f(E.Sdpal/9.81,3)} g)`,'m/s²','§3.2.2.5, éq. (3.14)',1)
@@ -696,6 +699,8 @@ function renderSeisme(Z,E){
    +ligne('F<sub>b</sub> = S<sub>d</sub>(T<sub>1</sub>)·m·λ (indicatif)',f(E.Fb,1),'kN','§4.3.3.2.2, éq. (4.5)',1)
    +ligne('F<sub>b</sub>/(m·g)',f(E.Fb/(E.m*9.81),4),'','')+'</table>';
   h+=`<div class="msg ${E.domaine.includes('non')?'bad':'ok'}">${esc(E.domaine)} (régularité §4.2.3 non vérifiée ici)</div>`;
+  const g25=0.25*9.81, vReq=E.avg>g25;
+  h+=`<div class="msg ${vReq?'warn':'ok'}"><b>Composante verticale</b> : a<sub>vg</sub> = ${E.zs===5?'0,9':'0,8'}·a<sub>g</sub> = ${f(E.avg,2)} m/s² ${vReq?'&gt;':'≤'} 0,25·g = ${f(g25,2)} m/s². ${vReq?'À prendre en compte pour les éléments horizontaux de portée ≥ 20 m, les consoles de plus de 5 m, les éléments précontraints, les poutres portant des poteaux et les structures isolées à la base.':'Non requise (en France métropolitaine, zone 4 comprise, a<sub>vg</sub> reste inférieur à 0,25·g ; seule la zone 5 – Antilles – peut la rendre nécessaire).'} <span class="note">— NF EN 1998-1 §4.3.3.5.2(1) ; a<sub>vg</sub>/a<sub>g</sub> : arrêté du 22/10/2010 art. 4</span></div>`;
   h+=`<div class="msg ${E.exig.startsWith('Aucune')?'ok':'warn'}"><b>Exigence réglementaire</b> (zone ${E.zs}, catégorie ${E.cat}) : ${esc(E.exig)} <span class="note">— arrêté du 22/10/2010, art. 3-4, à vérifier sur la version consolidée</span></div>`;
   $('seismeRes').innerHTML=h;
   $('seismeGraph').innerHTML=graphSpectre(E);
@@ -979,17 +984,17 @@ $('versS1').onclick=()=>{
   const o={lieu:(c?c.n+' ('+c.d+')':'')+' – alt. '+f(num('alt'),0)+' m', date:new Date().toISOString(),
     vent:V?{cfFam:CV.cfFamilles(),zone:Z.zv,vb:V.vb,rho:V.rho,z0:V.t.z0,zmin:V.t.zmin,kr:V.kr,kI:V.t.kI,co:V.co,coMode:$('coMode').value,dAc:$('coMode').value==='p1'&&S.oro?S.oro.dAc??null:null,cat:V.t.id}:null,
     neige:N?{zone:Z.zn,sk:N.sk,sAd:N.sAd,alt:N.A}:null,
-    seisme:E?{zone:E.zs,ag:E.ag,alpha:E.alpha,S:E.S,cat:E.cat,sol:E.sol}:null};
+    seisme:E?{avg:E.avg,zone:E.zs,ag:E.ag,alpha:E.alpha,S:E.S,cat:E.cat,sol:E.sol}:null};
   try{localStorage.setItem('fip.climat',JSON.stringify(o));$('versS1').textContent='✓ Envoyé vers S1';setTimeout(()=>$('versS1').textContent='➜ Supports S1',2500);}
   catch(e){alert('Stockage indisponible sur ce navigateur.');}
 };
 </script>
-<script src="../commun/cahier.js?v=2.20"></script>
+<script src="../commun/cahier.js?v=2.21"></script>
 <script>CAHIER.remplir({affaire:'affaire',auteur:'realise'});</script>
-<script src="../commun/replier.js?v=2.20"></script>
-<script src="../commun/aide.js?v=2.20"></script>
-<script src="aide-c1.js?v=2.20"></script>
-<script src="../commun/export.js?v=2.20"></script>
+<script src="../commun/replier.js?v=2.21"></script>
+<script src="../commun/aide.js?v=2.21"></script>
+<script src="aide-c1.js?v=2.21"></script>
+<script src="../commun/export.js?v=2.21"></script>
 <script>EXPORT.init({code:'C1',titre:'Hypothèses climatiques, sismiques et complexes',
   zones:()=>[...document.querySelectorAll('#syn > .card')].concat(['ventRes','neigeRes','neigeToit','seismeRes','seismeGraph','seismeFa'].concat([['cpxCouv','nCouv'],['cpxBard','nBard'],['cpxPlan','nPlan']].filter(([,c])=>document.getElementById(c).checked).map(([z])=>z)).map(id=>document.getElementById(id).closest('.card'))),
   donnees:()=>[document.querySelector('.panneau'),...document.querySelectorAll('main .card')],
