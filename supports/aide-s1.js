@@ -14,7 +14,7 @@ AIDE.init({
   ],
   liens: [["#rRatios", "taux", "Taux de travail et couleurs"], ["#rRatios", "resistance", "Résistance des sections"], ["#rBarres", "flambement", "Flambement"], ["#rBarres", "torsion", "Torsion et gauchissement"],
     ["#rDDC", "combinaisons", "Combinaisons d'actions"], ["#rFix", "assemblages", "Boulons, tiges, chevilles"], ["#tuyaux", "supportage", "Glissant, guidé, point fixe"], ["#rEntraxes", "entraxes", "Entraxes"],
-    ["#cT", "charges", "Les actions G, Q, S, W, T, E"], ["#qp", "vent", "Vent : q_p"], ["#platine", "platines", "Platines semi-rigides"], ["#rData", "modelisation", "Modèle de calcul S1"], ["#vFace", "deplacements", "Déplacements (ELS)"]],
+    ["#cT", "charges", "Les actions G, Q, S, W, T, E"], ["#qp", "vent", "Vent : q_p"], ["#platine", "platines", "Platines semi-rigides"], ["#rData", "modelisation", "Modèle de calcul S1"], ["#vDiag", "modelisation", "Diagrammes N, V, M"], ["#vFace", "deplacements", "Déplacements (ELS)"]],
   faq: [
     { q: "Que mettre dans « portée » ?", r: "La longueur de tuyauterie reprise par ce support : en général la distance entre deux supports (la moitié de chaque côté). Pour un support entre deux portées différentes L₁ et L₂, prendre (L₁ + L₂)/2. La calculette T1 donne la portée admissible du tuyau." },
     { q: "Glissant, guidé ou point fixe : que choisir ?", r: "<b>Glissant</b> : le tuyau est posé et peut bouger dans tous les sens horizontaux (frottement μ·G). <b>Guidé</b> : il peut glisser dans son axe mais est bloqué latéralement (effort F<sub>y</sub> à saisir si connu). <b>Point fixe</b> : il est bloqué dans toutes les directions ; les efforts viennent de l'étude de flexibilité, ou de l'estimation proposée par S1. Sur un montant vertical, un tuyau ne peut pas être glissant (il tomberait)." },
@@ -26,6 +26,8 @@ AIDE.init({
     { q: "Quelle valeur de frottement μ ?", r: "0,3 pour acier sur acier (cas courant, prudent), 0,1 avec patin PTFE (téflon). 0 seulement si le tuyau est libre." },
     { q: "Qu'est-ce que le déplacement limite L/150 ?", r: "Le support ne doit pas trop se déformer sous les charges de service : déplacement au point d'appui du tuyau ≤ min(L/150 ; 5 mm), L étant la longueur de la barre. Ces limites sont modifiables dans « Critère ELS »." },
     { q: "Pourquoi les platines semi-rigides ?", r: "Une platine chevillée n'est jamais parfaitement encastrée. S1 la modélise par un ressort (S<sub>j</sub> = 10·EI/L) : les déplacements sont plus grands que pour un encastrement parfait, ce qui est prudent." },
+    { q: "Comment lire les diagrammes N, V, M et la déformée ?", r: "Carte « Diagrammes » : choisir l'effort (N, V, M dans le plan de la vue de face ; V<sub>x</sub>, M<sub>h</sub> hors plan, c'est-à-dire dus aux efforts le long des tuyaux ; T torsion). Par défaut, la combinaison ELU affichée (★) est celle qui donne le taux maximal, et la combinaison ELS est celle du déplacement maximal ; les menus permettent d'en choisir une autre. Les valeurs sont données aux extrémités et au maximum de chaque barre ; le tableau donne les maxima dans les axes du profilé, pour comparaison avec Robot. La déformée passe automatiquement en vue oblique quand le déplacement le long des tuyaux (X) domine." },
+    { q: "À quoi sert le bouton « 📐 Dessin industriel » ?", r: "Il remplace les vues schématiques par une planche de plan (A3 ou A4 paysage) : vues de face, de côté et de dessus en projection européenne, à une échelle normalisée (1:5, 1:10, 1:20…), faces cachées supprimées, cotation ISO, repères, nomenclature et cartouche. Les tuyauteries sont des pièces voisines (trait mixte fin à deux tirets). « 🖨 Planche à l'échelle » imprime la planche seule au bon format, à l'échelle réelle. Les longueurs de la nomenclature sont prises entre axes du modèle : longueurs de débit à confirmer en fabrication. Le cartouche est provisoire en attendant le cartouche FIP." },
     { q: "Que faire des efforts de la descente de charges ?", r: "Les transmettre au génie civil (chevilles, platines, massifs) ou au charpentier (poutre existante). Les enveloppes donnent la valeur la plus défavorable de chaque composante (sécuritaire). Pour le choix des chevilles, utiliser les efforts par fixation de la carte « Fixations »." },
   ],
   bulles: {
@@ -44,6 +46,9 @@ AIDE.init({
     fa1: "Entraxes des 4 fixations de la platine, en mm (a₁ le long de X, a₂ dans l'autre direction).",
     crAng: "Pente de la poutre existante (toiture). En travers (panne) ou le long du profilé (arbalétrier) : dans ce dernier cas le poids fait glisser les crapauds.",
     crT: "Résistance en traction d'un crapaud, à lire dans le catalogue du fabricant.",
+    crType: "Crapaud maison (boulon précontraint + plat ou rond soudé sur la platine) : glissement vérifié par frottement (EN 1993-1-8 §3.9). Crapaud catalogue : valeurs du fabricant.",
+    crProf: "Profilé existant sur lequel on se crapaute (dessiné en 2D et en 3D).",
+    eMur: "Épaisseur du mur traversé par les tiges filetées (dessinée en 2D et en 3D).",
     crV: "Résistance au glissement d'un crapaud le long de la poutre (frottement), à lire dans le catalogue du fabricant. C'est souvent le point faible.",
     tD: "Diamètre et classe des tiges filetées traversantes (M12 classe 8.8 par défaut).",
     cT: "Frottement du tuyau sur le support quand il se dilate (μ·G) et efforts de dilatation des points fixes.",
