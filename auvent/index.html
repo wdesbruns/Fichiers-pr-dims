@@ -4,27 +4,27 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.85"></script>
+<script src="../commun/auth.js?v=2.91"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — A1 Toiture isolée (auvent)</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.85">
-<script src="../commun/apps.js?v=2.85"></script>
-<script src="../commun/cahier.js?v=2.85"></script>
-<script src="../commun/data/profils.js?v=2.85"></script>
-<script src="../commun/data/tuyauterie.js?v=2.85"></script>
-<script src="../commun/data/sadef.js?v=2.85"></script>
-<script src="../commun/acier.js?v=2.85"></script>
-<script src="../commun/coefvent.js?v=2.85"></script>
-<script src="../commun/barres3d.js?v=2.85"></script>
-<script src="../commun/charges.js?v=2.85"></script>
-<script src="../commun/notes.js?v=2.85"></script>
-<script src="../commun/ident.js?v=2.85"></script>
-<script src="../commun/tendues.js?v=2.85"></script>
-<script src="../commun/portique.js?v=2.85"></script>
-<script src="../commun/topo.js?v=2.85"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.91">
+<script src="../commun/apps.js?v=2.91"></script>
+<script src="../commun/cahier.js?v=2.91"></script>
+<script src="../commun/data/profils.js?v=2.91"></script>
+<script src="../commun/data/tuyauterie.js?v=2.91"></script>
+<script src="../commun/data/sadef.js?v=2.91"></script>
+<script src="../commun/acier.js?v=2.91"></script>
+<script src="../commun/coefvent.js?v=2.91"></script>
+<script src="../commun/barres3d.js?v=2.91"></script>
+<script src="../commun/charges.js?v=2.91"></script>
+<script src="../commun/notes.js?v=2.91"></script>
+<script src="../commun/ident.js?v=2.91"></script>
+<script src="../commun/tendues.js?v=2.91"></script>
+<script src="../commun/portique.js?v=2.91"></script>
+<script src="../commun/topo.js?v=2.91"></script>
 <style>
   .prs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
   .fig svg{width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:6px}
@@ -506,10 +506,10 @@ const ok=charger(); if(!ok){ repC1(); } else { $('srcC').innerHTML='Valeurs enre
 document.querySelectorAll('#form input, #form select').forEach(el=>el.addEventListener('change',()=>{ if(el.id==='casAff') return; calc(); }));
 calc();
 </script>
-<script src="../commun/replier.js?v=2.85"></script>
-<script src="../commun/export.js?v=2.85"></script>
+<script src="../commun/replier.js?v=2.91"></script>
+<script src="../commun/export.js?v=2.91"></script>
 <script>EXPORT.init({code:'A1',titre:'Toiture isolée (auvent) – prédimensionnement',zones:()=>[...document.querySelectorAll('#res > .card')],donnees:()=>[document.getElementById('form')],affaire:()=>IDENT.lire(),nom:()=>{ const K=IDENT.lire(); return K.doc||K.num||'auvent'; }});</script>
-<script src="../commun/aide.js?v=2.85"></script>
+<script src="../commun/aide.js?v=2.91"></script>
 <script>AIDE.init({titre:"Aide – A1 Toiture isolée (auvent)",manuel:"a1",intro:"A1 prédimensionne le portique courant d'une toiture isolée (auvent, préau, abri) à une travée, mono ou bi-pente, à pieds articulés, avec jarrets : charges de G1 et C1, combinaisons NF EN 1990, analyse élastique avec α<sub>cr</sub>, imperfections et amplification (§5.2, §5.3), vérifications NF EN 1993-1-1, pannes, flèches et descente de charges (phase APS/APD).",
   etapes:[{t:"Identification",html:"Champs de la trame (affaire, client, repère, n° de note, indice, phase, réalisé / contrôlé / approuvé), saisis dans le module et repris dans le cartouche de la note ; bouton de reprise de l'affaire enregistrée.",cible:"#cIdent"},
     {t:"Géométrie",html:"Mono ou bi-pente, portée (≤ 20 m), hauteur des poteaux, pente (≤ 15 %), entraxe (≤ 12 m) et nombre de portiques (≥ 4 : pannes continues).",cible:"#cGeo"},

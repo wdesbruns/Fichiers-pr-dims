@@ -4,22 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.85"></script>
+<script src="../commun/auth.js?v=2.91"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — CS Cahier de supportage</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.85">
-<script src="../commun/acier.js?v=2.85"></script>
-<script src="../commun/cahier.js?v=2.85"></script>
-<script src="../commun/pictos-s1.js?v=2.85"></script>
-<script src="../commun/notes.js?v=2.85"></script>
-<script src="../commun/ident.js?v=2.85"></script>
-<script src="../commun/data/gabarit-a3.js?v=2.85"></script>
-<script src="../commun/data/gabarit-a2.js?v=2.85"></script>
-<script src="../commun/dessin.js?v=2.85"></script>
-<script src="../commun/topo.js?v=2.85"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.91">
+<script src="../commun/acier.js?v=2.91"></script>
+<script src="../commun/cahier.js?v=2.91"></script>
+<script src="../commun/pictos-s1.js?v=2.91"></script>
+<script src="../commun/notes.js?v=2.91"></script>
+<script src="../commun/ident.js?v=2.91"></script>
+<script src="../commun/data/gabarit-a3.js?v=2.91"></script>
+<script src="../commun/data/gabarit-a2.js?v=2.91"></script>
+<script src="../commun/dessin.js?v=2.91"></script>
+<script src="../commun/topo.js?v=2.91"></script>
 <style>
   .picto{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;border:1px solid var(--line);border-radius:6px;padding:2px 8px 2px 2px;background:#fff;font-size:12.5px;cursor:default}
   .picto.choix{cursor:pointer;border-color:#1f6fd1}.picto svg{width:44px;height:35px}.picto.mini{padding:0;border:0;background:none}.picto.mini svg{width:30px;height:24px}
@@ -122,7 +122,7 @@
   <div class="printhead"><img src="../commun/img/logo-fip.png" alt="FIP"><strong id="phTitre">Cahier de supportage</strong><br><span id="phInfo"></span></div>
   <div class="card noprint" id="cGestion"><h2>Supports du cahier</h2>
     <div class="actions" style="margin-top:0">
-      <a href="../supports/?v=2.85"><button type="button" title="Créer et calculer un support type dans S1, puis « Ajouter au cahier »">➕ Type calculé (S1)</button></a>
+      <a href="../supports/?v=2.91"><button type="button" title="Créer et calculer un support type dans S1, puis « Ajouter au cahier »">➕ Type calculé (S1)</button></a>
       <button class="sec" id="addNC" type="button" title="Réserver un type (quantités, repères) à calculer plus tard dans S1">➕ Type à calculer</button>
       <button class="sec" id="addSPE" type="button" title="Support spécial dessiné à part (AutoCAD, Plant 3D, Advance Steel)">➕ Support spécial</button>
       <button class="sec" id="recalc" type="button">⟳ Recalculer tout</button>
@@ -271,6 +271,7 @@ async function recalculer0(avecImages){
     for(const c of T.configs){ $('etat').innerHTML=`<div class="msg info">⏳ Calcul ${++i} / ${nTot} : ${h(repere(T,c))}…</div>`;
       A.appliquerCotes({...T.cotes0,...(c.cotes||{})}); c.resume=A.resume(); }
     T.resume=T.configs[0].resume;
+    A.appliquerCotes({...T.cotes0,...(T.configs[0].cotes||{})}); T.decal=A.decalCotes(retourT(T)); T.epAN=epCourant(T);
     if(md!=='schema'){ A.appliquerCotes({...T.cotes0,...(T.configs[0].cotes||{})});                     // planche dessinée sur la 1re configuration
     T.vues=A.vues(md==='schema'?{}:argsPlanche(T,A,md));
     }
@@ -280,7 +281,7 @@ async function recalculer0(avecImages){
 function argsPlanche(T,A,md){
     const a=K.affaire, defs=A.cotes().filter(d=>d.id!=='zsol');
     return {indus:true,format:md,repSupport:T.nom,cartouche:{...cartPlan(a,T),affaire:CAHIER.libAffaire(a)||'',client:[a.client,a.site].filter(Boolean).join(' – '),titres:['CAHIER DE SUPPORTAGE',`Support type ${T.nom}${T.designation?' – '+T.designation:''}`,`Phase ${a.phase||'APS'} – non valable pour exécution`],titre:`Support type ${T.nom}${T.designation?' – '+T.designation:''}`,date:a.date?new Date(a.date).toLocaleDateString('fr-FR'):'',indice:a.indice||'',dessine:a.realise||'',verifie:a.controle||'',plan:[a.doc,T.nom].filter(Boolean).join('-')},
-      traitement:traitementT(T),phase:a.phase||'APS',tableau:{titre:'Tableau des configurations (cotes en mm)',cols:['Repère',...defs.map(d=>d.l),'Qté'],rows:T.configs.map(c=>[repere(T,c),...defs.map(d=>{ const v=(c.cotes||{})[d.id]??(T.cotes0||{})[d.id]; return v==null?'—':f(v*1000,0); }),String(+c.qte||0)])}};
+      retourAN:retourT(T),traitement:traitementT(T),phase:a.phase||'APS',tableau:{titre:'Tableau des configurations (cotes en mm)',cols:['Repère',...defs.map(d=>d.l),'Qté'],rows:T.configs.map(c=>[repere(T,c),...defs.map(d=>{ const v=(c.cotes||{})[d.id]??(T.cotes0||{})[d.id]; return v==null?'—':f((v+((T.decal||{})[d.id]||0))*1000,0); }),String(+c.qte||0)])}};
 }
 /* ---------- sorties : notes de calcul et plans DXF ---------- */
 const typesS1=()=>K.types.filter(T=>T.kind==='s1'&&T.etat);
@@ -343,7 +344,7 @@ function gestion(){ setTimeout(schemasManquants,200);
         ${spe?'':`<td class="n">${c.resume?f(c.resume.taux*100,0)+' %':'—'}</td><td>${BADGE[stConf(T,c)]}</td>`}
         <td class="act">${spe?'':`<a href="${lienS1(T,c)}"><button type="button" title="Ouvrir cette configuration dans S1">✎</button></a>`}<button class="sec" type="button" data-cdup="${ti}|${ci}" title="Nouvelle configuration (copie)">⧉</button><button class="sec" type="button" data-cdel="${ti}|${ci}" title="Supprimer" style="color:var(--bad)">✕</button></td></tr>`).join('')+'</table>';
     return `<div class="typeBloc ${spe?'spe':''}" data-tb="${ti}">${tete}${blocSchema(T,ti,defs)}${blocPlan(T)}${tab}${ligneAN1(T,ti)}</div>`; }).join('')+
-    `<div class="note">Cotes en mm ; une cote sur fond jaune est propre à la configuration (sinon valeur du type). Une modification de cote rend la configuration « à recalculer ». Pour changer profilé, tuyauterie ou actions : ✎ S1 sur le type (commun à toutes ses configurations).</div>`;
+    `<div class="note">Cotes en mm ; une cote sur fond jaune est propre à la configuration (sinon valeur du type). Cotes saisies depuis la platine ; sur les plans et dans les tableaux imprimés, les positions des tuyauteries et la hauteur du montant sont comptées depuis le sol, le plafond ou le mur fini (valeur saisie + épaisseur de platine de AN1, 12 mm à défaut). Une modification de cote rend la configuration « à recalculer ». Pour changer profilé, tuyauterie ou actions : ✎ S1 sur le type (commun à toutes ses configurations).</div>`;
   const ix=s=>s.split('|').map((x,i)=>i<2?+x:x), on=(sel,ev,fn)=>document.querySelectorAll(sel).forEach(el=>el.addEventListener(ev,()=>fn(el)));
   on('[data-tpk]','click',el=>choisirType(el));
   on('[data-an1]','click',el=>ouvrirAN1CS(+el.dataset.an1,el.dataset.an1l));
@@ -377,6 +378,7 @@ $('rGestion').addEventListener('focusin',e=>{ const el=e.target.closest('[data-c
 $('rGestion').addEventListener('toggle',e=>{ const dp=e.target.closest&&e.target.closest('details[data-plan]'); if(dp){ if(dp.open) PLAN_OUVERT.add(dp.dataset.plan); else PLAN_OUVERT.delete(dp.dataset.plan); return; } const d=e.target.closest&&e.target.closest('details.schema'); if(!d) return; const k='x'+d.dataset.sch; if(d.open) SCH_OUVERT.delete(k); else SCH_OUVERT.add(k);
   try{ localStorage.setItem('fip.replie.cs.schemas',JSON.stringify([...SCH_OUVERT])); }catch(err){} },true);
 function etatRecalc(){
+  K.types.forEach(T=>{ if(T.kind==='s1'&&T.etat&&T.configs.length&&T.configs.every(c=>c.resume)&&epCourant(T)!==(T.epAN||0)){ T.configs.forEach(c=>{ c.resume=null; }); } });
   const n=K.types.filter(T=>T.kind==='s1'&&T.etat).reduce((s,T)=>s+T.configs.filter(c=>!c.resume).length,0), nc=K.types.filter(T=>T.kind==='s1'&&!T.etat).length;
   $('etat').innerHTML=(n?`<div class="msg jaune">${n} configuration(s) à recalculer (cotes ou paramètres modifiés) : cliquer « ⟳ Recalculer tout ».</div>`:'')+(nc?`<div class="msg info">${nc} type(s) non calculé(s) : comptés dans le listing, à calculer dans S1 (✎ S1) pour obtenir profilés et BOM.</div>`:'');
 }
@@ -395,6 +397,9 @@ function an1Type(T){ const par={};
     const crit=[c=>c.N,c=>-c.N,c=>Math.hypot(c.Vx,c.Vy),c=>Math.abs(c.Mx),c=>Math.abs(c.My),c=>Math.abs(c.Mz),c=>c.N/4+Math.abs(c.Mx)*1000/(2*a2)+Math.abs(c.My)*1000/(2*a1)], C=[];
     [false,true].forEach(sis=>{ const G=o.L.filter(c=>!!c.sis===sis); if(!G.length) return; crit.forEach(k=>{ const b=G.reduce((x,c)=>k(c)>k(x)?c:x); if(!C.includes(b)) C.push(b); }); });
     return {...o,C,confs:[...o.confs],cle:cleAN1CS(T,o.lib),emp:TOPO.empreinte(C.map(c=>[c.N,c.Vx,c.Vy,c.Mx,c.My,c.Mz,!!c.sis]))}; }); }
+/* résultats AN1 des platines du type par nature d'appui (sol, mur, plafond…) : épaisseur, dimensions, chevilles → plans et cotes fonctionnelles */
+function retourT(T){ const R={}; try{ an1Type(T).forEach(o=>{ const r=TOPO.retour(o.cle); if(r&&!R[o.k]) R[o.k]=r; }); }catch(e){} return R; }
+const epCourant=T=>Math.max(0,...Object.entries(retourT(T)).filter(([k])=>['sol','plafond','mur'].includes(k)).map(([,r])=>+r.tp||0));
 function ouvrirAN1CS(ti,lib){ const T=K.types[ti], o=an1Type(T).find(x=>x.lib===lib); if(!o) return;
   const pre={t:Date.now(),src:`cahier ${K.affaire.num?K.affaire.num+' – ':''}${T.nom} – ${o.lib}`,srcCourt:'cahier',retour:'../cahier/',cle:o.cle,emp:o.emp,profil:o.profil,C:o.C,A:o.A,plaque:o.plaque,
     info:`enveloppe de ${o.confs.length} configuration(s) (${o.confs.join(', ')})${o.libs.length>1?` et de ${o.libs.length} platines identiques (${o.libs.join(', ')})`:''} ; ${o.info||''}`};
@@ -432,7 +437,8 @@ function bom(){
     (r.appuis||[]).forEach(a=>{ const k=`${LIB[a.k]||'Platine'} – ${a.profil||''}`, fm=(r.fix||{}).mode||'chev'; PL[k]=(PL[k]||0)+q;
       if(a.k==='murArt') return;
       if(fm==='tige'&&(a.k==='mur'||a.k==='murPied')){ const t=`Tige filetée M${r.fix.d} classe ${r.fix.cl} traversante (écrous, rondelles)`; FX[t]=(FX[t]||0)+4*q; FX['Contre-plaque (côté opposé du mur)']=(FX['Contre-plaque (côté opposé du mur)']||0)+q; }
-      else if(fm==='crap'&&a.k==='plafond') FX['Crapaud / pince-poutre (sur profilé existant)']=(FX['Crapaud / pince-poutre (sur profilé existant)']||0)+4*q;
+      else if(fm==='sand'&&['sol','mur','plafond','murPied'].includes(a.k)){ const t=`Tige filetée M${r.fix.d} classe ${r.fix.cl} (sandwich du profilé existant : écrous, rondelles)`; FX[t]=(FX[t]||0)+4*q; FX['Contre-plaque (sandwich du profilé existant)']=(FX['Contre-plaque (sandwich du profilé existant)']||0)+q; }
+      else if(fm==='crap'&&['sol','mur','plafond','murPied'].includes(a.k)) FX['Crapaud / pince-poutre (sur profilé existant)']=(FX['Crapaud / pince-poutre (sur profilé existant)']||0)+4*q;
       else { const o=AN.find(x=>x.libs.includes(String(a.lib).replace(/<[^>]+>/g,''))), rr=o&&TOPO.retour(o.cle);
         if(rr&&rr.n){ const t=`Chevilles ${rr.produit} ${rr.diam}${rr.cl?' '+rr.cl:''} – h_ef ${rr.hef} mm (AN1${rr.emp!==o.emp?', à relancer':''})`; FX[t]=(FX[t]||0)+rr.n*q; } else nPl+=q; } }); }));
   const L=Object.values(P).sort((a,b)=>a.profil.localeCompare(b.profil,'fr',{numeric:true})), tot=L.reduce((s,o)=>s+o.L*o.m,0), maj=+K.reglages.majo||0, chev=+K.reglages.chev||0;
@@ -471,7 +477,7 @@ function fiches(){
     }
     // tableau des configurations
     s+=`<h3>Configurations</h3><table><tr><th>Repère</th>${spe?'':defs.map(d=>`<th class="cote" title="${h(d.lib)}">${h(d.l)}</th>`).join('')}<th class="n">Qté</th><th>Repères</th><th>Lignes / iso</th>${!spe&&S.verif?'<th class="n">Taux</th><th>Critère</th><th>Statut</th>':''}</tr>`+
-      T.configs.map(c=>`<tr><td><b>${h(repere(T,c))}</b></td>${spe?'':defs.map(d=>{ const v=(c.cotes||{})[d.id]??(T.cotes0||{})[d.id]; return `<td class="n">${v==null?'—':f(v*1000,0)}</td>`; }).join('')}<td class="n">${+c.qte||0}</td><td>${h(c.reperes||'')}</td><td>${h(c.lignes||'')}</td>
+      T.configs.map(c=>`<tr><td><b>${h(repere(T,c))}</b></td>${spe?'':defs.map(d=>{ const v=(c.cotes||{})[d.id]??(T.cotes0||{})[d.id]; return `<td class="n">${v==null?'—':f((v+((T.decal||{})[d.id]||0))*1000,0)}</td>`; }).join('')}<td class="n">${+c.qte||0}</td><td>${h(c.reperes||'')}</td><td>${h(c.lignes||'')}</td>
         ${!spe&&S.verif?`<td class="n">${c.resume?f(c.resume.taux*100,0)+' %':'—'}</td><td style="font-size:12px">${h(c.resume?.critere||'')}</td><td>${BADGE[stConf(T,c)]}</td>`:''}</tr>`).join('')+
       `<tr><td><b>Total</b></td>${spe?'':defs.map(()=>'<td></td>').join('')}<td class="n"><b>${qteT(T)}</b></td><td colspan="${2+(!spe&&S.verif?3:0)}"></td></tr></table>`+
       (!spe&&defs.length?`<div class="note">Cotes en mm : ${defs.map(d=>`<b>${h(d.l)}</b> = ${h(d.lib.toLowerCase())}`).join(' ; ')}.</div>`:'');
@@ -504,10 +510,10 @@ window.addEventListener('storage',e=>{ if(e.key===CAHIER.CLE){ K=CAHIER.lire(); 
 if(!CAHIER.existe()) enr(); else enr();               // enregistre la migration éventuelle (v1 → v2)
 initRevs(); demarrer();
 </script>
-<script src="../commun/replier.js?v=2.85"></script>
-<script src="../commun/aide.js?v=2.85"></script>
-<script src="aide-cs.js?v=2.85"></script>
-<script src="../commun/export.js?v=2.85"></script>
+<script src="../commun/replier.js?v=2.91"></script>
+<script src="../commun/aide.js?v=2.91"></script>
+<script src="aide-cs.js?v=2.91"></script>
+<script src="../commun/export.js?v=2.91"></script>
 <script>EXPORT.init(CFG);</script>
 </body>
 </html>

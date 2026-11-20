@@ -4,23 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.85"></script>
+<script src="../commun/auth.js?v=2.91"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — RC Rapport de calcul</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.85">
-<script src="../commun/apps.js?v=2.85"></script>
-<script src="../commun/cahier.js?v=2.85"></script>
-<script src="../commun/acier.js?v=2.85"></script>
-<script src="../climat/data/zonage.js?v=2.85"></script>
-<script src="../commun/data/tuyauterie.js?v=2.85"></script>
-<script src="../commun/charges.js?v=2.85"></script>
-<script src="../commun/notes.js?v=2.85"></script>
-<script src="../commun/ident.js?v=2.85"></script>
-<script src="../commun/pictos-s1.js?v=2.85"></script>
-<script src="../commun/projet.js?v=2.85"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.91">
+<script src="../commun/apps.js?v=2.91"></script>
+<script src="../commun/cahier.js?v=2.91"></script>
+<script src="../commun/acier.js?v=2.91"></script>
+<script src="../climat/data/zonage.js?v=2.91"></script>
+<script src="../commun/data/tuyauterie.js?v=2.91"></script>
+<script src="../commun/charges.js?v=2.91"></script>
+<script src="../commun/notes.js?v=2.91"></script>
+<script src="../commun/ident.js?v=2.91"></script>
+<script src="../commun/pictos-s1.js?v=2.91"></script>
+<script src="../commun/projet.js?v=2.91"></script>
 <style>
   main{grid-template-columns:minmax(300px,380px) 1fr}
   .src{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;font-size:13px}.src .ok{color:#1d7a36;font-weight:700}.src .ko{color:#b26a00;font-weight:700}
@@ -168,10 +168,10 @@ async function imprimerRC(){ await avantExport(); const w=window.open('','_blank
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Rapport de calcul</title><link rel="stylesheet" href="../commun/calc.css"><style>${document.querySelector('style').textContent}@page{size:A4;margin:12mm}body{background:#fff}</style></head><body><div class="rc">${$('rc').innerHTML}</div></body></html>`); w.document.close(); setTimeout(()=>w.print(),600); }
 rendre(); PROJET.barre('projet');
 </script>
-<script src="../commun/replier.js?v=2.85"></script>
-<script src="../commun/export.js?v=2.85"></script>
+<script src="../commun/replier.js?v=2.91"></script>
+<script src="../commun/export.js?v=2.91"></script>
 <script>EXPORT.init({code:'RC',titre:'Rapport de calcul',excel:false,avant:()=>avantExport(),zones:()=>[document.getElementById('rc')],affaire:()=>IDENT.lire(),nom:()=>{ const K=IDENT.lire(); return K.doc||K.num||'ouvrage'; }});</script>
-<script src="../commun/aide.js?v=2.85"></script>
+<script src="../commun/aide.js?v=2.91"></script>
 <script>AIDE.init({titre:"Aide – RC Rapport de calcul",manuel:"rc",intro:"RC assemble le rapport de calcul de l'ouvrage à partir des résultats enregistrés par les modules : hypothèses (C1, G1, Q1, NH), ossature (A1, futur bâtiment fermé), supportage (cahier, S1) et assemblages (AS1). Modèle simplifié, complet ou au choix ; sortie Word ou PDF.",
   etapes:[{t:"Identification",html:"Champs de la trame FIP : client, site, projet, phase, N° de document, révision et motif, auteur / vérifié / approuvé, logo du client (page de garde Word) ; « 📌 Archiver l'indice » alimente le tableau des révisions.",cible:"#cIdent"},
     {t:"Sources",html:"État des résultats disponibles dans ce navigateur et liens vers les modules pour les compléter : A1 enregistre à chaque calcul, AS1 par « Ajouter au rapport de calcul ».",cible:"#cSrc"},

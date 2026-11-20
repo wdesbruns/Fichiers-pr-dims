@@ -4,20 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.85"></script>
+<script src="../commun/auth.js?v=2.91"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — AN1 Ancrages</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.85">
+<link rel="stylesheet" href="../commun/calc.css?v=2.91">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/apps.js?v=2.85"></script>
-<script src="../commun/data/profils.js?v=2.85"></script>
-<script src="../commun/ident.js?v=2.85"></script>
-<script src="../commun/chevilles.js?v=2.85"></script>
-<script src="../commun/cbfem.js?v=2.85"></script>
-<script src="../commun/export.js?v=2.85"></script>
+<script src="../commun/apps.js?v=2.91"></script>
+<script src="../commun/data/profils.js?v=2.91"></script>
+<script src="../commun/ident.js?v=2.91"></script>
+<script src="../commun/chevilles.js?v=2.91"></script>
+<script src="../commun/cbfem.js?v=2.91"></script>
+<script src="../commun/export.js?v=2.91"></script>
 <style>
   /* mise en page type logiciel : panneau de saisie | vues | résultats, combinaisons en bas */
   main.app{display:grid;grid-template-columns:300px minmax(0,1fr) 300px;grid-template-rows:auto auto;gap:12px;max-width:none;padding:12px}
@@ -297,6 +297,7 @@ function regles(){ if(PROD[$('fam').value].diam.indexOf($('diam').value)<0) retu
   const fck=+$('classe').value; if(fck<20||fck>50) av('Classe de béton hors du domaine courant des ETE (C20/25 à C50/60) : à vérifier dans l\'ETE.');
   if($('meth').value==='cbfem'&&C.some(c=>c.N<0&&RES[C.indexOf(c)]&&RES[C.indexOf(c)].cb&&RES[C.indexOf(c)].cb.C>5*Math.max(1,...RES[C.indexOf(c)].T))) av('Combinaison fortement comprimée : les faibles tractions dues au relèvement des bords de la platine sont sous-estimées par le CBFEM de AN1 (notes PROFIS de calage : 439 daN pour 125 calculés, 122 pour 75). Prévoir une marge sur les chevilles ou saisir une raideur de béton plus faible (h<sub>c</sub> plus grand).');
   if($('meth').value==='cbfem'&&(parseInt($('diam').value.slice(1))||0)<=24&&C.some((c,i)=>c.N>0&&RES[i]&&RES[i].T&&RES[i].T.length&&Math.min(...RES[i].T)>0)) av('Traction sur toutes les chevilles (platine soulevée) : le CBFEM d\'AN1 sous-estime de 3 à 9 % l\'effort de la cheville la plus tendue par rapport à PROFIS (5 notes de contrôle M8 à M24, platine de 10 mm, effet de levier plus marqué chez PROFIS ; au-delà de M24, 3 notes M27-M30 : résultats du côté sécuritaire). Majorer de 10 % ou vérifier la combinaison dans PROFIS.');
+  if($('meth').value==='cbfem'&&PROD[$('fam').value].chimique&&$('diam').value==='M20') av('Scellement chimique M20 : sur quatre notes PROFIS de contrôle (h_ef 90 à 200 mm, platines de 10 à 20 mm) le CBFEM d\'AN1 sous-estime de 8 à 15 % l\'effort de la cheville la plus tendue (effet de levier plus marqué chez PROFIS). Majorer de 15 % ou vérifier dans PROFIS.');
   if($('meth').value==='cbfem') av('Platine flexible (CBFEM) : hors du cadre strict de la NF EN 1992-4 §6.2.1 (platine rigide) ; raideur des chevilles calée sur des notes PROFIS, à confirmer (essais, fournisseur). Soudures, pression diamétrale et section du profilé à justifier par ailleurs.');
   else inf('Platine supposée rigide (NF EN 1992-4 §6.2.1) : son épaisseur doit être justifiée (flexion de la platine) ; une platine mince augmente les tractions des chevilles proches du profilé (effet de levier) – vérification CBFEM en phase 2.');
   if(!$('annul').checked) inf('Espace annulaire non comblé : rupture du bord vérifiée avec la rangée la plus proche du bord seule ; en séisme α_gap = 0,5 (§C.5).');
@@ -734,7 +735,7 @@ const PRE_PROF=lirePre();
 syncPR(); majSis(); majBeton(); majProfils(); if(PRE_PROF){ $('pnom').value=PRE_PROF; } majProduit();
 </script>
 <script>EXPORT.init({code:'AN1',titre:'Note de calcul – ancrage de platine',excel:false,avant:()=>preparerNote(),zones:()=>[$('note')],affaire:()=>IDENT.lire(),nom:()=>{ const K=IDENT.lire(); return K.doc||K.repere||K.num||'ancrage'; }});</script>
-<script src="../commun/aide.js?v=2.85"></script>
+<script src="../commun/aide.js?v=2.91"></script>
 <script>AIDE.init({titre:"Aide – AN1 Ancrages",manuel:"an1",intro:"AN1 vérifie les ancrages d'une platine sur béton (chevilles mécaniques et chimiques) selon la NF EN 1992-4 et son annexe nationale, avec les données des ETE : répartition des efforts en platine rigide, tous les modes de rupture en traction et en cisaillement, interactions, situation sismique (annexe C) et h_ef optimale. Prédimensionnement APS/APD : la platine rigide est une hypothèse à justifier, ou à contrôler avec la méthode CBFEM (platine flexible en éléments finis)",
   etapes:[{t:"Saisie",html:"Panneau de gauche : identification, béton (NF EN 1992-1-1 Tab. 3.1), bords, cheville (données de l'ETE, schéma de pose coté : tige ou goujon, trou de platine, perçage, résine ou clip d'expansion, h<sub>ef</sub>, t<sub>fix</sub>, h), disposition, platine et profilé, méthode. Les conditions de pose (température, perçage, état du trou, durée d'utilisation, espace annulaire, α<sub>sus</sub>, armatures) sont regroupées dans un bloc replié « Conditions de pose » de la carte Cheville, avec leur résumé ; valeurs par défaut : plage I, perforateur, trou sec, 50 ans, espace annulaire comblé, ψ<sub>re,N</sub> = 1. Elles figurent dans les hypothèses de la cheville des notes.",cible:"#pSaisie"},
     {t:"Vues",html:"Vue 3D cotée (rotation et zoom à la souris ; chaînes de cotes platine / chevilles, l<sub>x</sub>, l<sub>y</sub>, épaisseur h, distances aux bords finis en rouge ; SCU X/Y/Z placé hors de la platine) ou plan 2D coté (mêmes cotes, bords du béton : trait fort si fini, trait mixte si infini ou lointain) . Barre d'outils du plan 2D : « ↖ Sélection » (cliquer une cheville ou le profilé puis glisser, accrochage au quadrillage), « ＋ Chevilles » (clic pour poser), « ✕ Supprimer » ou touche Suppr, « ↺ / ↻ 90° » pour tourner le profilé.",cible:"#v3d"},
