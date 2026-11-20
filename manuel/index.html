@@ -4,25 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.91"></script>
+<script src="../commun/auth.js?v=2.92"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — Manuel technique</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.91">
-<script src="../commun/apps.js?v=2.91"></script>
-<script src="../commun/data/profils.js?v=2.91"></script>
-<script src="../commun/barres3d.js?v=2.91"></script>
-<script src="../commun/acier.js?v=2.91"></script>
-<script src="../commun/data/tuyauterie.js?v=2.91"></script>
-<script src="../commun/charges.js?v=2.91"></script>
-<script src="../commun/coefvent.js?v=2.91"></script>
-<script src="../commun/tendues.js?v=2.91"></script>
-<script src="../commun/portique.js?v=2.91"></script>
-<script src="../commun/chevilles.js?v=2.91"></script>
-<script src="../commun/cbfem.js?v=2.91"></script>
-<script src="../commun/topo.js?v=2.91"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.92">
+<script src="../commun/apps.js?v=2.92"></script>
+<script src="../commun/data/profils.js?v=2.92"></script>
+<script src="../commun/barres3d.js?v=2.92"></script>
+<script src="../commun/acier.js?v=2.92"></script>
+<script src="../commun/data/tuyauterie.js?v=2.92"></script>
+<script src="../commun/charges.js?v=2.92"></script>
+<script src="../commun/coefvent.js?v=2.92"></script>
+<script src="../commun/tendues.js?v=2.92"></script>
+<script src="../commun/portique.js?v=2.92"></script>
+<script src="../commun/chevilles.js?v=2.92"></script>
+<script src="../commun/cbfem.js?v=2.92"></script>
+<script src="../commun/topo.js?v=2.92"></script>
 <style>
   main{grid-template-columns:minmax(230px,290px) 1fr}
   nav.toc{position:sticky;top:10px;align-self:start;max-height:calc(100vh - 20px);overflow:auto}
@@ -207,6 +207,7 @@
 <p><b>Fixations sur profilé existant (2.89)</b> : en plus des chevilles et des tiges traversantes dans un mur, les platines des supports en U, T, L mural, console murale (avec ou sans jambe de force) et suspente peuvent être <b>crapautées</b> (4 crapauds aux bords de la semelle) ou <b>sandwichées</b> (4 tiges filetées passant de part et d'autre de la semelle, reliées à une contre-plaque de l'autre côté du profilé). Profilé existant choisi dans la base (famille, profilé), parallèle à X ou Y (sol, plafond) ou vertical / horizontal (mur), éventuellement <b>tourné de 90°</b> (tranche des semelles contre la platine). Vérifications : tiges ou boulons de crapaud comme en 2.5x (traction et cisaillement NF EN 1993-1-8 Tab. 3.4, glissement §3.9) avec n = normale sortante du profilé existant et entraxes a<sub>1</sub> (X) × a<sub>2</sub> ; le profilé existant (flexion locale de la semelle, effort tranchant) reste à justifier par ailleurs. Alerte si l'entraxe des tiges mesuré en travers du profilé est inférieur à la largeur de la semelle + diamètre + 10 mm. Les platines concernées ne sont plus envoyées à AN1 (pas de chevilles). Dessin : profilé existant sur 0,5 m, tiges, contre-plaque et crapauds en 2D, 3D et sur le plan ; nomenclature (tiges, contre-plaque, crapauds) reprise dans la BOM du cahier.</p>
 <p><b>Consoles des deux côtés (2.90)</b> : supports en L et en L plafonnier, option « Des deux côtés (symétriques) » : chaque niveau de console est doublé par une console de longueur identique vers −Y (barres numérotées après celles de droite) ; chaque tuyauterie choisit sa console (droite ou gauche). Le montant reprend l'excentrement des deux côtés (charges non symétriques selon les tuyauteries). La note de calcul des supports sur profilé existant (crapautage, sandwich) porte l'hypothèse « structure existante hors périmètre ».</p>
 <p><b>Traverse sur sabots (2.91)</b> : traverse simplement posée sur deux sabots fixés sur béton (supports de tuyauterie de caniveaux). Modèle : une barre horizontale à la hauteur H de son axe au-dessus de l'assise des sabots ; appuis aux deux extrémités avec translations verticale et transversale bloquées, torsion bloquée (butées d'extrémité), rotations de flexion libres (simple appui), translation longitudinale bloquée à gauche et libre à droite (dilatation) ; les efforts du nœud d'appui sont <b>ramenés à la platine du sabot</b> : M' = M + [0 ; 0 ; H] × F, avant la vérification des chevilles (lien AN1, platine « sol ») ; platine et chevilles du sabot vérifiées dans AN1 comme un pied de poteau. Butée d'extrémité (plat ép. 8) et goussets du sabot : dessinés et nomenclaturés, à dimensionner selon le plan du sabot.</p>
+<p><b>Liaisons tuyau / support (2.92)</b> : par tuyauterie, type de liaison de la spécification Rubis Terminal (§11.3 et §11.4) : étrier serré sur cale téflon (4, défaut), patin collier plat ép. 5 + ½ IPE 200 soudé (1), tôle intermédiaire + ½ IPE 200 (2, DN 25 à 200), tôle intermédiaire + support mécano-soudé (2a, DN &gt; 200), tôle intermédiaire posée (3), tuyau posé sur plat (5) ; guide latéral (cornières, plats ou ronds, jeu 10 mm) ; hauteur de l'élément sous le tuyau (étrier : hauteur de sabot ; types 1 et 2 : 105 mm = ½ IPE 200 + 5 mm ; 2a : 150 mm ; 3 : 5 mm ; 5 : 10 mm), modifiable. <b>Effet sur le calcul</b> : la hauteur décale l'axe du tuyau au-dessus du profilé (excentrement vertical des charges) ; la fonction (glissant, guidé, point fixe) et le coefficient de frottement restent saisis. L'étrier, sa pince et ses alertes ne s'appliquent qu'au type 4 ; alertes sur les types 2 / 2a selon le DN, sur les guides non prévus pour le type, et rappel du perçage Ø8 des tôles. Dessin du patin, des tôles et des guides, nomenclature et BOM du cahier. Le patin « Hilti DN » des cahiers TEPSA est une demande particulière du client, non reprise.</p>
 </article>
 
 <article class="card" id="p1"><div class="theme">P1 – Poutre</div><h2>9. P1 – Poutre isostatique</h2>
@@ -348,6 +349,7 @@ Pression diamétrale F<sub>b,Rd</sub> = k<sub>1</sub>·α<sub>b</sub>·f<sub>u</
 
 <article class="card" id="journal"><div class="theme">Qualification</div><h2>17. Journal des modifications ayant un impact sur les résultats</h2>
 <table><tr><th>Version</th><th>Module</th><th>Modification</th><th>Impact</th></tr>
+<tr><td>2.92</td><td>S1, CS</td><td>Liaisons tuyau / support par tuyauterie (types 1, 2, 2a, 3, 4 et 5 de la spécification Rubis Terminal) et guide latéral ; hauteur de l'élément sous le tuyau ; dessin, nomenclature, BOM, alertes.</td><td>Valeurs par défaut inchangées (étrier) ; les autres liaisons décalent le tuyau de la hauteur de l'élément.</td></tr>
 <tr><td>2.91</td><td>S1, CS, AN1</td><td>Nouveau support « Traverse sur sabots (caniveau) » : traverse posée sur deux sabots fixés sur béton ; appuis simples, torsion bloquée ; efforts ramenés à la platine du sabot et vérifiés dans AN1 ; dessin, nomenclature, cahier, export Robot.</td><td>Nouveau type ; calculs existants inchangés.</td></tr>
 <tr><td>2.90</td><td>S1</td><td>Supports en L et L plafonnier : consoles des deux côtés ; hypothèse « structure existante hors périmètre » ajoutée aux hypothèses de la note de calcul (crapautage et sandwich).</td><td>Aucun calcul modifié.</td></tr>
 <tr><td>2.89</td><td>S1, CS</td><td>Fixations sur profilé existant : crapautage et sandwich (platine, 4 tiges filetées, contre-plaque) pour les supports en U, T, L mural, console murale, jambe de force et suspente ; profilé existant orientable (tourné de 90°) ; dessin 2D / 3D / plan, nomenclature, BOM, alerte d'entraxe.</td><td>Nouvelles options ; calculs existants inchangés (chevilles inchangées).</td></tr>
@@ -563,6 +565,6 @@ function tests(){
 }
 try{ tests(); }catch(e){ $('tests').innerHTML=`<div class="msg bad">Erreur d'exécution des tests : ${e.message}</div>`; }
 </script>
-<script src="../commun/replier.js?v=2.91"></script>
+<script src="../commun/replier.js?v=2.92"></script>
 </body>
 </html>

@@ -4,22 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.91"></script>
+<script src="../commun/auth.js?v=2.92"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — CS Cahier de supportage</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.91">
-<script src="../commun/acier.js?v=2.91"></script>
-<script src="../commun/cahier.js?v=2.91"></script>
-<script src="../commun/pictos-s1.js?v=2.91"></script>
-<script src="../commun/notes.js?v=2.91"></script>
-<script src="../commun/ident.js?v=2.91"></script>
-<script src="../commun/data/gabarit-a3.js?v=2.91"></script>
-<script src="../commun/data/gabarit-a2.js?v=2.91"></script>
-<script src="../commun/dessin.js?v=2.91"></script>
-<script src="../commun/topo.js?v=2.91"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.92">
+<script src="../commun/acier.js?v=2.92"></script>
+<script src="../commun/cahier.js?v=2.92"></script>
+<script src="../commun/pictos-s1.js?v=2.92"></script>
+<script src="../commun/notes.js?v=2.92"></script>
+<script src="../commun/ident.js?v=2.92"></script>
+<script src="../commun/data/gabarit-a3.js?v=2.92"></script>
+<script src="../commun/data/gabarit-a2.js?v=2.92"></script>
+<script src="../commun/dessin.js?v=2.92"></script>
+<script src="../commun/topo.js?v=2.92"></script>
 <style>
   .picto{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;border:1px solid var(--line);border-radius:6px;padding:2px 8px 2px 2px;background:#fff;font-size:12.5px;cursor:default}
   .picto.choix{cursor:pointer;border-color:#1f6fd1}.picto svg{width:44px;height:35px}.picto.mini{padding:0;border:0;background:none}.picto.mini svg{width:30px;height:24px}
@@ -122,7 +122,7 @@
   <div class="printhead"><img src="../commun/img/logo-fip.png" alt="FIP"><strong id="phTitre">Cahier de supportage</strong><br><span id="phInfo"></span></div>
   <div class="card noprint" id="cGestion"><h2>Supports du cahier</h2>
     <div class="actions" style="margin-top:0">
-      <a href="../supports/?v=2.91"><button type="button" title="Créer et calculer un support type dans S1, puis « Ajouter au cahier »">➕ Type calculé (S1)</button></a>
+      <a href="../supports/?v=2.92"><button type="button" title="Créer et calculer un support type dans S1, puis « Ajouter au cahier »">➕ Type calculé (S1)</button></a>
       <button class="sec" id="addNC" type="button" title="Réserver un type (quantités, repères) à calculer plus tard dans S1">➕ Type à calculer</button>
       <button class="sec" id="addSPE" type="button" title="Support spécial dessiné à part (AutoCAD, Plant 3D, Advance Steel)">➕ Support spécial</button>
       <button class="sec" id="recalc" type="button">⟳ Recalculer tout</button>
@@ -432,7 +432,9 @@ function bom(){
     if(T.kind==='spe'){ SP.push({rep,des:T.designation||'Support spécial',plan:T.plan,q,m:T.masse===''||T.masse==null?null:+T.masse}); return; }
     const r=c.resume; if(!r){ if(q) manq.push(rep); return; }
     r.barres.forEach(b=>{ const k=b.profil+'|'+r.nuance, o=P[k]||(P[k]={profil:b.profil,nuance:r.nuance,m:b.m,L:0,det:[]}); o.L+=q*b.L; o.det.push(`${rep} : ${q} × ${f(b.L,2)} m`); });
-    (r.tuyaux||[]).forEach(t=>{ if(!t.d) return; const k=`Étrier M${t.d} pour ${t.dn?'DN'+t.dn:'Ø'+f(t.De,1)}`; E[k]=(E[k]||0)+q; });
+    (r.tuyaux||[]).forEach(t=>{ const LN={t1:'type 1 – collier plat ép. 5 + ½ IPE 200',t2:'type 2 – tôle ép. 5 + ½ IPE 200',t2a:'type 2a – tôle + mécano-soudé',t3:'type 3 – tôle intermédiaire',t5:'type 5 – plat'}, GN={corn:'cornières L 50×5',plat:'plats 50×5',rond:'ronds Ø12'}, dn=t.dn?'DN'+t.dn:'Ø'+f(t.De,1);
+      if(t.liaison&&t.liaison!=='etrier'){ const k=`Patin ${LN[t.liaison]} pour ${dn}`; E[k]=(E[k]||0)+q; if(t.guide&&t.guide!=='non'){ const kg=`Guide latéral (${GN[t.guide]}) pour ${dn}`; E[kg]=(E[kg]||0)+2*q; } }
+      if(!t.d) return; const k=`Étrier M${t.d} pour ${dn}`; E[k]=(E[k]||0)+q; });
     const AN=r.an1?an1Type(T):[];
     (r.appuis||[]).forEach(a=>{ const k=`${LIB[a.k]||'Platine'} – ${a.profil||''}`, fm=(r.fix||{}).mode||'chev'; PL[k]=(PL[k]||0)+q;
       if(a.k==='murArt') return;
@@ -510,10 +512,10 @@ window.addEventListener('storage',e=>{ if(e.key===CAHIER.CLE){ K=CAHIER.lire(); 
 if(!CAHIER.existe()) enr(); else enr();               // enregistre la migration éventuelle (v1 → v2)
 initRevs(); demarrer();
 </script>
-<script src="../commun/replier.js?v=2.91"></script>
-<script src="../commun/aide.js?v=2.91"></script>
-<script src="aide-cs.js?v=2.91"></script>
-<script src="../commun/export.js?v=2.91"></script>
+<script src="../commun/replier.js?v=2.92"></script>
+<script src="../commun/aide.js?v=2.92"></script>
+<script src="aide-cs.js?v=2.92"></script>
+<script src="../commun/export.js?v=2.92"></script>
 <script>EXPORT.init(CFG);</script>
 </body>
 </html>

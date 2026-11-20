@@ -4,25 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.91"></script>
+<script src="../commun/auth.js?v=2.92"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.91">
+<link rel="stylesheet" href="../commun/calc.css?v=2.92">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.91"></script>
-<script src="../commun/data/tuyauterie.js?v=2.91"></script>
-<script src="../commun/acier.js?v=2.91"></script>
-<script src="../commun/barres3d.js?v=2.91"></script>
-<script src="../commun/data/gabarit-a3.js?v=2.91"></script>
-<script src="../commun/data/gabarit-a2.js?v=2.91"></script>
-<script src="../commun/dessin.js?v=2.91"></script>
-<script src="../commun/coefvent.js?v=2.91"></script>
-<script src="../commun/cahier.js?v=2.91"></script>
-<script src="../commun/chevilles.js?v=2.91"></script>
-<script src="../commun/topo.js?v=2.91"></script>
+<script src="../commun/data/profils.js?v=2.92"></script>
+<script src="../commun/data/tuyauterie.js?v=2.92"></script>
+<script src="../commun/acier.js?v=2.92"></script>
+<script src="../commun/barres3d.js?v=2.92"></script>
+<script src="../commun/data/gabarit-a3.js?v=2.92"></script>
+<script src="../commun/data/gabarit-a2.js?v=2.92"></script>
+<script src="../commun/dessin.js?v=2.92"></script>
+<script src="../commun/coefvent.js?v=2.92"></script>
+<script src="../commun/cahier.js?v=2.92"></script>
+<script src="../commun/chevilles.js?v=2.92"></script>
+<script src="../commun/topo.js?v=2.92"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -250,7 +250,7 @@ const typeSup=()=>document.querySelector('input[name=type]:checked').value;
 /* =====================================================================
    TUYAUTERIES (base commune T1 ou saisie directe)
    ===================================================================== */
-let tuyaux=[{nom:'L1',mode:'base',dn:100,sch:'40',mat:'P265GH',fluide:0,rho:1000,ecal:0,rhoCal:120,qd:0.3,Dd:114.3,portee:5,pos:0.8,e:'',fonc:'guide',mu:0.3,Fx:0,Fy:0,Fz:0,Gsup:0}];
+let tuyaux=[{nom:'L1',mode:'base',dn:100,sch:'40',mat:'P265GH',fluide:0,rho:1000,ecal:0,rhoCal:120,qd:0.3,Dd:114.3,portee:5,pos:0.8,e:'',fonc:'guide',mu:0.3,liaison:'etrier',guide:'non',hl:'',Fx:0,Fy:0,Fz:0,Gsup:0}];
 function propsTuyau(t){
   let De,qop,qeau,ecal=+t.ecal||0;
   if(t.mode==='base'){
@@ -318,6 +318,9 @@ function cartesTuyaux(){
       <div><label>${pos}</label><input data-k="pos" type="number" step="0.05" value="${t.pos}"></div>
       <div><label>${['sol','plafond'].includes(typ)?'Excentr. e (m)':'Excentr. vert. (m)'}</label><input data-k="e" type="number" step="0.01" value="${t.e}" placeholder="auto"></div>
       <div><label>Fonction</label><select data-k="fonc">${opt([['glissant','Glissant'],['guide','Guidé'],['fixe','Point fixe']],t.fonc)}</select></div>
+      <div><label>Liaison tuyau / support (ST Rubis §11.4)</label><select data-k="liaison">${opt(Object.entries(LIAISONS),t.liaison||'etrier')}</select></div>
+      <div><label>Guide latéral (§11.3.1)</label><select data-k="guide">${opt(Object.entries(GUIDES),t.guide||'non')}</select></div>
+      <div><label>Hauteur de l'élément sous le tuyau (mm)</label><input data-k="hl" type="number" step="5" value="${t.hl??''}" placeholder="auto"></div>
       <div><label>μ frottement</label><select data-k="mu">${opt([[0.3,'0,3 acier/acier'],[0.1,'0,1 PTFE'],[0,'0 (aucun)']],t.mu)}</select></div>
       ${t.fonc!=='glissant'?`${t.fonc==='fixe'?`<div><label>F<sub>x</sub> therm. (kN)</label><input data-k="Fx" type="number" step="0.1" value="${t.est?ancrage(t).F.toFixed(2):t.Fx}" ${t.est?'disabled title="Estimé (voir ci-dessous)"':''}></div>`:''}
         <div><label>F<sub>y</sub> therm. (kN)</label><input data-k="Fy" type="number" step="0.1" value="${t.Fy}"></div>
@@ -330,7 +333,7 @@ function cartesTuyaux(){
     t[k]=el.type==='checkbox'?el.checked:el.type==='number'?(el.value===''?'':+el.value):el.value;
     if(k==='fluide'){const fl=FLUIDS[+el.value];if(fl&&fl.r!==null)t.rho=fl.r;}
     if(k==='dn'){const P=PIPES.find(p=>p.dn==t.dn);if(P&&P.s[t.sch]===undefined)t.sch=P.s['40']!==undefined?'40':Object.keys(P.s)[0];}
-    if(['mode','dn','fluide','fonc','est','elt'].includes(k)||t.est) cartesTuyaux(); else { const n=el.closest('.tuyau').querySelector('.note'); if(n) n.innerHTML=`${escH(propsTuyau(t).desc)} · q<sub>service</sub> = ${f(propsTuyau(t).qop,3)} kN/m`; }
+    if(['mode','dn','fluide','fonc','est','elt','liaison'].includes(k)||t.est) cartesTuyaux(); else { const n=el.closest('.tuyau').querySelector('.note'); if(n) n.innerHTML=`${escH(propsTuyau(t).desc)} · q<sub>service</sub> = ${f(propsTuyau(t).qop,3)} kN/m`; }
     calc();}));
   $('tuyaux').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{if(tuyaux.length>1){tuyaux.splice(+b.dataset.del,1);cartesTuyaux();calc();}});
 }
@@ -417,8 +420,8 @@ function geometrie(D){
     const bi=barreDuTuyau(t,D), b=B[bi], P=t.P;
     let s=+t.pos||0; if(D.typ==='T') s+=b.L/2; s=Math.min(Math.max(s,0),b.L);
     const pt=add3(b.A,mul3(b.dir,s)); let e=t.e===''||t.e==null?null:+t.e, c;
-    if(b.vert){ if(e===null) e=b.bord([0,1,0]).hi+P.Dc/2000+D.sabot/1000; c=add3(pt,[0,e,0]); }
-    else { if(e===null) e=b.bord([0,0,1]).hi+P.Dc/2000+D.sabot/1000; c=add3(pt,[0,0,e]); }
+    if(b.vert){ if(e===null) e=b.bord([0,1,0]).hi+P.Dc/2000+hLiaison(t,D)/1000; c=add3(pt,[0,e,0]); }
+    else { if(e===null) e=b.bord([0,0,1]).hi+P.Dc/2000+hLiaison(t,D)/1000; c=add3(pt,[0,0,e]); }
     return {...t,bi,s,e,pt,c,n:null};
   });
   const surBarre=(b,P)=>{const v=P.map((x,i)=>x-b.A[i]), s=v[0]*b.dir[0]+v[1]*b.dir[1]+v[2]*b.dir[2]; if(s<-1e-6||s>b.L+1e-6) return null; return Math.hypot(...v.map((x,i)=>x-s*b.dir[i]))<1e-6?s:null;};
@@ -915,6 +918,12 @@ function combos(V){
 /* =====================================================================
    ALERTES DE CONCEPTION (règles de bonne pratique, seuils modifiables)
    ===================================================================== */
+/* liaison tuyau / support, ST Rubis Terminal « Tuyauteries hydrocarbures et additifs » §11.4 (types 1 à 5) et §11.3.1 (guide latéral) */
+const LIAISONS={etrier:'Étrier serré sur cale téflon (type 4)',t1:'Patin : collier plat ép. 5 + ½ IPE 200 soudé (type 1)',t2:'Tôle intermédiaire + ½ IPE 200 (type 2, DN 25 à 200)',t2a:'Tôle intermédiaire + support mécano-soudé (type 2a, DN > 200)',t3:'Tôle intermédiaire posée sur le support (type 3)',t5:'Tuyau posé sur plat (type 5)'};
+const LIAIS_NOM={t1:'type 1 – collier plat ép. 5 + ½ IPE 200 soudé',t2:'type 2 – tôle intermédiaire ép. 5 + ½ IPE 200 soudé',t2a:'type 2a – tôle intermédiaire + support mécano-soudé',t3:'type 3 – tôle intermédiaire ép. 5',t5:'type 5 – plat sous le tuyau'};
+const GUIDES={non:'Sans',corn:'Cornières L 50×5',plat:'Plats 50×5',rond:'Ronds Ø12'};
+const liaisonT=t=>t.liaison||'etrier', avecEtrier=t=>liaisonT(t)==='etrier';
+const hLiaison=(t,D)=>{ if(+t.hl>0) return +t.hl; return {etrier:D.sabot,t1:105,t2:105,t2a:150,t3:5,t5:10}[liaisonT(t)]; };      // hauteur sous le tuyau (mm) : ½ IPE 200 = 100 mm + collier ou tôle 5 mm
 function diamEtrier(t){
   if(t.etrier!==''&&t.etrier!=null&&+t.etrier>0) return +t.etrier;
   const dn=t.mode==='base'?+t.dn:(PIPES.reduce((a,b)=>Math.abs(b.od-t.P.De)<Math.abs(a.od-t.P.De)?b:a).dn);
@@ -953,13 +962,21 @@ function alertes(D,V){
     add('info',`${SANDW()?'Sandwich':'Crapautage'} sur ${escH(G.p.n)} existant – ${escH(a.lib)}`,`Profilé existant à justifier par ailleurs (flexion locale de la semelle, effort tranchant, ${SANDW()?'serrage des tiges':'glissement des crapauds'}) ; position : ${G.rot?'tourné de 90° (tranche des semelles contre la platine)':'semelle contre la platine'}.`,'NF EN 1993-1-8 §6'); });
   for(const t of Gm.T){
     const b=Gm.B[t.bi], p=b.p, horiz=!b.vert, lu=largeurUtile(p,horiz,b);
-    const d=diamEtrier(t), d0=d+(d<=14?1:d<=24?2:3), need=2.4*d0, dn=t.mode==='base'?+t.dn:null, nom=`${escH(t.nom)} (${t.mode==='base'?'DN'+t.dn:'Ø'+t.P.De}) sur ${escH(b.lib.toLowerCase())}`;
+    const lia=liaisonT(t), d=diamEtrier(t), d0=d+(d<=14?1:d<=24?2:3), need=2.4*d0, dn=t.mode==='base'?+t.dn:null, nom=`${escH(t.nom)} (${t.mode==='base'?'DN'+t.dn:'Ø'+t.P.De}) sur ${escH(b.lib.toLowerCase())}`;
+    if(lia!=='etrier'){ const De=t.P.De, dnv=t.mode==='base'?+t.dn:De/25.4;
+      if(lia==='t2'&&De>219.1+1) add('warn',`Type 2 au-delà du DN200 – ${nom}`,'La spécification Rubis réserve le type 2 (tôle intermédiaire + Té) aux DN25 à DN200 ; au-delà (DN > 200) : type 2a, tôle intermédiaire + support mécano-soudé.','ST Rubis Terminal §11.4');
+      if(lia==='t2a'&&De<=219.1+1) add('info',`Type 2a sur DN ≤ 200 – ${nom}`,'Le type 2a de la spécification Rubis est prévu pour les DN > 200 ; en DN25 à DN200 le type 2 suffit.','ST Rubis Terminal §11.4');
+      if(['t1','t2','t2a','t3'].includes(lia)) add('info',`Tôle ou collier soudé – ${nom}`,'Tôles intermédiaires de même nature que la tuyauterie, soudées en continu, avec un perçage Ø8 sur la génératrice inférieure (passage du gaz).','ST Rubis Terminal §11.4');
+      if(t.guide&&t.guide!=='non'){ const ok={t1:['corn','plat'],t2:['corn','plat'],t2a:['corn','plat'],t3:['corn','rond'],t5:['corn','rond']}[lia]||[]; if(!ok.includes(t.guide)) add('warn',`Guide latéral non prévu pour ce type – ${nom}`,`La spécification Rubis prévoit, pour ${LIAIS_NOM[lia].split(' – ')[0]}, un guidage latéral en ${ok.map(k=>GUIDES[k].toLowerCase()).join(' ou ')} (jeu 10 mm, chanfrein).`,'ST Rubis Terminal §11.3.1'); }
+    }
+    else if(t.guide&&t.guide!=='non') add('info',`Guide latéral sur étrier – ${nom}`,'Avec un étrier (type 4) la spécification prévoit un étrier serré avec jeu et, si nécessaire, un guide vertical ; le guide latéral est décrit pour les types 1, 2, 3 et 5.','ST Rubis Terminal §11.3');
+    if(lia!=='etrier'){} else
     if(lu.ameI) add('bloq',`Profilé en I tourné : pas d'appui plan – ${nom}`,`Le tuyau ferait face à l'âme, entre les ailes du ${escH(p.n)} : il n'y a pas de face plane pour l'étrier. Garder l'orientation « grande inertie dans le plan des tuyaux », utiliser un U (âme face au tuyau) ou prévoir une platine soudée.`,'Règle de l\'art supportage',b.role);
-    else if(p.f==='CHS') add('info',`Étrier sur tube rond – ${nom}`,'Pas de face plane pour l\'étrier : prévoir une patte ou une platine soudée sur le tube.');
-    else if(lu.l<need) add('bloq',`Pince insuffisante pour l'étrier M${d} – ${nom}`,`Largeur plate disponible (${lu.face} du ${escH(p.n)}) = ${f(lu.l,0)} mm &lt; 2 × 1,2·d<sub>0</sub> = ${f(need,0)} mm (d<sub>0</sub> = ${d0} mm). Profilé trop petit pour cette tuyauterie : choisir un profilé plus large (ex. UPN, UPE) ou une patte rapportée.`,'Pince e<sub>2</sub> ≥ 1,2·d<sub>0</sub> – NF EN 1993-1-8 Tab. 3.3',b.role);
-    if((dn&&dn>dnB)||(!dn&&t.P.De>(PIPES.find(x=>x.dn>=dnB)||{od:9e9}).od)) add('warn',`Gros diamètre sur étrier – ${nom}`,`Au-delà du DN${dnB}, préférer un berceau ou un sabot soudé (répartition de la charge, ovalisation).`,'Règle de l\'art supportage');
-    if(t.P.ecal>0&&D.sabot<=0) add('warn',`Tuyauterie calorifugée sans sabot – ${nom}`,`Calorifuge ${f(t.P.ecal,0)} mm : l'étrier écraserait l'isolant. Prévoir un sabot (cale) de hauteur ≥ ${f(t.P.ecal,0)} mm.`,'Règle de l\'art supportage');
-    else if(t.P.ecal>0&&D.sabot<t.P.ecal) add('warn',`Sabot plus bas que le calorifuge – ${nom}`,`Sabot ${f(D.sabot,0)} mm &lt; calorifuge ${f(t.P.ecal,0)} mm.`,'Règle de l\'art supportage');
+    else if(p.f==='CHS'&&lia==='etrier') add('info',`Étrier sur tube rond – ${nom}`,'Pas de face plane pour l\'étrier : prévoir une patte ou une platine soudée sur le tube.');
+    else if(lia==='etrier'&&lu.l<need) add('bloq',`Pince insuffisante pour l'étrier M${d} – ${nom}`,`Largeur plate disponible (${lu.face} du ${escH(p.n)}) = ${f(lu.l,0)} mm &lt; 2 × 1,2·d<sub>0</sub> = ${f(need,0)} mm (d<sub>0</sub> = ${d0} mm). Profilé trop petit pour cette tuyauterie : choisir un profilé plus large (ex. UPN, UPE) ou une patte rapportée.`,'Pince e<sub>2</sub> ≥ 1,2·d<sub>0</sub> – NF EN 1993-1-8 Tab. 3.3',b.role);
+    if(lia==='etrier'&&((dn&&dn>dnB)||(!dn&&t.P.De>(PIPES.find(x=>x.dn>=dnB)||{od:9e9}).od))) add('warn',`Gros diamètre sur étrier – ${nom}`,`Au-delà du DN${dnB}, préférer un berceau ou un sabot soudé (répartition de la charge, ovalisation).`,'Règle de l\'art supportage');
+    if(lia==='etrier'&&t.P.ecal>0&&D.sabot<=0) add('warn',`Tuyauterie calorifugée sans sabot – ${nom}`,`Calorifuge ${f(t.P.ecal,0)} mm : l'étrier écraserait l'isolant. Prévoir un sabot (cale) de hauteur ≥ ${f(t.P.ecal,0)} mm.`,'Règle de l\'art supportage');
+    else if(lia==='etrier'&&t.P.ecal>0&&D.sabot<t.P.ecal) add('warn',`Sabot plus bas que le calorifuge – ${nom}`,`Sabot ${f(D.sabot,0)} mm &lt; calorifuge ${f(t.P.ecal,0)} mm.`,'Règle de l\'art supportage');
     const rc=t.P.Dc/2000, re=t.P.De/2000+d/1000;
     if(b.vert){
       if(t.s>=b.L-1e-6) add('warn',`Tuyauterie en bout de ${escH(b.lib.toLowerCase())} – ${nom}`,`L'étrier (± ${f(re*1000,0)} mm autour de l'axe) doit être entièrement repris : allonger le profilé d'au moins ${f(re*1000,0)} mm au-delà de l'axe.`);
@@ -1237,11 +1254,25 @@ function specDessin(D,V,opt={}){
     if(t.P.ecal){ const rc=t.P.Dc/2000; cercles.push({c:[c[0]+Lp,c[1],c[2]],r:rc,n:[1,0,0],style:'tirets'});
       [-1,1].forEach(sg=>{ aides.push({type:'tirets',pts:[[c[0]-Lp,c[1],c[2]+sg*rc],[c[0]+Lp,c[1],c[2]+sg*rc]],vues:['gauche','droite']},{type:'tirets',pts:[[c[0]-Lp,c[1]+sg*rc,c[2]],[c[0]+Lp,c[1]+sg*rc,c[2]]],vues:['dessus']}); }); }
     // étrier (U-bolt) : demi-cercle côté opposé à la barre + branches jusqu'à la sous-face de la barre
-    const de=diamEtrier(t)/1000, re=r+de/2, side=b.vert?[0,0,1]:[0,1,0], base=add3(t.pt,mul3(up,(b.vert?b.bord([0,1,0]):b.bord([0,0,1])).lo-0.02)), arc=[];
-    for(let k=0;k<=18;k++){ const a=Math.PI*k/18, p=add3(c,add3(mul3(side,re*Math.cos(a)),mul3(up,re*Math.sin(a)))); arc.push([c[0]+Lp,p[1],p[2]]); }
-    const pied=s=>{const q=add3(base,mul3(side,s*re));return [c[0]+Lp,q[1],q[2]];};
-    aides.push({type:'fort',pts:[pied(1),...arc,pied(-1)],vues:['face']});
-    etiq.push({vue:'face',p:[c[0]+Lp,c[1]+r*0.7,c[2]+r*0.7],txt:`${t.nom||'L'+(i+1)} – ${t.mode==='base'?'DN'+t.dn+' ':''}Ø${f(t.P.De,1)}${t.P.ecal?' + calo. '+t.P.ecal:''}`,dx:10,dy:-8-6*i}); });
+    const side=b.vert?[0,0,1]:[0,1,0], hi0=(b.vert?b.bord([0,1,0]):b.bord([0,0,1])).hi, hl=hLiaison(t,D)/1000, lia=liaisonT(t);
+    if(lia==='etrier'){ const de=diamEtrier(t)/1000, re=r+de/2, side=b.vert?[0,0,1]:[0,1,0], base=add3(t.pt,mul3(up,(b.vert?b.bord([0,1,0]):b.bord([0,0,1])).lo-0.02)), arc=[];
+      for(let k=0;k<=18;k++){ const a=Math.PI*k/18, p=add3(c,add3(mul3(side,re*Math.cos(a)),mul3(up,re*Math.sin(a)))); arc.push([c[0]+Lp,p[1],p[2]]); }
+      const pied=s=>{const q=add3(base,mul3(side,s*re));return [c[0]+Lp,q[1],q[2]];};
+      aides.push({type:'fort',pts:[pied(1),...arc,pied(-1)],vues:['face']}); }
+    else {          // patin (types 1, 2, 2a, 3, 5, ST Rubis) : élément soudé sous le tuyau, posé sur le profilé ; guide latéral éventuel
+      const X0=c[0], cb=(sg,hh)=>add3(c,mul3(up,sg*hh)), rect=(ctr,L,w,hh)=>DESSIN.prisme([ctr[0]-L/2,ctr[1],ctr[2]],[1,0,0],side,up,L,[[-w/2,-hh/2],[w/2,-hh/2],[w/2,hh/2],[-w/2,hh/2]],null);
+      const ctrAt=(dz,ds=0)=>add3(add3(t.pt,mul3(up,hi0+dz)),mul3(side,ds)), Lp2=0.15, tole=0.005;
+      if(lia==='t1'){ S.push(DESSIN.cylindre([X0-0.02,c[1],c[2]],[X0+0.02,c[1],c[2]],r+tole,r)); S.push(rect(ctrAt(0.005),0.10,0.10,0.01)); S.push(rect(ctrAt(0.01+(hl-tole-0.01)/2),0.10,0.01,hl-tole-0.01)); }
+      if(lia==='t2'||lia==='t2a'||lia==='t3'){ S.push(rect(ctrAt(hl-tole/2),Lp2,Math.min(0.6*t.P.De/1,0.3),tole)); }
+      if(lia==='t2'){ S.push(rect(ctrAt(0.005),0.10,0.10,0.01)); S.push(rect(ctrAt(0.01+(hl-tole-0.01)/2),0.10,0.01,hl-tole-0.01)); }
+      if(lia==='t2a'){ S.push(rect(ctrAt(0.005),Lp2,0.14,0.01)); [-1,1].forEach(sg=>S.push(rect(ctrAt(0.01+(hl-tole-0.01)/2,sg*0.05),Lp2,0.008,hl-tole-0.01))); }
+      if(lia==='t3') S.push(rect(ctrAt(tole/2),Lp2,Math.min(0.6*t.P.De,0.3),tole));
+      if(lia==='t5') S.push(rect(ctrAt(hl/2),Lp2,0.10,hl));
+      if(t.guide&&t.guide!=='non'){ const hg=Math.max(hl,0.06)+0.03; [-1,1].forEach(sg=>{ const ds=sg*(r+0.01+0.004);
+        if(t.guide==='rond') S.push(DESSIN.cylindre(add3(add3(t.pt,mul3(up,hi0)),mul3(side,ds)).map((v,k)=>k===0?X0-0.03:v),add3(add3(add3(t.pt,mul3(up,hi0)),mul3(side,ds)),mul3(up,hg)).map((v,k)=>k===0?X0-0.03:v),0.006,0));
+        else S.push(rect(ctrAt(hg/2,ds),0.10,0.008,hg)); }); }
+    }
+    etiq.push({vue:'face',p:[c[0]+Lp,c[1]+r*0.7,c[2]+r*0.7],txt:`${t.nom||'L'+(i+1)} – ${t.mode==='base'?'DN'+t.dn+' ':''}Ø${f(t.P.De,1)}${t.P.ecal?' + calo. '+t.P.ecal:''}${liaisonT(t)!=='etrier'?' – patin '+LIAIS_NOM[liaisonT(t)].split(' – ')[0]:''}${t.guide&&t.guide!=='non'?' + guide':''}`,dx:10,dy:-8-6*i}); });
   // --- cotes (vue de face)
   const v=Gm.B.find(b=>b.vert), hz=Gm.B.find(b=>!b.vert);
   const zSol=((Gm.appuis.find(a=>a.k==='sol')||{pt:[0,0,0]}).pt[2])-ep, zPlaf=((Gm.appuis.find(a=>a.k==='plafond')||{pt:[0,0,0]}).pt[2])+ep;
@@ -1275,15 +1306,18 @@ function specDessin(D,V,opt={}){
     if(pm&&!crap){ const P=pm.pt; reperes.push(pm.k==='mur'?{vue:vCote,p:[cx*0.3,0,P[2]+cz*0.3],n:String(rep),dx:-1,dy:-1}:{vue:'dessus',p:[cx*0.3,P[1]-cz*0.3,P[2]],n:String(rep),dx:-1,dy:1}); }
     if(tige){ rep++; nom.push([rep,nP+pl.filter(p=>p.k==='murPied').length,'Contre-plaque – dimensions selon note de chevillage',$('nuance').value,'—','—']); }
     if(sandE){ rep++; nom.push([rep,pl.filter(p=>['sol','mur','plafond','murPied'].includes(p.k)).length,'Contre-plaque (face opposée du profilé existant)',$('nuance').value,'—','—']); } }
-  const ge=new Map(); Gm.T.forEach(t=>{ const d=diamEtrier(t), k=`Étrier (U-bolt) M${d} pour Ø${f(t.P.De,1)}`; ge.set(k,(ge.get(k)||0)+1); });
+  const ge=new Map(); Gm.T.forEach(t=>{ if(!avecEtrier(t)) return; const d=diamEtrier(t), k=`Étrier (U-bolt) M${d} pour Ø${f(t.P.De,1)}`; ge.set(k,(ge.get(k)||0)+1); });
+  const gl=new Map(); Gm.T.forEach(t=>{ const l=liaisonT(t); if(l==='etrier') return; const k=`Patin ${LIAIS_NOM[l]} pour Ø${f(t.P.De,1)} (h = ${f(hLiaison(t,D),0)} mm)`; gl.set(k,(gl.get(k)||0)+1);
+    if(t.guide&&t.guide!=='non'){ const kg=`Guide latéral (${GUIDES[t.guide].toLowerCase()}) pour Ø${f(t.P.De,1)}, jeu 10 mm, chanfrein`; gl.set(kg,(gl.get(kg)||0)+2); } });
+  [...gl.entries()].forEach(([k,n])=>{ rep++; nom.push([rep,n,k,$('nuance').value,'—','—']); });
   [...ge.entries()].forEach(([k,n])=>{ rep++; nom.push([rep,n,k+' + écrous','acier galva.','—','—']); });
-  if(Gm.T[0]) reperes.push({vue:'face',p:[0,Gm.T[0].c[1]-Gm.T[0].P.De/2000*0.7-diamEtrier(Gm.T[0])/2000,Gm.T[0].c[2]+Gm.T[0].P.De/2000*0.7],n:String(rep),dx:-1,dy:-0.6});
+  if(Gm.T[0]) reperes.push({vue:'face',p:[0,Gm.T[0].c[1]-Gm.T[0].P.De/2000*0.7-(avecEtrier(Gm.T[0])?diamEtrier(Gm.T[0]):0)/2000,Gm.T[0].c[2]+Gm.T[0].P.De/2000*0.7],n:String(rep),dx:-1,dy:-0.6});
   const masse=Gm.B.reduce((s,b)=>s+b.p.m*b.L,0);
   const A=(typeof CAHIER!=='undefined'&&CAHIER.existe()&&CAHIER.lire().affaire)||{}, K=opt.cartouche||{affaire:$('affaire').value,client:'',titre:`Support ${$('repere').value||''} – ${TYPES[D.typ].n}`,dessine:$('auteur').value,plan:$('repere').value,
     client1:A.client||'',client2:A.site||'',projet:A.num||'00-000',doc:'PLA',lot:'PIP',chrono:A.chronoPlan||'01',rev:A.indice||'0',bonPour:A.bonPour||'CONSULTATION',revisions:(A.revs||[]).concat([{rev:A.indice||'0',desc:A.motif||'Création du document',par:A.realise||'',verif:A.controle||'',appr:A.approuve||'',date:A.date?new Date(A.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit'}):''}])};
   // --- vues interrompues : plus grande plage sans détail le long d'une barre droite (pas de barre inclinée qui la traverse)
   const interruptions=[]; [[2,[0,0,1]],[1,[0,1,0]]].forEach(([i,ax])=>{
-    const F=[...Gm.B.flatMap(b=>[b.A[i],b.B[i]]),...Gm.T.flatMap(t=>{ const r=t.P.Dc/2000+diamEtrier(t)/1000+0.03; return [t.c[i]-r,t.c[i]+r]; }),...Gm.appuis.flatMap(a=>{ const e=['sol','plafond'].includes(a.k)?(i===2?0.03:cz/2+0.02):a.k==='mur'?(i===2?cz/2+0.02:0.03):0.1; return [a.pt[i]-e,a.pt[i]+e]; })].sort((a,b)=>a-b);
+    const F=[...Gm.B.flatMap(b=>[b.A[i],b.B[i]]),...Gm.T.flatMap(t=>{ const r=t.P.Dc/2000+(avecEtrier(t)?diamEtrier(t):10)/1000+0.03; return [t.c[i]-r,t.c[i]+r]; }),...Gm.appuis.flatMap(a=>{ const e=['sol','plafond'].includes(a.k)?(i===2?0.03:cz/2+0.02):a.k==='mur'?(i===2?cz/2+0.02:0.03):0.1; return [a.pt[i]-e,a.pt[i]+e]; })].sort((a,b)=>a-b);
     let best=null; for(let k=0;k<F.length-1;k++){ const lo=F[k], hi=F[k+1]; if(hi-lo<0.45) continue;
       const porte=Gm.B.some(b=>Math.abs(b.dir[i])>0.99&&Math.min(b.A[i],b.B[i])<=lo+1e-6&&Math.max(b.A[i],b.B[i])>=hi-1e-6), incl=Gm.B.some(b=>Math.abs(b.dir[i])>0.05&&Math.abs(b.dir[i])<0.99&&Math.min(b.A[i],b.B[i])<hi&&Math.max(b.A[i],b.B[i])>lo);
       if(porte&&!incl&&(!best||hi-lo>best[1]-best[0])) best=[lo,hi]; }
@@ -1300,7 +1334,7 @@ function specDessin(D,V,opt={}){
   const phase=opt.phase||(CAHIER.existe()?(CAHIER.lire().affaire.phase||'APS'):'APS/APD');
   const TRN={galva:'Traitement de surface : galvanisation à chaud après fabrication (NF EN ISO 1461).',peinture:'Traitement de surface : peinture (système à préciser selon NF EN ISO 12944, catégorie de corrosivité du site).'};
   return {repSupport:opt.repSupport||'',format:opt.format||formatIndus,statut:{phase},vues,solides:S,tableaux,scu:!!opt.ddc||!!opt.scu,appuis:appuisL||[],interruptions:opt.interrompre===false?[]:interruptions,iso:opt.perspective===false?null:iso,aides,cercles,sols,murs,cotes,reperes,etiquettes:etiq,nomenclature:nom,cartouche:K,
-    notes:[`Cotes en mm${lettres?' (valeurs : tableau des configurations)':''} : a = positionnement des tuyauteries (axe), autres cotes = géométrie du support. Platines et fixations représentées à titre indicatif : dimensions, épaisseurs, entraxes et chevilles selon la note de chevillage.`,`Longueurs entre axes du modèle de calcul : longueurs de débit à confirmer en fabrication.`,`Acier ${$('nuance').value} — masse acier ≈ ${f(masse,1)} kg${varie?' (configuration '+opt.tableau.rows[0][0]+')':''} (profilés seuls, hors platines et visserie). Tuyauteries représentées sur ±${Lp*1000} mm.`,...(opt.traitement&&TRN[opt.traitement]?[TRN[opt.traitement]]:[])]};
+    notes:[`Cotes en mm${lettres?' (valeurs : tableau des configurations)':''} : a = positionnement des tuyauteries (axe), autres cotes = géométrie du support. Platines et fixations représentées à titre indicatif : dimensions, épaisseurs, entraxes et chevilles selon la note de chevillage.`,`Longueurs entre axes du modèle de calcul : longueurs de débit à confirmer en fabrication.`,`Acier ${$('nuance').value} — masse acier ≈ ${f(masse,1)} kg${varie?' (configuration '+opt.tableau.rows[0][0]+')':''} (profilés seuls, hors platines et visserie). Tuyauteries représentées sur ±${Lp*1000} mm.`,...(opt.traitement&&TRN[opt.traitement]?[TRN[opt.traitement]]:[]),...(Gm.T.some(t=>['t1','t2','t2a','t3'].includes(liaisonT(t)))?['Tôles intermédiaires de même nature que la tuyauterie, soudées en continu, avec un perçage Ø8 sur la génératrice inférieure (ST Rubis Terminal §11.4).']:[])]};
 }
 function planIndus(D,V,opt){ return DESSIN.planche(specDessin(D,V,opt)); }
 function majIndus(){ if(!modeIndus||!dernier) return; try{ const P=planIndus(dernier.D,dernier.V,{format:formatIndus,ddc:$('ddcInd').checked}); $('vInd').innerHTML=P.svg; $('nInd').innerHTML=`Échelle 1:${P.echelle} sur ${P.format} paysage · projection européenne · faces cachées supprimées. ${P.format==='A3'?'Gabarit et cartouche FIP A3 (blocs à attributs dans le DXF).':'Cartouche simplifié en A4 (le gabarit FIP est en A3).'}`+(P.format==='A4'&&P.echelle>20?' <b style="color:#b26a00">⚠ Format A4 trop petit pour ce contenu (échelle réduite) : préférer l\'A3.</b>':''); dernier.planche=P; }
@@ -1522,7 +1556,7 @@ function resumeS1(){                                     // résultats synthéti
   return {type:D.typ,typeNom:TYPES[D.typ].n,nuance:$('nuance').value,profils:[...new Set(V.Gm.B.map(b=>b.p.n))],
     barres:V.Gm.B.map(b=>({lib:b.lib,profil:b.p.n,f:b.p.f,L:b.L,m:b.p.m})),masse:V.Gm.B.reduce((s,b)=>s+b.p.m*b.L,0),
     taux:V.gov.r,critere:V.gov.n.replace(/<[^>]+>/g,''),statut,bloq:nb,warn:nw,alertes:A.filter(a=>a.niv!=='info').map(a=>(a.niv==='bloq'?'⛔ ':'⚠ ')+a.titre.replace(/<[^>]+>/g,'')),
-    tuyaux:V.Gm.T.map(t=>({nom:t.nom,desc:t.P.desc,G:V.CC.detail[V.Gm.T.indexOf(t)].G,barre:V.Gm.B[t.bi].lib,d:diamEtrier(t),dn:t.mode==='base'?+t.dn:null,De:t.P.De})),
+    tuyaux:V.Gm.T.map(t=>({nom:t.nom,desc:t.P.desc,G:V.CC.detail[V.Gm.T.indexOf(t)].G,barre:V.Gm.B[t.bi].lib,d:avecEtrier(t)?diamEtrier(t):0,liaison:liaisonT(t),guide:t.guide||'non',hl:hLiaison(t,D),dn:t.mode==='base'?+t.dn:null,De:t.P.De})),
     fix:{mode:$('fix').value||'chev',d:+$('tD').value,cl:$('tCl').value},appuis:env.map(E=>({lib:E.a.lib,k:E.a.k,profil:(V.Gm.B.find(b=>[b.A,b.B].some(P=>Math.hypot(...P.map((v,i)=>v-E.a.pt[i]))<1e-6))||V.Gm.B[0]).p.n,ELU:E.ELU.map(e=>e.v),SIS:V.res.some(r=>r.c.type==='Sismique')?E.SIS.map(e=>e.v):null,
       cas:Object.fromEntries(['G','FL','T','S','WY','WX','EP','EX','EY'].filter(c=>V.R[c]).map(c=>[c,V.R[c].reactions[E.a.n].map(x=>-x)]))})),
     an1:V.Gm.appuis.map((a,ia)=>({a,ia})).filter(({a})=>chevillable(a.k))
@@ -1566,13 +1600,13 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.91"></script>
-<script src="../commun/aide.js?v=2.91"></script>
-<script src="../commun/notes.js?v=2.91"></script>
-<script src="ndc-s1.js?v=2.91"></script>
+<script src="../commun/replier.js?v=2.92"></script>
+<script src="../commun/aide.js?v=2.92"></script>
+<script src="../commun/notes.js?v=2.92"></script>
+<script src="ndc-s1.js?v=2.92"></script>
 <script>document.head.insertAdjacentHTML("beforeend",`<style>${NDC_CSS}</style>`); ndcUI();</script>
-<script src="aide-s1.js?v=2.91"></script>
-<script src="../commun/export.js?v=2.91"></script>
+<script src="aide-s1.js?v=2.92"></script>
+<script src="../commun/export.js?v=2.92"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
