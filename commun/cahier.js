@@ -16,7 +16,7 @@ const CAHIER = (() => {
     ["rBord", "Distance mini tuyau – bord (mm)", 50], ["rTors", "Alerte torsion (% fy/√3)", 30]];
   /* Modèle (version 2) : types[] = { id, nom (ST-01 / SPE-1), kind 's1'|'spe', designation, etat (S1), cotesDef, cotes0, vues,
        plan, masse (spe), ddc (spe), configs: [{ id, n, qte, reperes, lignes, cotes (écarts / cotes0), resume }] } */
-  const REGLAGES = { prefST: "ST-", prefSPE: "SPE-", chev: 4, majo: 10 };
+  const REGLAGES = { prefST: "ST-", prefSPE: "SPE-", chev: 4, majo: 10, trait: "galva", docsRef: "", notesGen: "" };
   const vide = () => ({ version: 2, reglages: { ...REGLAGES }, rapport: { niveau: "simple" }, affaire: { num: "", intitule: "", client: "", site: "", doc: "", indice: "A", date: new Date().toISOString().slice(0, 10), phase: "APS", realise: "", controle: "", approuve: "", logo: "" },
     params: Object.fromEntries(PARAMS.map(([k, , d]) => [k, d])), climat: null, types: [] });
   function migrer(o) {                                         // version 1 (supports[]) → version 2 (types[] + configurations)

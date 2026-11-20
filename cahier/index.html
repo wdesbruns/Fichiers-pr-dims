@@ -4,21 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.77"></script>
+<script src="../commun/auth.js?v=2.85"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — CS Cahier de supportage</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.77">
-<script src="../commun/acier.js?v=2.77"></script>
-<script src="../commun/cahier.js?v=2.77"></script>
-<script src="../commun/pictos-s1.js?v=2.77"></script>
-<script src="../commun/notes.js?v=2.77"></script>
-<script src="../commun/ident.js?v=2.77"></script>
-<script src="../commun/data/gabarit-a3.js?v=2.77"></script>
-<script src="../commun/dessin.js?v=2.77"></script>
-<script src="../commun/topo.js?v=2.77"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.85">
+<script src="../commun/acier.js?v=2.85"></script>
+<script src="../commun/cahier.js?v=2.85"></script>
+<script src="../commun/pictos-s1.js?v=2.85"></script>
+<script src="../commun/notes.js?v=2.85"></script>
+<script src="../commun/ident.js?v=2.85"></script>
+<script src="../commun/data/gabarit-a3.js?v=2.85"></script>
+<script src="../commun/data/gabarit-a2.js?v=2.85"></script>
+<script src="../commun/dessin.js?v=2.85"></script>
+<script src="../commun/topo.js?v=2.85"></script>
 <style>
   .picto{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;border:1px solid var(--line);border-radius:6px;padding:2px 8px 2px 2px;background:#fff;font-size:12.5px;cursor:default}
   .picto.choix{cursor:pointer;border-color:#1f6fd1}.picto svg{width:44px;height:35px}.picto.mini{padding:0;border:0;background:none}.picto.mini svg{width:30px;height:24px}
@@ -41,8 +42,8 @@
   .b-nc{background:#eef0f3;color:#5f6670}.b-spe{background:#f3ead2;color:#6b5200}
   .fiche{break-before:page}
   .planche{background:#fff;border:1px solid var(--line);border-radius:6px;margin:0 0 10px;overflow:hidden}.planche svg{display:block;width:100%;height:auto}
-  @page plA3{size:A3 landscape;margin:0} @page plA4{size:A4 landscape;margin:0}
-  @media print{.planche{border:0;border-radius:0;margin:0;break-before:page;break-after:page}.planche.A3{page:plA3}.planche.A4{page:plA4}.planche.A3 svg{width:420mm;height:297mm}.planche.A4 svg{width:297mm;height:210mm}}
+  @page plA2{size:A2 landscape;margin:0} @page plA3{size:A3 landscape;margin:0} @page plA4{size:A4 landscape;margin:0}
+  @media print{.planche{border:0;border-radius:0;margin:0;break-before:page;break-after:page}.planche.A2{page:plA2}.planche.A2 svg{width:594mm;height:420mm}.planche.A3{page:plA3}.planche.A4{page:plA4}.planche.A3 svg{width:420mm;height:297mm}.planche.A4 svg{width:297mm;height:210mm}}
   .vuesType{display:grid;grid-template-columns:1.25fr .75fr 1.15fr;gap:8px;align-items:start}
   .vuesType img{width:100%;border:1px solid var(--line);border-radius:6px}
   .vuesType svg{width:100%;height:auto}
@@ -60,7 +61,7 @@
   <a href="../accueil.html" class="back">← Accueil</a>
   <div style="flex:1 1 auto">
     <h1><span class="code">CS</span>Cahier de supportage</h1>
-    <div class="sub">Supports types et configurations · supports spéciaux · BOM · plans types cotés · descentes de charges</div>
+    <div class="sub">Supports types et configurations · supports spéciaux · BOM · plans types cotés</div>
   </div>
   <button onclick="imprimer()">🖨️ Imprimer / PDF</button>
 </header>
@@ -75,23 +76,25 @@
     <div class="row"><div><label>Phase</label><select id="a_phase" data-a="phase"><option>APS</option><option>APD</option></select></div><div><label>Réalisé par</label><input id="a_realise" data-a="realise"></div></div>
     <div class="row"><div><label>Contrôlé par</label><input id="a_controle" data-a="controle"></div><div><label>Approuvé par</label><input id="a_approuve" data-a="approuve"></div></div>
     <div class="row3"><div><label>Lot</label><input id="a_lot" data-a="lot"></div><div><label>Motif de l'émission (indice en cours)</label><input id="a_motif" data-a="motif" placeholder="Création du document"></div><div><label>Bon pour</label><select id="a_bonPour" data-a="bonPour"><option>CONSULTATION</option><option>APPROBATION</option><option>INFORMATION</option><option>EXÉCUTION</option></select></div></div>
-    <div class="row"><div><label>Code « Doc » des plans (cartouche)</label><input id="a_codePlan" data-a="codePlan" placeholder="PLN"></div><div><label>Chrono des plans</label><input id="a_chronoPlan" data-a="chronoPlan" placeholder="01"></div></div>
+    <div class="row"><div><label>Chrono des plans</label><input id="a_chronoPlan" data-a="chronoPlan" placeholder="01"></div><div><label>N° des plans (cartouche)</label><input value="Lot PIP · code doc PLA" disabled title="Imposé : lot PIP, code document PLA"></div></div>
     <div id="aRevs"></div>
     <label>Logo du client (PNG / JPG, repris dans les exports Word)</label>
     <div class="row noprint" style="align-items:center"><input type="file" id="logoFic" accept="image/png,image/jpeg"><div><img id="logoImg" class="logoAff" alt="" hidden> <button class="sec" id="logoSup" type="button" hidden>✕</button></div></div>
-    <div class="note">Ces informations remplissent automatiquement les champs « Affaire », « Rédacteur », « N° de note » des calculettes, la trame FIP des exports Word (page de garde, révisions, en-tête, pied de page) et le cartouche FIP des plans A3 (Projet = N° d'affaire, Doc, Lot, Chrono, Page = n° du type, Rev = indice).</div>
+    <div class="note">Ces informations remplissent automatiquement les champs « Affaire », « Rédacteur », « N° de note » des calculettes, la trame FIP des exports Word (page de garde, révisions, en-tête, pied de page) et le cartouche FIP des plans A3 (Projet = N° d'affaire, Lot = PIP et Doc = PLA imposés, Chrono, Page = n° du type, Rev = indice).</div>
   </div>
 
   <div class="card">
     <h2>Contenu du cahier</h2>
     <label>Modèle</label>
-    <select id="niveau"><option value="bom">BOM (nomenclature seule)</option><option value="simple">Cahier simplifié (plans types cotés, quantités, repérage, BOM)</option><option value="complet">Cahier complet (simplifié + vérifications + descentes de charges)</option><option value="perso">Personnalisé</option></select>
+    <select id="niveau"><option value="bom">BOM (nomenclature seule)</option><option value="simple">Cahier simplifié (plans types cotés, quantités, repérage, BOM)</option><option value="complet">Cahier complet (simplifié + synthèse des vérifications)</option><option value="perso">Personnalisé</option></select>
     <div class="opts" id="opts"></div>
     <label>Présentation des plans types</label>
-    <select id="plansMode"><option value="schema">Vues schématiques (cotes en lettres, perspective)</option><option value="A3">Dessin industriel – planches A3 paysage</option><option value="A4">Dessin industriel – planches A4 paysage</option></select>
-    <div class="note">Toujours inclus : identification, listing des repères, BOM générale. Dessin industriel : une planche par support type (vues orthogonales à l'échelle, perspective, cotes en lettres, tableau des configurations, nomenclature, cartouche), imprimée au format choisi. Si une section DDC est cochée, la planche porte aussi le SCU, le repérage des appuis A1, A2… et le tableau des descentes de charges (enveloppe des configurations).</div>
+    <select id="plansMode"><option value="schema">Vues schématiques (cotes en lettres, perspective)</option><option value="A3">Dessin industriel – planches A3 paysage</option><option value="A2">Dessin industriel – planches A2 paysage</option><option value="A4">Dessin industriel – planches A4 paysage</option></select>
+    <div class="note">Toujours inclus : identification, listing des repères, BOM générale. Dessin industriel : une planche par support type (vues orthogonales à l'échelle, perspective, cotes en lettres, tableau des configurations, nomenclature, cartouche), imprimée au format choisi.</div>
     <h3>Réglages</h3>
     <div class="row"><div><label>Préfixe supports types</label><input id="g_prefST" data-g="prefST"></div><div><label>Préfixe supports spéciaux</label><input id="g_prefSPE" data-g="prefSPE"></div></div>
+    <div class="row"><div><label>Traitement des supports (par défaut)</label><select id="g_trait" data-g="trait"><option value="galva">Galvanisation à chaud (NF EN ISO 1461)</option><option value="peinture">Peinture (NF EN ISO 12944)</option></select></div><div></div></div>
+    <div class="row"><div><label>Documents projet de référence (page de garde, un par ligne)</label><textarea id="g_docsRef" data-g="docsRef" rows="3" placeholder="200-SILK2-25-L-01d-03 - PLAN DE REPERAGE DES SUPPORTS"></textarea></div><div><label>Notes générales (une par ligne ; vide = notes automatiques)</label><textarea id="g_notesGen" data-g="notesGen" rows="3" placeholder="ENSEMBLE DU SUPPORT EN ACIER S235 GALVANISE A CHAUD"></textarea></div></div>
     <div class="row"><div><label>Chevilles par platine (forfait)</label><input id="g_chev" data-g="chev" type="number" min="0" step="1"></div><div><label>Majoration accessoires (%)</label><input id="g_majo" data-g="majo" type="number" min="0" step="1"></div></div>
   </div>
 
@@ -119,7 +122,7 @@
   <div class="printhead"><img src="../commun/img/logo-fip.png" alt="FIP"><strong id="phTitre">Cahier de supportage</strong><br><span id="phInfo"></span></div>
   <div class="card noprint" id="cGestion"><h2>Supports du cahier</h2>
     <div class="actions" style="margin-top:0">
-      <a href="../supports/?v=2.77"><button type="button" title="Créer et calculer un support type dans S1, puis « Ajouter au cahier »">➕ Type calculé (S1)</button></a>
+      <a href="../supports/?v=2.85"><button type="button" title="Créer et calculer un support type dans S1, puis « Ajouter au cahier »">➕ Type calculé (S1)</button></a>
       <button class="sec" id="addNC" type="button" title="Réserver un type (quantités, repères) à calculer plus tard dans S1">➕ Type à calculer</button>
       <button class="sec" id="addSPE" type="button" title="Support spécial dessiné à part (AutoCAD, Plant 3D, Advance Steel)">➕ Support spécial</button>
       <button class="sec" id="recalc" type="button">⟳ Recalculer tout</button>
@@ -130,12 +133,11 @@
   </div>
   <div class="card noprint" id="cSorties"><h2>Plans DXF et notes de calcul</h2>
     <div class="actions"><button type="button" class="sec" id="dxfCS" title="Un folio par support type : une présentation par folio (cartouche en espace papier, vues en espace objet), DXF 2000, mm, calques ISO">⬇ Plans DXF</button> <a href="../rapport-calcul/"><button type="button" style="background:#2b579a;border-color:#2b579a">📘 Notes de calcul → Rapport de calcul (RC)</button></a></div>
-    <div class="note">Plans DXF au format choisi dans « Présentation des plans types » (A3 par défaut), avec tableau des configurations et DDC si une section DDC est cochée. Les notes de calcul détaillées des supports types (simplifiées ou complètes, une par type ou par configuration) sont produites dans le <b>Rapport de calcul</b>, avec l'ossature et les assemblages de l'ouvrage.</div></div>
+    <div class="note">Plans DXF au format choisi dans « Présentation des plans types » (A3 par défaut), avec tableau des configurations. Les notes de calcul détaillées des supports types (simplifiées ou complètes, une par type ou par configuration) sont produites dans le <b>Rapport de calcul</b>, avec l'ossature et les assemblages de l'ouvrage.</div></div>
   <div id="ndcHorsCS" aria-hidden="true" style="position:absolute;left:-12000px;top:0;width:760px;background:#fff"></div>
   <div class="card" id="secCart"><h2>Identification</h2><div id="rCartouche"></div></div>
+  <div class="card" id="secBom"><h2>Nomenclature générale des supports (BOM)</h2><div id="rBom"></div></div>
   <div class="card" id="secListing"><h2>Listing des repères</h2><div id="rListing"></div></div>
-  <div class="card" id="secBom"><h2>Nomenclature générale (BOM)</h2><div id="rBom"></div></div>
-  <div class="card" id="secRecap"><h2>Récapitulatif des descentes de charges</h2><div id="rRecap"></div></div>
   <div id="rTypes"></div>
 </section>
 </main>
@@ -146,11 +148,20 @@ const $=id=>document.getElementById(id), h=escH, f=(x,d=2)=>fmtN(typeof x==="num
 let K=CAHIER.lire(), IMG={};
 const enr=()=>CAHIER.ecrire({...K,types:K.types.map(T=>T.vues&&T.vues.planche?{...T,vues:{...T.vues,planche:null}}:T)});   // planches non stockées (taille) : régénérées à la demande
 const BADGE={ok:'<span class="badge b-ok">✅ conforme</span>',jaune:'<span class="badge b-jaune">⚠ à surveiller</span>',ko:'<span class="badge b-bad">⛔ non vérifié</span>',nc:'<span class="badge b-nc">○ non calculé</span>',spe:'<span class="badge b-spe">spécial</span>'};
-const COMP=['F<sub>x</sub>','F<sub>y</sub>','F<sub>z</sub>','M<sub>x</sub>','M<sub>y</sub>','M<sub>z</sub>'], thC=COMP.map((c,i)=>`<th class="n">${c} (${i<3?'kN':'kNm'})</th>`).join('');
-const CAS={G:'G (poids propre + tuyaux)',T:'T (frottement / dilatation)',S:'S (neige)',WY:'W<sub>Y</sub> (vent ⊥ tuyaux)',WX:'W<sub>X</sub> (vent ∥ tuyaux)',FL:'G<sub>fl</sub> (fluide en service, compris dans G)',EP:'E<sub>P</sub> (eau d\'épreuve)',EX:'E<sub>X</sub> (séisme)',EY:'E<sub>Y</sub> (séisme)'};
-const SECTIONS=[['plans','Plans types : vues cotées, perspective, tableau des configurations'],['verif','Synthèse des vérifications (taux, alertes)'],['ddcType','DDC par type (enveloppe de ses configurations)'],['ddcConf','DDC par configuration'],['ddcCas','DDC détaillée par cas de charge (caractéristique)'],['recap','Récapitulatif des DDC de tous les types']];
-const NIVEAUX={bom:[],simple:['plans'],complet:['plans','verif','ddcType','recap']};
+const SECTIONS=[['plans','Plans types : vues cotées, perspective, tableau des configurations'],['verif','Synthèse des vérifications (taux, alertes)']];
+const NIVEAUX={bom:[],simple:['plans'],complet:['plans','verif']};
 const TITRES={bom:'Nomenclature des supports (BOM)',simple:'Cahier de supportage simplifié',complet:'Cahier de supportage',perso:'Cahier de supportage'};
+/* page de garde / sommaire : tableau page – support – produit – quantité, documents de référence, notes générales, cartouche FIP */
+const sansAcc=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+function notesGenerales(){ const m=(K.reglages.notesGen||'').split('\n').map(x=>x.trim()).filter(Boolean); if(m.length) return m;
+  const tr=[...new Set(K.types.filter(T=>qteT(T)).map(T=>traitementT(T)))], nu=[...new Set(K.types.map(T=>resumeT(T)?.nuance).filter(Boolean))];
+  return [`ENSEMBLE DU SUPPORT EN ACIER ${nu.join(' / ')||'S235'}${tr.length===1?(tr[0]==='galva'?' GALVANISE A CHAUD':' PEINT'):' - TRAITEMENT DE SURFACE : VOIR LE PLAN DE CHAQUE SUPPORT'}`,'BOULONNERIE ACIER CLASSE 8.8']; }
+function specSommaire(md){ const a=K.affaire;
+  return {format:md,cols:['N° DE PAGE','N° DE SUPPORT','PRODUIT','QTE'],largeurs:[1,1.15,1.5,0.8],lignes:K.types.map((T,i)=>[String(i+2),T.nom,sansAcc(T.produit||''),String(qteT(T))]),
+    docsRef:(K.reglages.docsRef||'').split('\n').map(x=>x.trim()).filter(Boolean),notes:notesGenerales(),
+    cartouche:{...cartPlan(a,{}),folio:`01/${String(K.types.length+1).padStart(2,'0')}`,titres:['CAHIER DE SUPPORTAGE',CAHIER.libAffaire(a)||a.intitule||'',`Phase ${a.phase||'APS'} – non valable pour exécution`],titre:'CAHIER DE SUPPORTAGE',affaire:CAHIER.libAffaire(a)||''}}; }
+/* traitement de surface : défaut du cahier, modifiable par type */
+const TRAIT={galva:'Galvanisation à chaud (NF EN ISO 1461)',peinture:'Peinture (NF EN ISO 12944)'}, traitementT=T=>T.trait||K.reglages.trait||'galva';
 const repere=CAHIER.repere, qteT=T=>T.configs.reduce((s,c)=>s+(+c.qte||0),0);
 const stConf=(T,c)=>T.kind==='spe'?'spe':(c.resume?c.resume.statut:'nc');
 const stType=T=>{ if(T.kind==='spe') return 'spe'; const S=T.configs.map(c=>stConf(T,c)); return ['ko','nc','jaune','ok'].find(x=>S.includes(x))||'nc'; };
@@ -160,7 +171,7 @@ const prochain=(pref,pad)=>{ let n=1; const nom=i=>pref+(pad?String(i).padStart(
 
 /* ---------------- affaire ---------------- */
 /* champs du cartouche FIP A3 (gabarit) : Projet . Doc . Lot . Chrono . Page . Rev + révisions */
-const cartPlan=(a,T)=>({client1:a.client||'',client2:a.site||'',projet:a.num||'00-000',doc:a.codePlan||'PLN',lot:a.lot||'',chrono:a.chronoPlan||'01',page:String(K.types.indexOf(T)+1).padStart(2,'0'),rev:a.indice||'0',bonPour:a.bonPour||'CONSULTATION',revisions:IDENT.revisions(a)});
+const cartPlan=(a,T)=>({client1:a.client||'',client2:a.site||'',projectTitle:[a.client,a.site].filter(Boolean).join(' – ')||a.intitule||'',projet:a.num||'00-000',doc:'PLA',lot:'PIP',chrono:a.chronoPlan||'01',page:String(K.types.indexOf(T)+2).padStart(2,'0'),folio:`${String(K.types.indexOf(T)+2).padStart(2,'0')}/${String(K.types.length+1).padStart(2,'0')}`,rev:a.indice||'0',bonPour:a.bonPour||'CONSULTATION',revisions:IDENT.revisions(a)});
 function afficherAffaire(){
   document.querySelectorAll('[data-a]').forEach(el=>{ el.value=K.affaire[el.dataset.a]||''; });
   document.querySelectorAll('[data-g]').forEach(el=>{ el.value=K.reglages[el.dataset.g]??''; });
@@ -235,6 +246,11 @@ function blocSchema(T,ti,defs){
   const leg=defs.map(d=>`<span data-leg="${h(d.l)}"><b>${h(d.l)}</b> : ${h(d.lib||'')}</span>`).join('');
   return `<details class="schema" data-sch="${T.id}" ${ouvert?'open':''}><summary>📐 Schéma coté du type ${h(T.nom)} – les lettres correspondent aux colonnes du tableau</summary>
     <div class="schVues">${v.face?`<div>${v.face}</div><div>${v.cote||''}</div>`:`<div class="note">${T.etat?'⏳ Schéma en cours de génération (moteur S1)…':'Type à calculer : le schéma apparaîtra une fois le type créé dans S1.'}</div>`}<div class="schLeg">${leg}<div class="note">Valeurs de cotes en mm. Cliquer dans une case du tableau met la lettre correspondante en évidence sur le schéma.</div></div></div></details>`; }
+/* aperçu du plan du type (cartouche, vues, nomenclature) : même rendu que la planche imprimée / exportée en DXF */
+function blocPlan(T){ const md=K.rapport.plans||'schema'; if(T.kind==='spe'||md==='schema') return '';
+  const ouvert=PLAN_OUVERT.has(T.id), corps=!T.etat?'<div class="note">Type à calculer : le plan apparaîtra une fois le type créé dans S1.</div>':T.vues?.planche?`<div class="planche ${md}" style="border:1px solid var(--line);background:#fff">${T.vues.planche}</div><div class="note">Planche ${md} du type ${h(T.nom)} (1re configuration) : vérifier le cartouche, les vues, les échelles et la nomenclature avant l'export DXF.</div>`:'<div class="note">Plan non généré : « ⟳ Recalculer tout » ou « 🖼 Générer plans et perspectives ».</div>';
+  return `<details class="schema" data-plan="${T.id}" ${ouvert?'open':''}><summary>🖼 Aperçu du plan ${md} du type ${h(T.nom)}</summary>${corps}</details>`; }
+const PLAN_OUVERT=new Set();
 function moteur(){
   if(api) return Promise.resolve(api);
   return new Promise((ok,ko)=>{ const fr=$('iframeS1'), t0=Date.now();
@@ -255,17 +271,16 @@ async function recalculer0(avecImages){
     for(const c of T.configs){ $('etat').innerHTML=`<div class="msg info">⏳ Calcul ${++i} / ${nTot} : ${h(repere(T,c))}…</div>`;
       A.appliquerCotes({...T.cotes0,...(c.cotes||{})}); c.resume=A.resume(); }
     T.resume=T.configs[0].resume;
-    if(md!=='schema'){ A.appliquerCotes({...T.cotes0,...(T.configs[0].cotes||{})});                     // planche dessinée sur la 1re configuration, DDC = enveloppe des configurations
-    const a=K.affaire, defs=A.cotes().filter(d=>d.id!=='zsol'), avecDDC=sec('ddcType')||sec('ddcConf')||sec('ddcCas')||sec('recap');
+    if(md!=='schema'){ A.appliquerCotes({...T.cotes0,...(T.configs[0].cotes||{})});                     // planche dessinée sur la 1re configuration
     T.vues=A.vues(md==='schema'?{}:argsPlanche(T,A,md));
     }
   }
   K.aRecalc=false; enr(); $('etat').innerHTML=''; tout();
 }
 function argsPlanche(T,A,md){
-    const a=K.affaire, defs=A.cotes().filter(d=>d.id!=='zsol'), avecDDC=sec('ddcType')||sec('ddcConf')||sec('ddcCas')||sec('recap');
-    return {indus:true,format:md,cartouche:{...cartPlan(a,T),affaire:CAHIER.libAffaire(a)||'',client:[a.client,a.site].filter(Boolean).join(' – '),titre:`Support type ${T.nom}${T.designation?' – '+T.designation:''}`,date:a.date?new Date(a.date).toLocaleDateString('fr-FR'):'',indice:a.indice||'',dessine:a.realise||'',verifie:a.controle||'',plan:[a.doc,T.nom].filter(Boolean).join('-')},
-      ddc:avecDDC?envType(T):null,phase:a.phase||'APS',tableau:{titre:'Tableau des configurations (cotes en mm)',cols:['Repère',...defs.map(d=>d.l),'Qté'],rows:T.configs.map(c=>[repere(T,c),...defs.map(d=>{ const v=(c.cotes||{})[d.id]??(T.cotes0||{})[d.id]; return v==null?'—':f(v*1000,0); }),String(+c.qte||0)])}};
+    const a=K.affaire, defs=A.cotes().filter(d=>d.id!=='zsol');
+    return {indus:true,format:md,repSupport:T.nom,cartouche:{...cartPlan(a,T),affaire:CAHIER.libAffaire(a)||'',client:[a.client,a.site].filter(Boolean).join(' – '),titres:['CAHIER DE SUPPORTAGE',`Support type ${T.nom}${T.designation?' – '+T.designation:''}`,`Phase ${a.phase||'APS'} – non valable pour exécution`],titre:`Support type ${T.nom}${T.designation?' – '+T.designation:''}`,date:a.date?new Date(a.date).toLocaleDateString('fr-FR'):'',indice:a.indice||'',dessine:a.realise||'',verifie:a.controle||'',plan:[a.doc,T.nom].filter(Boolean).join('-')},
+      traitement:traitementT(T),phase:a.phase||'APS',tableau:{titre:'Tableau des configurations (cotes en mm)',cols:['Repère',...defs.map(d=>d.l),'Qté'],rows:T.configs.map(c=>[repere(T,c),...defs.map(d=>{ const v=(c.cotes||{})[d.id]??(T.cotes0||{})[d.id]; return v==null?'—':f(v*1000,0); }),String(+c.qte||0)])}};
 }
 /* ---------- sorties : notes de calcul et plans DXF ---------- */
 const typesS1=()=>K.types.filter(T=>T.kind==='s1'&&T.etat);
@@ -283,8 +298,8 @@ async function notesCS(){
 }
 $('dxfCS').onclick=()=>occupe($('dxfCS'),async()=>{ const L=typesS1(); if(!L.length) throw new Error('aucun support type calculé');
   if(K.aRecalc||L.some(T=>T.configs.some(c=>!c.resume))) await recalculer(false);
-  const A=await moteur(), md=(K.rapport.plans&&K.rapport.plans!=='schema')?K.rapport.plans:'A3', pages=[];
-  for(const T of L){ $('etat').innerHTML=`<div class="msg info">⏳ Plan ${h(T.nom)}…</div>`; A.charger(T.etat); A.appliquerCotes({...T.cotes0,...(T.configs[0].cotes||{})}); pages.push({svg:A.plancheVec(argsPlanche(T,A,md)),nom:`F${String(K.types.indexOf(T)+1).padStart(2,'0')} ${T.nom}`}); }
+  const A=await moteur(), md=(K.rapport.plans&&K.rapport.plans!=='schema')?K.rapport.plans:'A3', pages=[{svg:DESSIN.sommaire(specSommaire(md)).svg,nom:'F01 SOMMAIRE'}];
+  for(const T of L){ $('etat').innerHTML=`<div class="msg info">⏳ Plan ${h(T.nom)}…</div>`; A.charger(T.etat); A.appliquerCotes({...T.cotes0,...(T.configs[0].cotes||{})}); pages.push({svg:A.plancheVec(argsPlanche(T,A,md)),nom:`F${String(K.types.indexOf(T)+2).padStart(2,'0')} ${T.nom}`}); }
   $('etat').innerHTML=''; const o=DESSIN.dxf(pages), a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([o],{type:'application/dxf'}));
   a.download=DESSIN.nomFichierPlans(cartPlan(K.affaire,L[0]||{})); document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500); });
 const occupe=async(b,fn)=>{ b.disabled=true; try{ await fn(); }catch(e){ alert('Calcul impossible : '+e.message); } finally{ b.disabled=false; } };
@@ -297,7 +312,7 @@ async function imprimer(){ try{ await preparer(); }catch(e){} setTimeout(()=>win
 /* ---------------- gestion des supports ---------------- */
 function nouveauType(kind){
   const T={id:CAHIER.uid(),kind,nom:kind==='spe'?prochain(K.reglages.prefSPE,false):prochain(K.reglages.prefST,true),designation:'',etat:null,configs:[{id:CAHIER.uid(),n:1,qte:1,reperes:'',lignes:'',cotes:{},resume:null}]};
-  if(kind==='spe'){ T.plan=''; T.masse=''; T.ddc=[]; }
+  if(kind==='spe'){ T.plan=''; T.masse=''; }
   K.types.push(T); enr(); tout();
 }
 $('addNC').onclick=()=>nouveauType('s1'); $('addSPE').onclick=()=>nouveauType('spe');
@@ -318,6 +333,8 @@ function gestion(){ setTimeout(schemasManquants,200);
     const tete=`<div class="tete">${pictoT(T,ti)} <input data-tn="${ti}" value="${h(T.nom)}" style="width:90px;font-weight:700"> <input data-td="${ti}" value="${h(T.designation||'')}" placeholder="${spe?'Désignation (ex. arbre de Noël)':h(r?.typeNom||'Désignation')}" style="flex:1;min-width:140px">
       ${spe?`<input data-tp="${ti}" value="${h(T.plan||'')}" placeholder="N° de plan" style="width:120px"> <input data-tm="${ti}" type="number" min="0" step="any" value="${h(T.masse??'')}" placeholder="kg / u" title="Masse unitaire estimée (kg)" style="width:80px">`:`<span class="note">${h(r?(r.profils||[]).join(' + ')+' '+(r.nuance||''):'à calculer dans S1')}</span>`}
       ${BADGE[stType(T)]}
+      <input data-tpr="${ti}" value="${h(T.produit||'')}" placeholder="Produit (ex. HYDROCARBURES)" title="Produit véhiculé : colonne « Produit » du sommaire" style="width:150px">
+      <select data-ttr="${ti}" title="Traitement de surface du type" style="width:auto">${Object.entries(TRAIT).map(([k,l])=>`<option value="${k}" ${traitementT(T)===k?'selected':''}>${k==='galva'?'Galva':'Peinture'}</option>`).join('')}</select>
       <span class="act">${spe?'':`<a href="${lienS1(T,T.configs[0])}"><button type="button" title="Ouvrir le type dans S1">✎ S1</button></a>`}<button class="sec" type="button" data-tdup="${ti}" title="Dupliquer le type">⧉</button><button class="sec" type="button" data-tup="${ti}" title="Monter">↑</button><button class="sec" type="button" data-tdel="${ti}" title="Supprimer le type" style="color:var(--bad)">✕</button></span></div>`;
     const tab=`<table><tr><th>Repère</th>${spe?'':defs.map(d=>`<th class="cote" title="${h(d.lib)}">${h(d.l)} (mm)</th>`).join('')}<th class="n">Qté</th><th>Repères</th><th>Lignes / iso</th>${spe?'':'<th class="n">Taux</th><th>Statut</th>'}<th></th></tr>`+
       T.configs.map((c,ci)=>`<tr><td><b>${h(repere(T,c))}</b></td>${spe?'':defs.map(d=>{ const v=(c.cotes||{})[d.id]??(T.cotes0||{})[d.id]; const mod=(c.cotes||{})[d.id]!==undefined;
@@ -325,10 +342,7 @@ function gestion(){ setTimeout(schemasManquants,200);
         <td class="n"><input data-cq="${ti}|${ci}" type="number" min="0" step="1" value="${+c.qte||0}" style="width:56px"></td><td><input data-cr="${ti}|${ci}" value="${h(c.reperes||'')}"></td><td><input data-cl="${ti}|${ci}" value="${h(c.lignes||'')}"></td>
         ${spe?'':`<td class="n">${c.resume?f(c.resume.taux*100,0)+' %':'—'}</td><td>${BADGE[stConf(T,c)]}</td>`}
         <td class="act">${spe?'':`<a href="${lienS1(T,c)}"><button type="button" title="Ouvrir cette configuration dans S1">✎</button></a>`}<button class="sec" type="button" data-cdup="${ti}|${ci}" title="Nouvelle configuration (copie)">⧉</button><button class="sec" type="button" data-cdel="${ti}|${ci}" title="Supprimer" style="color:var(--bad)">✕</button></td></tr>`).join('')+'</table>';
-    const ddcM=spe?`<details ${T.ddc?.length?'open':''}><summary>Descente de charges saisie (ex. issue de Robot) — par support unitaire</summary><table><tr><th>Appui / nœud</th>${thC}<th></th></tr>`+
-      (T.ddc||[]).map((a,ai)=>`<tr><td><input data-dl="${ti}|${ai}" value="${h(a.lib)}"></td>${a.v.map((x,k)=>`<td><input data-dv="${ti}|${ai}|${k}" type="number" step="any" value="${x}" style="width:64px"></td>`).join('')}<td class="act"><button class="sec" type="button" data-ddel="${ti}|${ai}" style="color:var(--bad)">✕</button></td></tr>`).join('')+
-      `</table><button class="sec" type="button" data-dadd="${ti}" style="padding:2px 8px;font-size:12px">＋ appui</button></details>`:'';
-    return `<div class="typeBloc ${spe?'spe':''}" data-tb="${ti}">${tete}${blocSchema(T,ti,defs)}${tab}${ligneAN1(T,ti)}${ddcM}</div>`; }).join('')+
+    return `<div class="typeBloc ${spe?'spe':''}" data-tb="${ti}">${tete}${blocSchema(T,ti,defs)}${blocPlan(T)}${tab}${ligneAN1(T,ti)}</div>`; }).join('')+
     `<div class="note">Cotes en mm ; une cote sur fond jaune est propre à la configuration (sinon valeur du type). Une modification de cote rend la configuration « à recalculer ». Pour changer profilé, tuyauterie ou actions : ✎ S1 sur le type (commun à toutes ses configurations).</div>`;
   const ix=s=>s.split('|').map((x,i)=>i<2?+x:x), on=(sel,ev,fn)=>document.querySelectorAll(sel).forEach(el=>el.addEventListener(ev,()=>fn(el)));
   on('[data-tpk]','click',el=>choisirType(el));
@@ -337,6 +351,8 @@ function gestion(){ setTimeout(schemasManquants,200);
   on('[data-td]','change',el=>{ K.types[+el.dataset.td].designation=el.value; enr(); tout(); });
   on('[data-tp]','change',el=>{ K.types[+el.dataset.tp].plan=el.value; enr(); tout(); });
   on('[data-tm]','change',el=>{ K.types[+el.dataset.tm].masse=el.value===''?'':Math.max(0,+el.value); enr(); tout(); });
+  on('[data-tpr]','change',el=>{ K.types[+el.dataset.tpr].produit=el.value.trim(); enr(); tout(); });
+  on('[data-ttr]','change',el=>{ K.types[+el.dataset.ttr].trait=el.value; K.types.forEach(T=>{ if(T.vues) T.vues.planche=null; }); K.aRecalc=true; enr(); tout(); });
   on('[data-tdel]','click',el=>{ const T=K.types[+el.dataset.tdel]; if(!confirm(`Supprimer le type « ${T.nom} » et ses ${T.configs.length} configuration(s) ?`)) return; K.types.splice(+el.dataset.tdel,1); enr(); tout(); });
   on('[data-tup]','click',el=>{ const i=+el.dataset.tup; if(!i) return; [K.types[i-1],K.types[i]]=[K.types[i],K.types[i-1]]; enr(); tout(); });
   on('[data-tdup]','click',el=>{ const T=K.types[+el.dataset.tdup], c=JSON.parse(JSON.stringify(T)); c.id=CAHIER.uid(); c.configs.forEach(x=>{x.id=CAHIER.uid();x.reperes='';});
@@ -350,10 +366,6 @@ function gestion(){ setTimeout(schemasManquants,200);
     c.id=CAHIER.uid(); c.n=Math.max(...T.configs.map(x=>x.n))+1; c.reperes=''; T.configs.push(c); enr(); tout(); });
   on('[data-cdel]','click',el=>{ const [ti,ci]=ix(el.dataset.cdel), T=K.types[ti]; if(T.configs.length<2){ alert('Un type garde au moins une configuration (supprimer le type sinon).'); return; }
     if(!confirm(`Supprimer la configuration ${repere(T,T.configs[ci])} ?`)) return; T.configs.splice(ci,1); enr(); tout(); });
-  on('[data-dadd]','click',el=>{ const T=K.types[+el.dataset.dadd]; (T.ddc=T.ddc||[]).push({lib:'Appui '+(T.ddc.length+1),v:[0,0,0,0,0,0]}); enr(); tout(); });
-  on('[data-dl]','change',el=>{ const [ti,ai]=ix(el.dataset.dl); K.types[ti].ddc[ai].lib=el.value; enr(); tout(); });
-  on('[data-dv]','change',el=>{ const [ti,ai,k]=ix(el.dataset.dv); K.types[ti].ddc[ai].v[+k]=+el.value||0; enr(); tout(); });
-  on('[data-ddel]','click',el=>{ const [ti,ai]=ix(el.dataset.ddel); K.types[ti].ddc.splice(ai,1); enr(); tout(); });
   etatRecalc();
 }
 /* schéma coté : lettre de la case active en évidence ; état ouvert / replié mémorisé */
@@ -362,11 +374,11 @@ $('rGestion').addEventListener('focusin',e=>{ const el=e.target.closest('[data-c
   const [ti,,id]=el.dataset.cote.split('|'), d=(K.types[+ti].cotesDef||[]).find(x=>x.id===id); if(!d) return;
   bl.querySelectorAll('.schVues text').forEach(t=>{ if(t.textContent.trim()===d.l||t.textContent.trim().startsWith(d.l+' ')) t.classList.add('surbrille'); });
   bl.querySelectorAll(`.schLeg span[data-leg="${CSS.escape(d.l)}"]`).forEach(t=>t.classList.add('on')); });
-$('rGestion').addEventListener('toggle',e=>{ const d=e.target.closest&&e.target.closest('details.schema'); if(!d) return; const k='x'+d.dataset.sch; if(d.open) SCH_OUVERT.delete(k); else SCH_OUVERT.add(k);
+$('rGestion').addEventListener('toggle',e=>{ const dp=e.target.closest&&e.target.closest('details[data-plan]'); if(dp){ if(dp.open) PLAN_OUVERT.add(dp.dataset.plan); else PLAN_OUVERT.delete(dp.dataset.plan); return; } const d=e.target.closest&&e.target.closest('details.schema'); if(!d) return; const k='x'+d.dataset.sch; if(d.open) SCH_OUVERT.delete(k); else SCH_OUVERT.add(k);
   try{ localStorage.setItem('fip.replie.cs.schemas',JSON.stringify([...SCH_OUVERT])); }catch(err){} },true);
 function etatRecalc(){
   const n=K.types.filter(T=>T.kind==='s1'&&T.etat).reduce((s,T)=>s+T.configs.filter(c=>!c.resume).length,0), nc=K.types.filter(T=>T.kind==='s1'&&!T.etat).length;
-  $('etat').innerHTML=(n?`<div class="msg jaune">${n} configuration(s) à recalculer (cotes ou paramètres modifiés) : cliquer « ⟳ Recalculer tout ».</div>`:'')+(nc?`<div class="msg info">${nc} type(s) non calculé(s) : comptés dans le listing, à calculer dans S1 (✎ S1) pour obtenir profilés, BOM et DDC.</div>`:'');
+  $('etat').innerHTML=(n?`<div class="msg jaune">${n} configuration(s) à recalculer (cotes ou paramètres modifiés) : cliquer « ⟳ Recalculer tout ».</div>`:'')+(nc?`<div class="msg info">${nc} type(s) non calculé(s) : comptés dans le listing, à calculer dans S1 (✎ S1) pour obtenir profilés et BOM.</div>`:'');
 }
 
 /* ---------------- chevillage des platines (lien AN1) ----------------
@@ -432,39 +444,20 @@ function bom(){
     `<tr><td colspan="5"><b>Total profilés</b></td><td class="n"><b>${f(tot,1)} kg</b></td></tr><tr><td colspan="5">Majoration platines, goussets, boulonnerie, soudures (${maj} %)</td><td class="n">${f(tot*maj/100,1)} kg</td></tr></table>`:'<div class="note">—</div>');
   const acc=[...Object.entries(PL).map(([k,n])=>[k,n,'u']),...Object.entries(FX).map(([k,n])=>[k,n,'u']),...(nPl&&chev?[[`Chevilles (forfait ${chev} par platine non vérifiée dans AN1)`,nPl*chev,'u']]:[]),...Object.entries(E).sort().map(([k,n])=>[k,n,'u'])];
   html+=`<h3>Platines, fixations et étriers</h3>`+(acc.length?`<table><tr><th>Désignation</th><th class="n">Quantité</th></tr>${acc.map(([k,n])=>`<tr><td>${h(k)}</td><td class="n">${n}</td></tr>`).join('')}</table><div class="note">Platines et chevilles à dimensionner (hors périmètre S1). Un étrier par tuyauterie et par support ; diamètre automatique indicatif ou saisi dans S1.</div>`:'<div class="note">—</div>');
+  const TR={}; K.types.forEach(T=>{ const q=qteT(T); if(q) TR[traitementT(T)]=(TR[traitementT(T)]||[]).concat(T.nom); });
+  html+=`<h3>Traitement de surface</h3><table><tr><th>Traitement</th><th>Types</th></tr>${Object.entries(TR).map(([k,L])=>`<tr><td>${h(TRAIT[k])}</td><td>${L.map(h).join(', ')}</td></tr>`).join('')||'<tr><td colspan="2">—</td></tr>'}</table>`;
   html+=`<h3>Supports spéciaux</h3>`+(SP.length?`<table><tr><th>Repère</th><th>Désignation</th><th>Plan</th><th class="n">Qté</th><th class="n">Masse unitaire (kg)</th><th class="n">Masse (kg)</th></tr>${SP.map(x=>`<tr><td><b>${h(x.rep)}</b></td><td>${h(x.des)}</td><td>${h(x.plan||'')}</td><td class="n">${x.q}</td><td class="n">${x.m==null?'—':f(x.m,1)}</td><td class="n">${x.m==null?'—':f(x.m*x.q,1)}</td></tr>`).join('')}</table>`:'<div class="note">—</div>');
   const totG=tot*(1+maj/100)+mSp;
   html+=`<table style="margin-top:10px"><tr><td><b>Masse acier totale estimée</b> (profilés + majoration${mSp?' + spéciaux renseignés':''})</td><td class="n" style="width:140px"><b>${f(totG,0)} kg</b></td></tr></table><div class="note">Longueurs d'axe des barres du modèle S1 (hors coupes, chutes et recouvrements). Masses linéiques catalogue.</div>`;
   $('rBom').innerHTML=html;
 }
 
-/* ---------------- descentes de charges ---------------- */
-function envType(T){                                    // enveloppe des configurations, par appui et composante
-  const R=T.configs.map(c=>c.resume).filter(r=>r&&r.appuis); if(!R.length) return null;
-  const pire=(L)=>[0,1,2,3,4,5].map(i=>L.filter(Boolean).reduce((a,v)=>Math.abs(v[i])>Math.abs(a)?v[i]:a,0));
-  return R[0].appuis.map((a,ia)=>{ const A=R.map(r=>r.appuis[ia]).filter(Boolean), cas={};
-    Object.keys(CAS).forEach(k=>{ if(A.some(x=>x.cas&&x.cas[k])) cas[k]=pire(A.map(x=>x.cas&&x.cas[k])); });
-    return {lib:a.lib,ELU:pire(A.map(x=>x.ELU)),SIS:A.some(x=>x.SIS)?pire(A.map(x=>x.SIS)):null,cas}; });
-}
-const tdV=(v,b)=>v.map(x=>`<td class="n">${b?'<b>':''}${f(x,2)}${b?'</b>':''}</td>`).join('');
-const NOTE_DDC=`<b>Prédimensionnement (phase APS/APD) – valeurs non valables pour exécution</b>, à confirmer par les études d'exécution. Efforts exercés par le support sur la structure porteuse (X ∥ tuyaux, Y transversal, Z vertical ascendant ; F<sub>z</sub> &lt; 0 = charge descendante), par support unitaire. Enveloppe : pour chaque composante, valeur de plus grande valeur absolue sur l'ensemble des combinaisons et des configurations (composantes non concomitantes, sécuritaire). ELU : NF EN 1990 éq. 6.10 + AN ; sismique : éq. 6.12b et NF EN 1998-1 §4.3.5 (100 % / 30 %).`;
-function tableEnv(env,avecCas){
-  return `<table class="ddc"><tr><th>Appui</th><th>Valeur</th>${thC}</tr>`+env.map(a=>{ const cas=avecCas?Object.keys(a.cas):['G'].filter(k=>a.cas.G); const n=1+(a.SIS?1:0)+cas.length;
-    return `<tr><td rowspan="${n}">${h(a.lib)}</td><td><b>ELU (enveloppe)</b></td>${tdV(a.ELU,1)}</tr>`+(a.SIS?`<tr><td><b>Sismique (enveloppe)</b></td>${tdV(a.SIS,1)}</tr>`:'')+
-      cas.map(k=>`<tr><td>${CAS[k]} – caract.</td>${tdV(a.cas[k])}</tr>`).join(''); }).join('')+'</table>';
-}
-function recap(){
-  const L=K.types.map(T=>({T,env:T.kind==='spe'?(T.ddc?.length?T.ddc.map(a=>({lib:a.lib,ELU:a.v,SIS:null,cas:{}})):null):envType(T)})).filter(x=>x.env);
-  if(!L.length){ $('rRecap').innerHTML='<div class="note">—</div>'; return; }
-  $('rRecap').innerHTML=`<table class="ddc"><tr><th>Type (qté) – appui</th><th>Valeur</th>${thC}</tr>`+L.map(({T,env})=>env.map(a=>{ const n=1+(a.SIS?1:0)+(a.cas.G?1:0);
-    return `<tr><td rowspan="${n}"><b>${h(T.nom)}</b> (×${qteT(T)}) – ${h(a.lib)}</td><td>${T.kind==='spe'?'Saisie (ELU)':'ELU (enveloppe)'}</td>${tdV(a.ELU)}</tr>`+(a.SIS?`<tr><td>Sismique (enveloppe)</td>${tdV(a.SIS)}</tr>`:'')+(a.cas.G?`<tr><td>G caractéristique</td>${tdV(a.cas.G)}</tr>`:''); }).join('')).join('')+`</table><div class="note">${NOTE_DDC}</div>`;
-}
-
 /* ---------------- fiches par type ---------------- */
 function fiches(){
-  const S=K.rapport.sec||{}, avec=S.plans||S.verif||S.ddcType||S.ddcConf||S.ddcCas;
+  const S=K.rapport.sec||{}, avec=S.plans||S.verif;
   if(!avec){ $('rTypes').innerHTML=''; return; }
-  $('rTypes').innerHTML=K.types.map((T,ti)=>{ const spe=T.kind==='spe', r=resumeT(T), defs=T.cotesDef||[];
+  const mdS=K.rapport.plans||'schema', somm=(S.plans&&mdS!=='schema'&&K.types.length)?`<div class="planche ${mdS}" style="border:1px solid var(--line);background:#fff">${DESSIN.sommaire(specSommaire(mdS)).svg}</div>`:'';
+  $('rTypes').innerHTML=somm+K.types.map((T,ti)=>{ const spe=T.kind==='spe', r=resumeT(T), defs=T.cotesDef||[];
     let pre='', s=`<div class="card fiche ${ti?'':'premiere'}"><h2>${spe?'':pictoT(T,null,true)+' '}${spe?'Support spécial':'Support type'} ${h(T.nom)} — ${h(T.designation||r?.typeNom||(typeDe(T)?NOMS_S1[typeDe(T)]+' (non calculé)':(spe?'':'non calculé')))}</h2>`;
     if(spe){ s+=`<table><tr><td>Plan</td><td><b>${h(T.plan||'à établir')}</b> (AutoCAD / Plant 3D / Advance Steel)</td></tr><tr><td>Masse unitaire estimée</td><td>${T.masse===''||T.masse==null?'—':f(+T.masse,1)+' kg'}</td></tr></table>`; }
     else if(!r){ s+='<div class="msg info">Type non calculé : ouvrir dans S1 (✎ S1) pour le dimensionner.</div>'; }
@@ -486,20 +479,13 @@ function fiches(){
       s+=`<h3>Vérifications (configuration la plus sollicitée par critère)</h3><table><tr><th>Critère</th><th class="n">Taux maxi</th><th>Configuration</th></tr>`+
         (r.lignes||[]).map((l,i)=>{ let best={r:-1,c:null}; T.configs.forEach(c=>{ const x=c.resume?.lignes?.[i]; if(x&&x.r>best.r) best={r:x.r,c}; }); return `<tr><td>${h(l.n)}</td><td class="n">${best.c?f(best.r*100,0)+' %':'—'}</td><td>${best.c?h(repere(T,best.c)):''}</td></tr>`; }).join('')+
         `</table><div class="note">Alertes de conception : ${A.length?A.map(h).join(' ; '):'aucune'}.</div>`; }
-    if(spe&&T.ddc?.length&&(S.ddcType||S.ddcConf)) s+=`<h3>Descente de charges saisie (par support unitaire)</h3><table class="ddc"><tr><th>Appui / nœud</th>${thC}</tr>${T.ddc.map(a=>`<tr><td>${h(a.lib)}</td>${tdV(a.v)}</tr>`).join('')}</table>`;
-    if(!spe&&r){ const env=envType(T);
-      if(env&&(S.ddcType||S.ddcCas)) s+=`<h3>Descente de charges du type ${h(T.nom)} (enveloppe de ${T.configs.length} configuration(s), par support unitaire)</h3>${tableEnv(env,S.ddcCas)}`;
-      if(S.ddcConf) s+=`<h3>Descente de charges par configuration (ELU, par support unitaire)</h3><table class="ddc"><tr><th>Configuration – appui</th><th>Valeur</th>${thC}</tr>`+
-        T.configs.filter(c=>c.resume).map(c=>c.resume.appuis.map(a=>`<tr><td>${h(repere(T,c))} – ${h(a.lib)}</td><td>ELU</td>${tdV(a.ELU)}</tr>`+(a.SIS?`<tr><td></td><td>Sismique</td>${tdV(a.SIS)}</tr>`:'')).join('')).join('')+'</table>';
-      if(S.ddcType||S.ddcCas||S.ddcConf) s+=`<div class="note">${NOTE_DDC}</div>`; }
     return pre+s+'</div>'; }).join('');
 }
 
 /* ---------------- affichage général ---------------- */
 function tout(){
   const S=K.rapport.sec||{};
-  $('secRecap').hidden=!S.recap;
-  cartouche(); gestion(); listing(); bom(); recap(); fiches();
+  cartouche(); gestion(); listing(); bom(); fiches();
 }
 
 /* ---------------- fichier ---------------- */
@@ -518,10 +504,10 @@ window.addEventListener('storage',e=>{ if(e.key===CAHIER.CLE){ K=CAHIER.lire(); 
 if(!CAHIER.existe()) enr(); else enr();               // enregistre la migration éventuelle (v1 → v2)
 initRevs(); demarrer();
 </script>
-<script src="../commun/replier.js?v=2.77"></script>
-<script src="../commun/aide.js?v=2.77"></script>
-<script src="aide-cs.js?v=2.77"></script>
-<script src="../commun/export.js?v=2.77"></script>
+<script src="../commun/replier.js?v=2.85"></script>
+<script src="../commun/aide.js?v=2.85"></script>
+<script src="aide-cs.js?v=2.85"></script>
+<script src="../commun/export.js?v=2.85"></script>
 <script>EXPORT.init(CFG);</script>
 </body>
 </html>

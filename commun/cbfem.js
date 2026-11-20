@@ -92,12 +92,17 @@ const CBFEM = (() => {
     return x;
   }
 
-  /* ---------- raideur axiale d'une cheville (N/mm) ----------
-     chimique : déplacement à court terme de l'ETE δ_N0 = f·τ (mm par N/mm²) → k = π·d·h_ef / f ; mécanique : k = N / δ_N0 (ETE) ;
-     à défaut : tige E_s·A_s / h_ef. P : fiche produit de chevilles.js (champ rig facultatif) */
-  function raideurCheville(chimique, d, hef, t) {
-    const As = 0.78 * Math.PI * d * d / 4, L = chimique ? t + 4 * d : 2 * hef;
-    return { k: ES * As / L, L, As, src: chimique ? "tige E_s·A_s/(t + 4·d) : longueur libre dans la platine + longueur de transfert de l'adhérence" : "tige E_s·A_s/(2·h_ef) : allongement jusqu'au cône d'expansion et glissement" };
+  /* ---------- raideur axiale d'une cheville (N/mm) — À VÉRIFIER ----------
+     PROFIS utilise des raideurs d'essais non publiées. Règle calée sur 12 notes PROFIS (2.79) :
+     scellement chimique (HAS, M10 à M30, h_ef 60 à 214 mm, béton fissuré ou non) : k = E_s·A_s/L avec L = 80 mm ;
+     cheville à expansion (HST4 M8 à M20, h_ef 30 à 111 mm) : k = 160 kN/mm en béton non fissuré, 125 kN/mm en béton fissuré,
+     indépendamment du diamètre (raideur gouvernée par le glissement du cône, pas par la tige).
+     Contrôlée sans recalage sur 4 notes de plus (2.80 : HST4 M8, HAS M10 et M20) : écart sur la cheville la plus tendue −9 % à +7 %.
+     Faibles efforts (chevilles peu tendues, platine comprimée) : tractions sous-estimées (raideur réelle non linéaire).
+     Les déplacements à court terme des ETE (δ_N0) donnent des raideurs 2,5 à 7 fois plus faibles, donc moins d'effet de levier. */
+  function raideurCheville(chimique, d, hef, t, fiss) {
+    const As = 0.78 * Math.PI * d * d / 4, k = chimique ? ES * As / 80 : (fiss ? 125e3 : 160e3);
+    return { k, L: ES * As / k, As, src: chimique ? "tige E_s·A_s/L, L = 80 mm (calée sur 7 notes PROFIS, contrôlée sur 8, M10 à M30)" : `${fiss ? 125 : 160} kN/mm en béton ${fiss ? "" : "non "}fissuré (calée sur 4 notes PROFIS, contrôlée sur 1, HST4 M8 à M20)` };
   }
 
   /* ---------- calcul ----------

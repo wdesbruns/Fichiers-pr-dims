@@ -4,24 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.77"></script>
+<script src="../commun/auth.js?v=2.85"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.77">
+<link rel="stylesheet" href="../commun/calc.css?v=2.85">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.77"></script>
-<script src="../commun/data/tuyauterie.js?v=2.77"></script>
-<script src="../commun/acier.js?v=2.77"></script>
-<script src="../commun/barres3d.js?v=2.77"></script>
-<script src="../commun/data/gabarit-a3.js?v=2.77"></script>
-<script src="../commun/dessin.js?v=2.77"></script>
-<script src="../commun/coefvent.js?v=2.77"></script>
-<script src="../commun/cahier.js?v=2.77"></script>
-<script src="../commun/chevilles.js?v=2.77"></script>
-<script src="../commun/topo.js?v=2.77"></script>
+<script src="../commun/data/profils.js?v=2.85"></script>
+<script src="../commun/data/tuyauterie.js?v=2.85"></script>
+<script src="../commun/acier.js?v=2.85"></script>
+<script src="../commun/barres3d.js?v=2.85"></script>
+<script src="../commun/data/gabarit-a3.js?v=2.85"></script>
+<script src="../commun/data/gabarit-a2.js?v=2.85"></script>
+<script src="../commun/dessin.js?v=2.85"></script>
+<script src="../commun/coefvent.js?v=2.85"></script>
+<script src="../commun/cahier.js?v=2.85"></script>
+<script src="../commun/chevilles.js?v=2.85"></script>
+<script src="../commun/topo.js?v=2.85"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -205,7 +206,7 @@
   <div class="card"><h2>Alertes de conception</h2><div id="rAlertes"></div></div>
   <div class="card"><h2>Vues du support</h2>
     <div class="vues noprint"><button id="b2d" class="on">Vues 2D</button><button id="b3d">Vue 3D</button><button id="bNum" title="Afficher les numéros de nœuds et de barres (avec leur section) et le tableau du modèle : nœuds, barres, liaisons">🔢 Nœuds / barres</button><button id="bStr" type="button" title="Fichier texte Robot (.str, syntaxe ROBOT97) : nœuds, barres, sections, appuis, relâchements, cas et charges (daN) – à ouvrir dans Robot">📄 Robot (.str)</button><button id="bRobot" type="button" title="Classeur Excel au format des tableaux Robot : nœuds, barres, appuis, cas, charges sur barres, combinaisons">📊 Tableaux Robot</button><button id="bInd" title="Planche de plan : vues orthogonales à l'échelle, cotation ISO, nomenclature, cartouche">📐 Dessin industriel</button>
-      <span id="optInd" style="display:none;margin-left:8px"><select id="fmtInd" style="width:auto"><option value="A3">A3 paysage</option><option value="A4">A4 paysage</option></select> <label style="display:inline;font-weight:400;margin:0 6px"><input type="checkbox" id="ddcInd"> DDC + SCU</label><button id="prInd" type="button">🖨 Planche à l'échelle</button> <button id="dxfInd" type="button" title="Export AutoCAD (DXF 2000 : présentation A3 avec cartouche en espace papier, vues en espace objet ; mm, calques ISO)">⬇ DXF</button></span></div>
+      <span id="optInd" style="display:none;margin-left:8px"><select id="fmtInd" style="width:auto"><option value="A3">A3 paysage</option><option value="A2">A2 paysage</option><option value="A4">A4 paysage</option></select> <label style="display:inline;font-weight:400;margin:0 6px"><input type="checkbox" id="ddcInd"> DDC + SCU</label><button id="prInd" type="button">🖨 Planche à l'échelle</button> <button id="dxfInd" type="button" title="Export AutoCAD (DXF 2000 : présentation A3 avec cartouche en espace papier, vues en espace objet ; mm, calques ISO)">⬇ DXF</button></span></div>
     <div id="p2d"><div class="vue2d"><div id="vFace"></div><div id="vCote"></div></div><div id="vTopo" hidden></div></div>
     <div id="pInd" style="display:none"><div id="vInd" style="border:1px solid var(--line);border-radius:6px;overflow:hidden"></div><div class="note" id="nInd"></div></div>
     <div id="p3d" class="noprint" style="display:none"><div id="v3d"><span class="aide">Glisser pour tourner · molette / pincer pour zoomer · flèches : charges G (rouge), vent (bleu), frottement (orange)</span></div></div>
@@ -1170,7 +1171,7 @@ function specDessin(D,V,opt={}){
   // --- tuyaux, calorifuge, étriers
   const Lp=0.3;
   Gm.T.forEach((t,i)=>{ const r=t.P.De/2000, en=(t.P.en||Math.max(t.P.De*0.05,3))/1000, c=t.c, b=Gm.B[t.bi], up=b.vert?[0,1,0]:[0,0,1];
-    cercles.push({c:[c[0]+Lp,c[1],c[2]],r,n:[1,0,0],style:'fantome',croix:true},{c:[c[0]+Lp,c[1],c[2]],r:r-en,n:[1,0,0],style:'fantome'});
+    cercles.push({c:[c[0]+Lp,c[1],c[2]],r,n:[1,0,0],style:'fantome',croix:true,coupe:true},{c:[c[0]+Lp,c[1],c[2]],r:r-en,n:[1,0,0],style:'fantome'});
     [-1,1].forEach(sg=>{ aides.push({type:'fantome',pts:[[c[0]-Lp,c[1],c[2]+sg*r],[c[0]+Lp,c[1],c[2]+sg*r]],vues:['gauche','droite']},{type:'fantome',pts:[[c[0]-Lp,c[1]+sg*r,c[2]],[c[0]+Lp,c[1]+sg*r,c[2]]],vues:['dessus']}); });
     aides.push({type:'axe',pts:[[c[0]-Lp-0.03,c[1],c[2]],[c[0]+Lp+0.03,c[1],c[2]]]});
     if(t.P.ecal){ const rc=t.P.Dc/2000; cercles.push({c:[c[0]+Lp,c[1],c[2]],r:rc,n:[1,0,0],style:'tirets'});
@@ -1216,7 +1217,7 @@ function specDessin(D,V,opt={}){
   if(Gm.T[0]) reperes.push({vue:'face',p:[0,Gm.T[0].c[1]-Gm.T[0].P.De/2000*0.7-diamEtrier(Gm.T[0])/2000,Gm.T[0].c[2]+Gm.T[0].P.De/2000*0.7],n:String(rep),dx:-1,dy:-0.6});
   const masse=Gm.B.reduce((s,b)=>s+b.p.m*b.L,0);
   const A=(typeof CAHIER!=='undefined'&&CAHIER.existe()&&CAHIER.lire().affaire)||{}, K=opt.cartouche||{affaire:$('affaire').value,client:'',titre:`Support ${$('repere').value||''} – ${TYPES[D.typ].n}`,dessine:$('auteur').value,plan:$('repere').value,
-    client1:A.client||'',client2:A.site||'',projet:A.num||'00-000',doc:A.codePlan||'PLN',lot:A.lot||'',chrono:A.chronoPlan||'01',rev:A.indice||'0',bonPour:A.bonPour||'CONSULTATION',revisions:(A.revs||[]).concat([{rev:A.indice||'0',desc:A.motif||'Création du document',par:A.realise||'',verif:A.controle||'',appr:A.approuve||'',date:A.date?new Date(A.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit'}):''}])};
+    client1:A.client||'',client2:A.site||'',projet:A.num||'00-000',doc:'PLA',lot:'PIP',chrono:A.chronoPlan||'01',rev:A.indice||'0',bonPour:A.bonPour||'CONSULTATION',revisions:(A.revs||[]).concat([{rev:A.indice||'0',desc:A.motif||'Création du document',par:A.realise||'',verif:A.controle||'',appr:A.approuve||'',date:A.date?new Date(A.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit'}):''}])};
   // --- vues interrompues : plus grande plage sans détail le long d'une barre droite (pas de barre inclinée qui la traverse)
   const interruptions=[]; [[2,[0,0,1]],[1,[0,1,0]]].forEach(([i,ax])=>{
     const F=[...Gm.B.flatMap(b=>[b.A[i],b.B[i]]),...Gm.T.flatMap(t=>{ const r=t.P.Dc/2000+diamEtrier(t)/1000+0.03; return [t.c[i]-r,t.c[i]+r]; }),...Gm.appuis.flatMap(a=>{ const e=['sol','plafond'].includes(a.k)?(i===2?0.03:cz/2+0.02):a.k==='mur'?(i===2?cz/2+0.02:0.03):0.1; return [a.pt[i]-e,a.pt[i]+e]; })].sort((a,b)=>a-b);
@@ -1234,8 +1235,9 @@ function specDessin(D,V,opt={}){
       note:`${env.map((E,i)=>'A'+(i+1)+' : '+E.lib).join(' ; ')}. Efforts du support sur l'ouvrage, enveloppes non concomitantes ; Fz < 0 : descendant.`}); }
   if(opt.tableau) tableaux.push(opt.tableau);
   const phase=opt.phase||(CAHIER.existe()?(CAHIER.lire().affaire.phase||'APS'):'APS/APD');
-  return {format:opt.format||formatIndus,statut:{phase},vues,solides:S,tableaux,scu:!!opt.ddc||!!opt.scu,appuis:appuisL||[],interruptions:opt.interrompre===false?[]:interruptions,iso:opt.perspective===false?null:iso,aides,cercles,sols,murs,cotes,reperes,etiquettes:etiq,nomenclature:nom,cartouche:K,
-    notes:[`Cotes en mm${lettres?' (valeurs : tableau des configurations)':''} : a = positionnement des tuyauteries (axe), autres cotes = géométrie du support. Platines et fixations représentées à titre indicatif : dimensions, épaisseurs, entraxes et chevilles selon la note de chevillage.`,`Longueurs entre axes du modèle de calcul : longueurs de débit à confirmer en fabrication.`,`Acier ${$('nuance').value} — masse acier ≈ ${f(masse,1)} kg${varie?' (configuration '+opt.tableau.rows[0][0]+')':''} (profilés seuls, hors platines et visserie). Tuyauteries représentées sur ±${Lp*1000} mm.`]};
+  const TRN={galva:'Traitement de surface : galvanisation à chaud après fabrication (NF EN ISO 1461).',peinture:'Traitement de surface : peinture (système à préciser selon NF EN ISO 12944, catégorie de corrosivité du site).'};
+  return {repSupport:opt.repSupport||'',format:opt.format||formatIndus,statut:{phase},vues,solides:S,tableaux,scu:!!opt.ddc||!!opt.scu,appuis:appuisL||[],interruptions:opt.interrompre===false?[]:interruptions,iso:opt.perspective===false?null:iso,aides,cercles,sols,murs,cotes,reperes,etiquettes:etiq,nomenclature:nom,cartouche:K,
+    notes:[`Cotes en mm${lettres?' (valeurs : tableau des configurations)':''} : a = positionnement des tuyauteries (axe), autres cotes = géométrie du support. Platines et fixations représentées à titre indicatif : dimensions, épaisseurs, entraxes et chevilles selon la note de chevillage.`,`Longueurs entre axes du modèle de calcul : longueurs de débit à confirmer en fabrication.`,`Acier ${$('nuance').value} — masse acier ≈ ${f(masse,1)} kg${varie?' (configuration '+opt.tableau.rows[0][0]+')':''} (profilés seuls, hors platines et visserie). Tuyauteries représentées sur ±${Lp*1000} mm.`,...(opt.traitement&&TRN[opt.traitement]?[TRN[opt.traitement]]:[])]};
 }
 function planIndus(D,V,opt){ return DESSIN.planche(specDessin(D,V,opt)); }
 function majIndus(){ if(!modeIndus||!dernier) return; try{ const P=planIndus(dernier.D,dernier.V,{format:formatIndus,ddc:$('ddcInd').checked}); $('vInd').innerHTML=P.svg; $('nInd').innerHTML=`Échelle 1:${P.echelle} sur ${P.format} paysage · projection européenne · faces cachées supprimées. ${P.format==='A3'?'Gabarit et cartouche FIP A3 (blocs à attributs dans le DXF).':'Cartouche simplifié en A4 (le gabarit FIP est en A3).'}`+(P.format==='A4'&&P.echelle>20?' <b style="color:#b26a00">⚠ Format A4 trop petit pour ce contenu (échelle réduite) : préférer l\'A3.</b>':''); dernier.planche=P; }
@@ -1457,7 +1459,7 @@ function resumeS1(){                                     // résultats synthéti
     lignes:V.lignes.map(l=>({n:l.n.replace(/<[^>]+>/g,''),r:l.r})),date:new Date().toISOString()};
 }
 window.S1API={ndc:async(o={})=>{ const sv={...NDC}; Object.assign(NDC,o); try{ const el=await ndcRendre(true), h=el.outerHTML; $('ndcHors').innerHTML=''; return h; } finally{ Object.keys(NDC).forEach(k=>delete NDC[k]); Object.assign(NDC,sv); } },ndcCSS:()=>NDC_CSS,
-  plancheVec:(o={})=>DESSIN.planche({...specDessin(dernier.D,dernier.V,{lettres:true,...o}),vecteur:true}).svg,cotes:()=>cotesDef(),cotesValeurs,appliquerCotes:C=>{appliquerCotes(C);cartesTuyaux();calc();},vues:(o={})=>({face:vueFace(dernier.D,dernier.V,{plan:true}),cote:vueCote(dernier.D,dernier.V,{plan:true}),planche:o.indus?planIndus(dernier.D,dernier.V,{lettres:true,format:o.format,cartouche:o.cartouche,tableau:o.tableau,ddc:o.ddc,phase:o.phase}).svg:null}),etat:etatS1,charger:E=>{chargerEtat(E);appliquerParamsAffaire();calc();return true;},resume:resumeS1,
+  plancheVec:(o={})=>DESSIN.planche({...specDessin(dernier.D,dernier.V,{lettres:true,...o}),vecteur:true}).svg,cotes:()=>cotesDef(),cotesValeurs,appliquerCotes:C=>{appliquerCotes(C);cartesTuyaux();calc();},vues:(o={})=>({face:vueFace(dernier.D,dernier.V,{plan:true}),cote:vueCote(dernier.D,dernier.V,{plan:true}),planche:o.indus?planIndus(dernier.D,dernier.V,{lettres:true,format:o.format,cartouche:o.cartouche,tableau:o.tableau,ddc:o.ddc,phase:o.phase,traitement:o.traitement,repSupport:o.repSupport}).svg:null}),etat:etatS1,charger:E=>{chargerEtat(E);appliquerParamsAffaire();calc();return true;},resume:resumeS1,
   perspective:async()=>{await perspective();return $('persp').hidden?'':$('imgPersp').src;}};
 const QS=new URLSearchParams(location.search), ID_CAHIER=QS.get('cahier'), ID_CONF=QS.get('conf');
 function initCahier(){
@@ -1493,13 +1495,13 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.77"></script>
-<script src="../commun/aide.js?v=2.77"></script>
-<script src="../commun/notes.js?v=2.77"></script>
-<script src="ndc-s1.js?v=2.77"></script>
+<script src="../commun/replier.js?v=2.85"></script>
+<script src="../commun/aide.js?v=2.85"></script>
+<script src="../commun/notes.js?v=2.85"></script>
+<script src="ndc-s1.js?v=2.85"></script>
 <script>document.head.insertAdjacentHTML("beforeend",`<style>${NDC_CSS}</style>`); ndcUI();</script>
-<script src="aide-s1.js?v=2.77"></script>
-<script src="../commun/export.js?v=2.77"></script>
+<script src="aide-s1.js?v=2.85"></script>
+<script src="../commun/export.js?v=2.85"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
