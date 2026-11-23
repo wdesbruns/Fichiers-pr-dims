@@ -21,6 +21,7 @@ const CBFEM = (() => {
      p : {f, h, b, tw, tf, t} (commun/data/profils.js) ; retour [{a:[x,y], b:[x,y], t}] ou, pour un tube rond, des cordes */
   function parois(p) {
     if (!p) return [];
+    if (p.parois) return p.parois.map((w) => ({ a: w.a.slice(), b: w.b.slice(), t: w.t }));      // plats soudés (sabot) : parois données dans le repère de la platine
     const f = p.f || "";
     if (/^(HE|IP)/.test(f)) { const d = (p.h - p.tf) / 2; return [{ a: [-d, -p.b / 2], b: [-d, p.b / 2], t: p.tf }, { a: [d, -p.b / 2], b: [d, p.b / 2], t: p.tf }, { a: [-d, 0], b: [d, 0], t: p.tw }]; }
     if (/^UP/.test(f)) { const d = (p.h - p.tf) / 2, y0 = -p.b / 2 + p.tw / 2; return [{ a: [-d, y0], b: [-d, p.b / 2], t: p.tf }, { a: [d, y0], b: [d, p.b / 2], t: p.tf }, { a: [-d, y0], b: [d, y0], t: p.tw }]; }

@@ -10,7 +10,7 @@
    vignette : petit schéma SVG affiché sur la carte (facultatif)
    marqueur de catégorie : ● ▬ → ■ ◆ … (couleur d'accent FIP)
    ===================================================================== */
-const CALC_VERSION = "v2.92";
+const CALC_VERSION = "v2.95";
 
 const CALC_CATEGORIES = [
   { id: "clim", nom: "Hypothèses de charges", sousTitre: "Charges climatiques et sismiques, permanentes et d'exploitation de l'affaire · NF EN 1990, NF EN 1991-1-1 / 1-3 / 1-4, NF EN 1998-1 + AN, arrêté du 22/10/2010", couleur: "#e30009", marqueur: "▬" },
@@ -143,7 +143,7 @@ const CALC_APPS = [
   {
     code: "CS",
     titre: "Cahier de supportage",
-    description: "Supports types et configurations (ST-01.1), supports spéciaux (SPE-1.1), BOM, plans types cotés avec perspective, traitement de surface, aperçu du plan. Modèles BOM / simplifié / complet. Informations d'affaire reprises dans toutes les calculettes et le cartouche Word.",
+    description: "Supports types et configurations (ST-01.1), supports spéciaux (SPE-1.1), BOM, plans types cotés avec perspective, traitement de surface, aperçu du plan, cahier d'exécution (DXF laser, Excel). Modèles BOM / simplifié / complet. Informations d'affaire reprises dans toutes les calculettes et le cartouche Word.",
     url: "cahier/",
     categorie: "tuy",
     normes: ["S1", "NF EN 1990", "NF EN 1993-1-1"],

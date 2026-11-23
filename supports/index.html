@@ -4,25 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.92"></script>
+<script src="../commun/auth.js?v=2.95"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.92">
+<link rel="stylesheet" href="../commun/calc.css?v=2.95">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.92"></script>
-<script src="../commun/data/tuyauterie.js?v=2.92"></script>
-<script src="../commun/acier.js?v=2.92"></script>
-<script src="../commun/barres3d.js?v=2.92"></script>
-<script src="../commun/data/gabarit-a3.js?v=2.92"></script>
-<script src="../commun/data/gabarit-a2.js?v=2.92"></script>
-<script src="../commun/dessin.js?v=2.92"></script>
-<script src="../commun/coefvent.js?v=2.92"></script>
-<script src="../commun/cahier.js?v=2.92"></script>
-<script src="../commun/chevilles.js?v=2.92"></script>
-<script src="../commun/topo.js?v=2.92"></script>
+<script src="../commun/data/profils.js?v=2.95"></script>
+<script src="../commun/data/tuyauterie.js?v=2.95"></script>
+<script src="../commun/acier.js?v=2.95"></script>
+<script src="../commun/barres3d.js?v=2.95"></script>
+<script src="../commun/data/gabarit-a3.js?v=2.95"></script>
+<script src="../commun/data/gabarit-a2.js?v=2.95"></script>
+<script src="../commun/dessin.js?v=2.95"></script>
+<script src="../commun/coefvent.js?v=2.95"></script>
+<script src="../commun/cahier.js?v=2.95"></script>
+<script src="../commun/chevilles.js?v=2.95"></script>
+<script src="../commun/topo.js?v=2.95"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -104,7 +104,7 @@
     </div>
     <div class="row">
       <div><label>Hauteur du support au-dessus du sol z (m)</label><input id="zsol" type="number" step="0.5" value="2"></div>
-      <div><label>Hauteur de sabot / cale (mm)</label><input id="sabot" type="number" step="5" value="0"></div>
+      <div><label>Hauteur sous les tuyaux</label><div class="note" style="margin-top:6px">Fixée par la liaison de chaque tuyauterie (type 1 à 5) et la cale téflon (μ = 0,1).</div><input id="sabot" type="hidden" value="0"></div>
     </div>
   </div>
 
@@ -318,10 +318,10 @@ function cartesTuyaux(){
       <div><label>${pos}</label><input data-k="pos" type="number" step="0.05" value="${t.pos}"></div>
       <div><label>${['sol','plafond'].includes(typ)?'Excentr. e (m)':'Excentr. vert. (m)'}</label><input data-k="e" type="number" step="0.01" value="${t.e}" placeholder="auto"></div>
       <div><label>Fonction</label><select data-k="fonc">${opt([['glissant','Glissant'],['guide','Guidé'],['fixe','Point fixe']],t.fonc)}</select></div>
-      <div><label>Liaison tuyau / support (ST Rubis §11.4)</label><select data-k="liaison">${opt(Object.entries(LIAISONS),t.liaison||'etrier')}</select></div>
+      <div><label>Liaison tuyau / support (ST Rubis §11.4)</label><select data-k="liaison">${opt(Object.entries(LIAISONS).filter(([k])=>liaisonOK(k,propsTuyau(t).De)),t.liaison||'etrier')}</select></div>
       <div><label>Guide latéral (§11.3.1)</label><select data-k="guide">${opt(Object.entries(GUIDES),t.guide||'non')}</select></div>
       <div><label>Hauteur de l'élément sous le tuyau (mm)</label><input data-k="hl" type="number" step="5" value="${t.hl??''}" placeholder="auto"></div>
-      <div><label>μ frottement</label><select data-k="mu">${opt([[0.3,'0,3 acier/acier'],[0.1,'0,1 PTFE'],[0,'0 (aucun)']],t.mu)}</select></div>
+      <div><label>μ frottement</label><select data-k="mu">${opt([[0.3,'0,3 acier/acier'],[0.1,'0,1 PTFE (cale téflon ép. 10)'],[0,'0 (aucun)']],t.mu)}</select></div>
       ${t.fonc!=='glissant'?`${t.fonc==='fixe'?`<div><label>F<sub>x</sub> therm. (kN)</label><input data-k="Fx" type="number" step="0.1" value="${t.est?ancrage(t).F.toFixed(2):t.Fx}" ${t.est?'disabled title="Estimé (voir ci-dessous)"':''}></div>`:''}
         <div><label>F<sub>y</sub> therm. (kN)</label><input data-k="Fy" type="number" step="0.1" value="${t.Fy}"></div>
         ${t.fonc==='fixe'?`<div><label>F<sub>z</sub> therm. (kN)</label><input data-k="Fz" type="number" step="0.1" value="${t.Fz}"></div>`:''}`:''}
@@ -333,7 +333,9 @@ function cartesTuyaux(){
     t[k]=el.type==='checkbox'?el.checked:el.type==='number'?(el.value===''?'':+el.value):el.value;
     if(k==='fluide'){const fl=FLUIDS[+el.value];if(fl&&fl.r!==null)t.rho=fl.r;}
     if(k==='dn'){const P=PIPES.find(p=>p.dn==t.dn);if(P&&P.s[t.sch]===undefined)t.sch=P.s['40']!==undefined?'40':Object.keys(P.s)[0];}
-    if(['mode','dn','fluide','fonc','est','elt','liaison'].includes(k)||t.est) cartesTuyaux(); else { const n=el.closest('.tuyau').querySelector('.note'); if(n) n.innerHTML=`${escH(propsTuyau(t).desc)} · q<sub>service</sub> = ${f(propsTuyau(t).qop,3)} kN/m`; }
+    if(['dn','mode','Dd','liaison'].includes(k)&&!liaisonOK(liaisonT(t),propsTuyau(t).De)) t.liaison=liaisonT(t)==='t2'?'t2a':liaisonT(t)==='t2a'?'t2':'etrier';   // liaison suivant le diamètre
+    if(k==='liaison'&&el.value==='etrier') t.mu=0.1;                                                                    // type 4 : étrier serré sur cale téflon
+    if(['mode','dn','Dd','fluide','fonc','est','elt','liaison','mu'].includes(k)||t.est) cartesTuyaux(); else { const n=el.closest('.tuyau').querySelector('.note'); if(n) n.innerHTML=`${escH(propsTuyau(t).desc)} · q<sub>service</sub> = ${f(propsTuyau(t).qop,3)} kN/m`; }
     calc();}));
   $('tuyaux').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{if(tuyaux.length>1){tuyaux.splice(+b.dataset.del,1);cartesTuyaux();calc();}});
 }
@@ -611,8 +613,19 @@ function majFormulaire(){
   $('labLt').innerHTML={T:'Largeur de la traverse L<sub>b</sub> (m)',L:'Longueur des consoles L<sub>c</sub> (m)',Lplaf:'Longueur des consoles L<sub>c</sub> (m)',U:'Largeur entre montants W (m)',Lmur:'Distance montant – mur W (m)',TS:'Portée entre sabots L (m)',murJ:'Attache de la jambe sur la console b (m)'}[typ]||'';
 }
 let dernier=null;
+/* crapautage et sandwich : entraxes des fixations (donc platine) déduits des profilés, arrondis à la dizaine supérieure (cotes de fabrication)
+   - le long du profilé existant : emprise du profilé du support + 3·d0 (accès écrou, soudure) ;
+   - en travers : sandwich = largeur de semelle + d0 + 2 × 10 mm de jeu ; crapauds = largeur de semelle + 2 × 12 mm (boulon au ras de la semelle) */
+function autoEntraxes(){ const m=$('fix').value, auto=(m==='crap'||m==='sand')&&dernier&&['plafond','Lplaf','U','T','Lmur','mur','murJ'].includes(typeSup());
+  ['fa1','fa2','fp1','fp2'].forEach(id=>{ if($(id)){ $(id).readOnly=!!auto; $(id).title=auto?'Calculé automatiquement (crapautage / sandwich), arrondi à 10 mm':''; } });
+  if(!auto) return; const Gm=dernier.V.Gm, r10=v=>Math.ceil(v/10)*10, dt=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+  Gm.appuis.filter(a=>surExist(a.k)||(a.k==='plafond'&&m!=='chev')).forEach(ap=>{ const G=fixGeo(ap,0.012), P=ap.pn||ap.pt, b=Gm.B.find(b=>[b.A,b.B].some(Q=>Math.hypot(...Q.map((v,i)=>v-P[i]))<1e-6))||Gm.B[0];
+    const d=m==='sand'?+$('tD').value:+$('crD').value||16, d0=d+(d<=24?2:3), w=G.w*1000;
+    const sEx=r10(Math.max(b.ext(G.ex)*1000+3*d0,ap.k==='murPied'?60:100)), sLat=r10(m==='sand'?2*w+d0+20:2*w+24);
+    const x1=ap.k==='plafond'||Math.abs(dt(G.ex,[1,0,0]))>0.7, [i1,i2]=ap.k==='murPied'?['fp1','fp2']:['fa1','fa2'];
+    $(i1).value=x1?sEx:sLat; $(i2).value=x1?sLat:sEx; }); }
 function calc(){
-  majFormulaire();
+  majFormulaire(); autoEntraxes();
   const D=donnees(); if(!D.pm||(TYPES[D.typ].multi&&!D.pt)) return;
   let V; try{ V=verifier(D); }catch(e){ $('rHero').innerHTML=`<div class="msg bad">${escH(e.message)}</div>`; return; }
   dernier={p:D.pm,D,V};
@@ -827,6 +840,9 @@ function fixations(D,V){
 /* ---------- vers AN1 : réactions de la platine dans ses axes (x, y dans le plan, z sortant du béton), N > 0 en traction ----------
    sol : (X, Y, Z) ; plafond : (X, −Y, −Z) ; mur : (−X, Z, Y) (vue de face, y vers le haut). F = −R (effort de l'ouvrage sur l'appui), kN → daN, kN·m → daN·m */
 function cleAN1S1(ia){ const ap=dernier&&dernier.V.Gm.appuis[ia]; return 'S1|'+($('repere').value||'')+'|'+(ap?ap.lib.replace(/<[^>]+>/g,''):ia); }
+/* sabot d'une traverse posée (plats soudés dans le repère de la platine : x en travers de la traverse, y le long) : butée d'extrémité ép. 8 à 12 mm du bord, deux goussets ép. 8 de part et d'autre de la traverse sur 100 mm */
+function sabotParois(ap,plq,b){ const gauche=ap.pt[1]<1e-6, sg=gauche?-1:1, yb=sg*(plq.ly/2-12), gx=Math.round(Math.max(b.ext([1,0,0])*1000,40)/2+8), t=8;
+  return {nom:'Sabot (butée côté −y ; sabot droit symétrique)',miroir:!gauche,parois:[{a:[-(plq.lx/2-20),-(plq.ly/2-12)],b:[plq.lx/2-20,-(plq.ly/2-12)],t},...[-1,1].map(x=>({a:[x*gx,-(plq.ly/2-12)],b:[x*gx,-(plq.ly/2-12)+100],t}))]}; }
 function preAN1S1(ia){ const {D,V}=dernier, ap=V.Gm.appuis[ia]; if(!ap) return null;
   const r1=x=>Math.round(x*10)/10;
   const [a1,a2]=entraxesAp(ap.k).map(v=>Math.round(v*1000)), kAx=ap.k==='murPied'?'mur':ap.k;
@@ -836,8 +852,11 @@ function preAN1S1(ia){ const {D,V}=dernier, ap=V.Gm.appuis[ia]; if(!ap) return n
   [false,true].forEach(sis=>{ const G=L.filter(c=>c.sis===sis); if(!G.length) return; crit.forEach(k=>{ const b=G.reduce((x,c)=>k(c)>k(x)?c:x); if(!C.includes(b)) C.push(b); }); });
   const b=V.Gm.B.find(b=>[b.A,b.B].some(P=>Math.hypot(...P.map((v,i)=>v-ap.pt[i]))<1e-6))||V.Gm.B[0];
   const Aa=[[-1,-1],[1,-1],[-1,1],[1,1]].map(([i,j])=>({x:i*a1/2,y:j*a2/2})), ax={sol:'x = X, y = Y, z = Z',plafond:'x = X, y = −Y, z = −Z (vers le bas)',mur:'x = −X, y = Z (vers le haut), z = Y (sortant du mur)'}[kAx]+(ap.k==='murPied'?' ; pied de jambe de force articulé (M = 0)':'');
-  return {t:Date.now(),src:'S1 – '+($('repere').value?$('repere').value+' – ':'')+ap.lib.replace(/<[^>]+>/g,''),srcCourt:'S1',retour:'../supports/',cle:cleAN1S1(ia),emp:TOPO.empreinte(C),profil:b.p.n,C,A:Aa,
-    plaque:ap.k==='murPied'?{lx:Math.round(Math.max(a1+60,120)),ly:Math.round(Math.max(a2+60,120))}:{lx:Math.round(Math.max(a1+80,150)),ly:Math.round(Math.max(a2+80,150))},info:`Axes de la platine : ${ax} ; combinaisons ELU${C.some(c=>c.sis)?' et sismiques':''} extrêmes (N, V, M) parmi ${L.length} ; 4 chevilles a<sub>1</sub> × a<sub>2</sub> = ${a1} × ${a2} mm, orientation du profilé à contrôler`}; }
+  const plq=ap.k==='murPied'?{lx:Math.round(Math.max(a1+60,120)),ly:Math.round(Math.max(a2+60,120))}:{lx:Math.round(Math.max(a1+80,150)),ly:Math.round(Math.max(a2+80,150))};
+  const sab=D.typ==='TS'?sabotParois(ap,plq,b):null;
+  if(sab&&sab.miroir) C.forEach(c=>{ c.Vy=-c.Vy; c.Mx=-c.Mx; c.Mz=-c.Mz; });      // sabot droit : symétrie y → −y (efforts du sabot gauche), même sabot des deux côtés                // sabot : butée et goussets soudés sur la platine, vérifiés par le CBFEM d'AN1 comme un profilé de plats
+  return {t:Date.now(),src:'S1 – '+($('repere').value?$('repere').value+' – ':'')+ap.lib.replace(/<[^>]+>/g,''),srcCourt:'S1',retour:'../supports/',cle:cleAN1S1(ia),emp:TOPO.empreinte(C),profil:sab?sab.nom:b.p.n,parois:sab?sab.parois:undefined,C,A:Aa,
+    plaque:plq,info:`Axes de la platine : ${ax} ; combinaisons ELU${C.some(c=>c.sis)?' et sismiques':''} extrêmes (N, V, M) parmi ${L.length} ; 4 chevilles a<sub>1</sub> × a<sub>2</sub> = ${a1} × ${a2} mm, orientation du profilé à contrôler`}; }
 function ouvrirAN1(ia){ const pre=preAN1S1(ia); if(!pre) return; try{ localStorage.setItem('fip.an1.pre',JSON.stringify(pre)); }catch(e){}
   location.href='../ancrages/'; }
 function tableFix(D,V){
@@ -919,11 +938,16 @@ function combos(V){
    ALERTES DE CONCEPTION (règles de bonne pratique, seuils modifiables)
    ===================================================================== */
 /* liaison tuyau / support, ST Rubis Terminal « Tuyauteries hydrocarbures et additifs » §11.4 (types 1 à 5) et §11.3.1 (guide latéral) */
-const LIAISONS={etrier:'Étrier serré sur cale téflon (type 4)',t1:'Patin : collier plat ép. 5 + ½ IPE 200 soudé (type 1)',t2:'Tôle intermédiaire + ½ IPE 200 (type 2, DN 25 à 200)',t2a:'Tôle intermédiaire + support mécano-soudé (type 2a, DN > 200)',t3:'Tôle intermédiaire posée sur le support (type 3)',t5:'Tuyau posé sur plat (type 5)'};
+const LIAISONS={etrier:'Étrier serré (type 4, sur cale téflon si μ = 0,1)',t1:'Patin : collier plat ép. 5 + ½ IPE 200 soudé (type 1)',t2:'Tôle intermédiaire + ½ IPE 200 (type 2, DN 25 à 200)',t2a:'Tôle intermédiaire + support mécano-soudé (type 2a, DN > 200)',t3:'Tôle intermédiaire posée sur le support (type 3)',t5:'Tuyau posé sur plat (type 5)'};
 const LIAIS_NOM={t1:'type 1 – collier plat ép. 5 + ½ IPE 200 soudé',t2:'type 2 – tôle intermédiaire ép. 5 + ½ IPE 200 soudé',t2a:'type 2a – tôle intermédiaire + support mécano-soudé',t3:'type 3 – tôle intermédiaire ép. 5',t5:'type 5 – plat sous le tuyau'};
 const GUIDES={non:'Sans',corn:'Cornières L 50×5',plat:'Plats 50×5',rond:'Ronds Ø12'};
 const liaisonT=t=>t.liaison||'etrier', avecEtrier=t=>liaisonT(t)==='etrier';
-const hLiaison=(t,D)=>{ if(+t.hl>0) return +t.hl; return {etrier:D.sabot,t1:105,t2:105,t2a:150,t3:5,t5:10}[liaisonT(t)]; };      // hauteur sous le tuyau (mm) : ½ IPE 200 = 100 mm + collier ou tôle 5 mm
+/* cale téflon : présente dès que le frottement retenu est celui du PTFE (μ = 0,1) – lien direct calcul / plan / nomenclature ; épaisseur 10 mm */
+const EP_CALE=10, caleT=t=>Math.abs(+t.mu-0.1)<1e-6;
+const hElement=t=>({etrier:0,t1:105,t2:105,t2a:150,t3:5,t5:10}[liaisonT(t)]);
+const hLiaison=(t,D)=>(+t.hl>0?+t.hl:hElement(t))+(caleT(t)?EP_CALE:0);      // hauteur sous le tuyau (mm) : élément (½ IPE 200 = 100 mm + collier ou tôle 5 mm…) + cale PTFE
+/* types de liaison admis selon le diamètre (ST Rubis §11.4) : type 2 du DN 25 au DN 200, type 2a au-delà */
+const liaisonOK=(k,De)=>k==='t2'?De<=219.1+1&&De>=33.7-1:k==='t2a'?De>219.1+1:true;      // hauteur sous le tuyau (mm) : ½ IPE 200 = 100 mm + collier ou tôle 5 mm
 function diamEtrier(t){
   if(t.etrier!==''&&t.etrier!=null&&+t.etrier>0) return +t.etrier;
   const dn=t.mode==='base'?+t.dn:(PIPES.reduce((a,b)=>Math.abs(b.od-t.P.De)<Math.abs(a.od-t.P.De)?b:a).dn);
@@ -969,14 +993,16 @@ function alertes(D,V){
       if(['t1','t2','t2a','t3'].includes(lia)) add('info',`Tôle ou collier soudé – ${nom}`,'Tôles intermédiaires de même nature que la tuyauterie, soudées en continu, avec un perçage Ø8 sur la génératrice inférieure (passage du gaz).','ST Rubis Terminal §11.4');
       if(t.guide&&t.guide!=='non'){ const ok={t1:['corn','plat'],t2:['corn','plat'],t2a:['corn','plat'],t3:['corn','rond'],t5:['corn','rond']}[lia]||[]; if(!ok.includes(t.guide)) add('warn',`Guide latéral non prévu pour ce type – ${nom}`,`La spécification Rubis prévoit, pour ${LIAIS_NOM[lia].split(' – ')[0]}, un guidage latéral en ${ok.map(k=>GUIDES[k].toLowerCase()).join(' ou ')} (jeu 10 mm, chanfrein).`,'ST Rubis Terminal §11.3.1'); }
     }
-    else if(t.guide&&t.guide!=='non') add('info',`Guide latéral sur étrier – ${nom}`,'Avec un étrier (type 4) la spécification prévoit un étrier serré avec jeu et, si nécessaire, un guide vertical ; le guide latéral est décrit pour les types 1, 2, 3 et 5.','ST Rubis Terminal §11.3');
+    if(lia==='etrier'&&!caleT(t)) add('warn',`Étrier sans cale téflon – ${nom}`,'Le type 4 de la spécification Rubis prévoit une cale téflon sous le tuyau : retenir μ = 0,1 (PTFE), la cale est alors dessinée et nomenclaturée.','ST Rubis Terminal §11.4');
+    if(!liaisonOK(lia,t.P.De)) add('bloq',`Liaison incompatible avec le diamètre – ${nom}`,`${LIAISONS[lia]} : non admis pour Ø${f(t.P.De,1)} (type 2 du DN 25 au DN 200, type 2a au-delà).`,'ST Rubis Terminal §11.4');
+    if(lia==='etrier'&&t.guide&&t.guide!=='non') add('info',`Guide latéral sur étrier – ${nom}`,'Avec un étrier (type 4) la spécification prévoit un étrier serré avec jeu et, si nécessaire, un guide vertical ; le guide latéral est décrit pour les types 1, 2, 3 et 5.','ST Rubis Terminal §11.3');
     if(lia!=='etrier'){} else
     if(lu.ameI) add('bloq',`Profilé en I tourné : pas d'appui plan – ${nom}`,`Le tuyau ferait face à l'âme, entre les ailes du ${escH(p.n)} : il n'y a pas de face plane pour l'étrier. Garder l'orientation « grande inertie dans le plan des tuyaux », utiliser un U (âme face au tuyau) ou prévoir une platine soudée.`,'Règle de l\'art supportage',b.role);
     else if(p.f==='CHS'&&lia==='etrier') add('info',`Étrier sur tube rond – ${nom}`,'Pas de face plane pour l\'étrier : prévoir une patte ou une platine soudée sur le tube.');
     else if(lia==='etrier'&&lu.l<need) add('bloq',`Pince insuffisante pour l'étrier M${d} – ${nom}`,`Largeur plate disponible (${lu.face} du ${escH(p.n)}) = ${f(lu.l,0)} mm &lt; 2 × 1,2·d<sub>0</sub> = ${f(need,0)} mm (d<sub>0</sub> = ${d0} mm). Profilé trop petit pour cette tuyauterie : choisir un profilé plus large (ex. UPN, UPE) ou une patte rapportée.`,'Pince e<sub>2</sub> ≥ 1,2·d<sub>0</sub> – NF EN 1993-1-8 Tab. 3.3',b.role);
     if(lia==='etrier'&&((dn&&dn>dnB)||(!dn&&t.P.De>(PIPES.find(x=>x.dn>=dnB)||{od:9e9}).od))) add('warn',`Gros diamètre sur étrier – ${nom}`,`Au-delà du DN${dnB}, préférer un berceau ou un sabot soudé (répartition de la charge, ovalisation).`,'Règle de l\'art supportage');
-    if(lia==='etrier'&&t.P.ecal>0&&D.sabot<=0) add('warn',`Tuyauterie calorifugée sans sabot – ${nom}`,`Calorifuge ${f(t.P.ecal,0)} mm : l'étrier écraserait l'isolant. Prévoir un sabot (cale) de hauteur ≥ ${f(t.P.ecal,0)} mm.`,'Règle de l\'art supportage');
-    else if(lia==='etrier'&&t.P.ecal>0&&D.sabot<t.P.ecal) add('warn',`Sabot plus bas que le calorifuge – ${nom}`,`Sabot ${f(D.sabot,0)} mm &lt; calorifuge ${f(t.P.ecal,0)} mm.`,'Règle de l\'art supportage');
+    if(lia==='etrier'&&t.P.ecal>0) add('warn',`Tuyauterie calorifugée sur étrier – ${nom}`,`Calorifuge ${f(t.P.ecal,0)} mm : l'étrier écraserait l'isolant. Prévoir un patin (type 1 ou 2) de hauteur ≥ ${f(t.P.ecal,0)} mm.`,'Règle de l\'art supportage');
+    else if(lia!=='etrier'&&t.P.ecal>0&&hLiaison(t,D)<t.P.ecal) add('warn',`Patin plus bas que le calorifuge – ${nom}`,`Hauteur sous le tuyau ${f(hLiaison(t,D),0)} mm &lt; calorifuge ${f(t.P.ecal,0)} mm.`,'Règle de l\'art supportage');
     const rc=t.P.Dc/2000, re=t.P.De/2000+d/1000;
     if(b.vert){
       if(t.s>=b.L-1e-6) add('warn',`Tuyauterie en bout de ${escH(b.lib.toLowerCase())} – ${nom}`,`L'étrier (± ${f(re*1000,0)} mm autour de l'axe) doit être entièrement repris : allonger le profilé d'au moins ${f(re*1000,0)} mm au-delà de l'axe.`);
@@ -1193,6 +1219,54 @@ function secProfil(p,mir){                                   // contour de secti
 }
 const boiteAA=(x0,x1,y0,y1,z0,z1,opt)=>DESSIN.prisme([x0,(y0+y1)/2,(z0+z1)/2],[1,0,0],[0,1,0],[0,0,1],x1-x0,[[-(y1-y0)/2,-(z1-z0)/2],[(y1-y0)/2,-(z1-z0)/2],[(y1-y0)/2,(z1-z0)/2],[-(y1-y0)/2,(z1-z0)/2]],null,opt);
 let modeIndus=false, formatIndus='A3';
+/* élément intermédiaire d'une liaison tuyau / support (ST Rubis §11.4) et guide latéral (§11.3.1) : solides du plan ; hl en m sous le tuyau ; pt : point de l'axe du profilé, hi0 : demi-hauteur au-dessus de l'axe jusqu'à la face d'appui */
+function elementsLiaison(S,o){ const {lia,De,r,guide,c,pt,up,side}=o, ec=o.cale?EP_CALE/1000:0, hl=o.hl-ec, hi0=o.hi0+ec, X0=c[0];
+  const rect=(ctr,L,w,hh)=>DESSIN.prisme([ctr[0]-L/2,ctr[1],ctr[2]],[1,0,0],side,up,L,[[-w/2,-hh/2],[w/2,-hh/2],[w/2,hh/2],[-w/2,hh/2]],null);
+  const ctrAt=(dz,ds=0)=>add3(add3(pt,mul3(up,hi0+dz)),mul3(side,ds)), Lp2=0.15, tole=0.005, larg=Math.min(0.6*De/1000,0.3);
+  if(ec){ const wc=o.wCale||Math.min(Math.max(0.6*De/1000,0.10),0.3); S.push(rect(add3(add3(pt,mul3(up,o.hi0+ec/2)),[0,0,0]).map((v,k)=>k===0?X0:v),0.12,wc,ec)); }   // cale PTFE (sous l'étrier ou le patin)
+  if(lia==='t1'){ S.push(DESSIN.cylindre([X0-0.02,c[1],c[2]],[X0+0.02,c[1],c[2]],r+tole,r)); S.push(rect(ctrAt(0.005),0.10,0.10,0.01)); S.push(rect(ctrAt(0.01+(hl-tole-0.01)/2),0.10,0.01,hl-tole-0.01)); }
+  if(lia==='t2'||lia==='t2a'||lia==='t3') S.push(rect(ctrAt(lia==='t3'?tole/2:hl-tole/2),Lp2,larg,tole));
+  if(lia==='t2'){ S.push(rect(ctrAt(0.005),0.10,0.10,0.01)); S.push(rect(ctrAt(0.01+(hl-tole-0.01)/2),0.10,0.01,hl-tole-0.01)); }
+  if(lia==='t2a'){ S.push(rect(ctrAt(0.005),Lp2,0.14,0.01)); [-1,1].forEach(sg=>S.push(rect(ctrAt(0.01+(hl-tole-0.01)/2,sg*0.05),Lp2,0.008,hl-tole-0.01))); }
+  if(lia==='t5') S.push(rect(ctrAt(hl/2),Lp2,0.10,hl));
+  if(lia==='cale') S.push(rect(ctrAt(hl/2),Lp2,0.10,Math.max(hl,0.003)));
+  if(guide&&guide!=='non'){ const hg=Math.max(hl,0.06)+0.03; [-1,1].forEach(sg=>{ const ds=sg*(r+0.01+0.004), base=add3(add3(pt,mul3(up,hi0)),mul3(side,ds));
+    if(guide==='rond') S.push(DESSIN.cylindre(base.map((v,k)=>k===0?X0-0.03:v),add3(base,mul3(up,hg)).map((v,k)=>k===0?X0-0.03:v),0.006,0));
+    else S.push(rect(ctrAt(hg/2,ds),0.10,0.008,hg)); }); }
+}
+/* pièces fabriquées d'une liaison : L × l × e (mm) */
+function piecesLiaison(lia,De,hl,guide,nm,cale,dE){ const L=[], add=(lib,l1,l2,e,q,mat)=>L.push({lib,L:Math.round(l1),l:Math.round(l2),e,q,nuance:mat||$('nuance').value}), larg=Math.min(0.6*De,300);
+  if(lia==='t1'){ add(`Collier plat – ${nm}`,Math.PI*(De+10),40,5,1,'= tuyauterie'); add(`½ IPE 200 (Té) – ${nm}`,100,100,10,1); }
+  if(lia==='t2'){ add(`Tôle intermédiaire – ${nm}`,150,larg,5,1,'= tuyauterie'); add(`½ IPE 200 (Té) – ${nm}`,100,100,10,1); }
+  if(lia==='t2a'){ add(`Tôle intermédiaire – ${nm}`,150,larg,5,1,'= tuyauterie'); add(`Semelle du support mécano-soudé – ${nm}`,150,140,10,1); add(`Plat vertical du support mécano-soudé – ${nm}`,150,Math.max(hl-15,20),8,2); }
+  if(lia==='t3') add(`Tôle intermédiaire – ${nm}`,150,larg,5,1,'= tuyauterie');
+  if(lia==='t5') add(`Plat sous le tuyau – ${nm}`,150,100,Math.max(hl,5),1);
+  if(cale){ const w=lia==='etrier'?Math.ceil((De+2*(dE||12)+50)/10)*10:Math.ceil(Math.min(Math.max(0.6*De,100),300)/10)*10; add(lia==='etrier'?`Cale PTFE percée de 2 trous Ø${(dE||12)+2} au passage de l'étrier (maintien de la cale) – ${nm}`:`Cale PTFE sous le patin – ${nm}`,120,w,EP_CALE,1,'PTFE'); }
+  if(lia!=='etrier'&&guide&&guide!=='non'){ const hg=Math.max(hl,60)+30; if(guide==='corn') add(`Cornière de guidage L 50×5 – ${nm}`,100,50,5,2); else if(guide==='plat') add(`Plat de guidage – ${nm}`,hg,50,5,2); else add(`Rond de guidage Ø12 – ${nm}`,hg,12,12,2); }
+  return L; }
+/* plan de détail d'un type de liaison tuyau / support (ST Rubis §11.4) : vues, cotes, nomenclature L × l × e et dimensions par diamètre ; une planche par type, placée en fin de cahier
+   o : { lia ('etrier'|'t1'|'t2'|'t2a'|'t3'|'t5'), De (mm, tuyau de référence), dn, hl (mm), guide, format, cartouche, exec, statutPhase, DNs:[{dn, De}] } */
+function specDetailLiaison(o){
+  const lia=o.lia, De=o.De, r=De/2000, hl=(o.hl>0?o.hl:{etrier:o.sabot||0,t1:105,t2:105,t2a:150,t3:5,t5:10}[lia])/1000, up=[0,0,1], side=[0,1,0], S=[], aides=[], cercles=[], cotes=[], etiq=[], reperes=[], nom=[];
+  const c=[0,0,hl+r], Lp=0.3, nm=`DN${o.dn||''} Ø${f(De,1)}`;
+  S.push(boiteAA(-0.025,0.025,-0.22,0.22,-0.10,0));                                              // profilé du support : UPN 100 en travers du tuyau (face d'appui à z = 0)
+  cercles.push({c,r,n:[1,0,0],style:'fantome',croix:true,vues:['face']});
+  [-1,1].forEach(sg=>aides.push({type:'fantome',pts:[[-Lp,0,c[2]+sg*r],[Lp,0,c[2]+sg*r]],vues:['gauche']},{type:'fantome',pts:[[-Lp,sg*r,0],[Lp,sg*r,0]],vues:['dessus']}));
+  aides.push({type:'axe',pts:[[-Lp-0.03,0,c[2]],[Lp+0.03,0,c[2]]],vues:['gauche']});
+  if(lia==='etrier'){ const de=diamEtrier({mode:'base',dn:o.dn,P:{De}})/1000, re=r+de/2, arc=[]; for(let k=0;k<=18;k++){ const a=Math.PI*k/18; arc.push([0,re*Math.cos(a),c[2]+re*Math.sin(a)]); }
+    aides.push({type:'fort',pts:[[0,re,-0.02],...arc,[0,-re,-0.02]],vues:['face']}); if(o.cale) elementsLiaison(S,{lia:'cale0',De,r,hl,guide:'non',c,pt:[0,0,0],up,side,hi0:0,cale:true,wCale:Math.ceil((De+2*de*1000+50)/10)*10/1000}); }
+  else elementsLiaison(S,{lia,De,r,hl,guide:o.guide,c,pt:[0,0,0],up,side,hi0:0,cale:o.cale});
+  const P=piecesLiaison(lia,De,hl*1000,o.guide,nm,o.cale,diamEtrier({mode:'base',dn:o.dn,P:{De}})), LONG=Math.max(...P.map(q=>q.L),100)/1000, rho=7850e-9;
+  P.forEach((q,i)=>nom.push([i+1,q.q,q.lib.replace(/ – .*$/,'')+` ${q.L} × ${q.l} × ${q.e}`,q.nuance,q.L,f(q.q*q.L*q.l*q.e*rho,2)]));
+  if(lia==='etrier') nom.push([nom.length+1,1,`Étrier (U-bolt) M${diamEtrier({mode:'base',dn:o.dn,P:{De}})} + écrous et contre-écrous (serrage avec jeu)`,'acier galva.','—','—']);
+  nom.forEach((q,i)=>{ q[0]=i+1; reperes.push({vue:'face',p:[0,(i%2?1:-1)*(0.07+0.02*i),Math.max(hl*0.5,0.01)],n:String(i+1),dx:i%2?1:-1,dy:0.6}); });
+  cotes.push({vue:'face',a:[0,-0.13,0],b:[0,-0.13,hl],cote:'gauche',niv:0,txt:`${f(hl*1000,0)}`},{vue:'face',a:[0,-r,c[2]+r],b:[0,r,c[2]+r],cote:'haut',niv:0,txt:`Ø${f(De,1)}`},
+    {vue:'face',a:[0,-0.05,0],b:[0,0.05,0],cote:'bas',niv:0,txt:'100'},{vue:'gauche',a:[-LONG/2,0,0],b:[LONG/2,0,0],cote:'bas',niv:0,txt:`${f(LONG*1000,0)}`});
+  const tab=lia==='t1'||lia==='t2'||lia==='t2a'||lia==='t3'?{titre:'Dimensions par diamètre (mm)',cols:['DN','Ø ext.',lia==='t1'?'Collier L × 40 × 5':'Tôle L × l × 5','h sous tuyau'],rows:(o.DNs||[]).map(d=>[String(d.dn||'—'),f(d.De,1),lia==='t1'?`${Math.round(Math.PI*(d.De+10))}`:`150 × ${Math.round(Math.min(0.6*d.De,300))}`,f(hl*1000,0)])}:null;
+  const notes=[`${LIAISONS[lia]}. Profilé du support représenté à titre indicatif (UPN 100) ; pièces L × l × e en mm, nomenclature pour le tuyau de référence ${nm}.`,...(['t1','t2','t2a','t3'].includes(lia)?['Tôles intermédiaires de même nature que la tuyauterie, soudées en continu, avec un perçage Ø8 sur la génératrice inférieure (passage du gaz).']:[]),...(o.guide&&o.guide!=='non'?['Guide latéral : jeu de 10 mm entre le tuyau et le guide, chanfrein sur les extrémités.']:[]),'Spécification technique Rubis Terminal – Tuyauteries hydrocarbures et additifs, §11.3 et §11.4.'];
+  return {format:o.format||'A3',repLib:'DÉTAIL TYPE '+({etrier:'4',t1:'1',t2:'2',t2a:'2A',t3:'3',t5:'5'}[lia]),statut:o.exec?null:{phase:o.phase||'APS'},
+    vues:[{id:'face',col:0,lig:0},{id:'gauche',col:1,lig:0},{id:'dessus',col:0,lig:1,option:true}],solides:S,aides,cercles,cotes,reperes,etiquettes:etiq,nomenclature:nom,tableaux:tab?[tab]:[],cartouche:o.cartouche,notes,
+    iso:{w:[1,-1,1],solides:[DESSIN.cylindre([-Lp,0,c[2]],[Lp,0,c[2]],r,r-Math.max(De*0.03,3)/1000,{trait:0.25})]}}; }
 function specDessin(D,V,opt={}){
   const Gm=V.Gm, lettres=!!opt.lettres, mm=v=>f(v*1000,0), lc=(l,v)=>lettres?l:mm(v);
   const S=[], aides=[], cercles=[], sols=[], murs=[], cotes=[], reperes=[], etiq=[], nom=[];
@@ -1216,23 +1290,37 @@ function specDessin(D,V,opt={}){
   // --- platines et fixations
   const a1=Math.max(num('fa1',120),20)/1000, a2=Math.max(num('fa2',120),20)/1000, dF=fixM==='tige'||fixM==='sand'?+$('tD').value:12, RET=opt.retourAN||retoursAN1S1(Gm), ep=epPlatine(RET,Gm), cx=Math.max(a1+0.08,0.15), cz=Math.max(a2+0.08,0.15);
   const pl=[], trou=()=>{};                                   // platines : ni trous, ni entraxes, ni dimensions (relèvent de la note de chevillage)
-  Gm.appuis.forEach(a=>{ const P=a.pt;
-    if(a.k==='sol'){ S.push(boiteAA(P[0]-cx/2,P[0]+cx/2,P[1]-cz/2,P[1]+cz/2,P[2]-ep,P[2])); pl.push({k:a.k,d:[cx,cz]}); [-1,1].forEach(i=>[-1,1].forEach(j=>trou([P[0]+i*a1/2,P[1]+j*a2/2,P[2]],[0,0,1])));
-      if(!exK('sol')) sols.push({a:[P[0]-0.3,P[1]-cz/2-0.06,P[2]-ep],b:[P[0]+0.3,P[1]+cz/2+0.06,P[2]-ep],mat:[P[0],P[1],P[2]-0.2],vues:['face','gauche','droite']}); }
-    if(a.k==='plafond'&&!crap){ S.push(boiteAA(P[0]-cx/2,P[0]+cx/2,P[1]-cz/2,P[1]+cz/2,P[2],P[2]+ep)); pl.push({k:a.k,d:[cx,cz]}); [-1,1].forEach(i=>[-1,1].forEach(j=>trou([P[0]+i*a1/2,P[1]+j*a2/2,P[2]+ep],[0,0,1])));
-      if(!sandE) sols.push({a:[P[0]-0.3,P[1]-cz/2-0.06,P[2]+ep],b:[P[0]+0.3,P[1]+cz/2+0.06,P[2]+ep],mat:[P[0],P[1],P[2]+0.2],vues:['face','gauche','droite']}); }
-    if(a.k==='mur'){ S.push(boiteAA(-cx/2,cx/2,-ep,0,P[2]-cz/2,P[2]+cz/2)); pl.push({k:a.k,d:[cx,cz]}); [-1,1].forEach(i=>[-1,1].forEach(j=>trou([i*a1/2,0,P[2]+j*a2/2],[0,1,0])));
-      if(tige){ const e=Math.max(num('eMur',200),20)/1000, zA=Math.min(z0,P[2]-cz/2)-0.15, zB=Math.max(z1,P[2]+cz/2)+0.1;
+  Gm.appuis.forEach(a=>{ const P=a.pt, EX=opt.platEx&&opt.platEx[a.k], cxp=EX?EX.lx/1000:cx, czp=EX?EX.ly/1000:cz;
+    if(a.k==='sol'){ S.push(boiteAA(P[0]-cxp/2,P[0]+cxp/2,P[1]-czp/2,P[1]+czp/2,P[2]-ep,P[2])); pl.push({k:a.k,d:[cxp,czp]}); [-1,1].forEach(i=>[-1,1].forEach(j=>trou([P[0]+i*a1/2,P[1]+j*a2/2,P[2]],[0,0,1])));
+      if(!exK('sol')) sols.push({a:[P[0]-0.3,P[1]-czp/2-0.06,P[2]-ep],b:[P[0]+0.3,P[1]+czp/2+0.06,P[2]-ep],mat:[P[0],P[1],P[2]-0.2],vues:['face','gauche','droite']}); }
+    if(a.k==='plafond'&&!crap){ S.push(boiteAA(P[0]-cxp/2,P[0]+cxp/2,P[1]-czp/2,P[1]+czp/2,P[2],P[2]+ep)); pl.push({k:a.k,d:[cxp,czp]}); [-1,1].forEach(i=>[-1,1].forEach(j=>trou([P[0]+i*a1/2,P[1]+j*a2/2,P[2]+ep],[0,0,1])));
+      if(!sandE) sols.push({a:[P[0]-0.3,P[1]-czp/2-0.06,P[2]+ep],b:[P[0]+0.3,P[1]+czp/2+0.06,P[2]+ep],mat:[P[0],P[1],P[2]+0.2],vues:['face','gauche','droite']}); }
+    if(a.k==='mur'){ S.push(boiteAA(-cxp/2,cxp/2,-ep,0,P[2]-czp/2,P[2]+czp/2)); pl.push({k:a.k,d:[cxp,czp]}); [-1,1].forEach(i=>[-1,1].forEach(j=>trou([i*a1/2,0,P[2]+j*a2/2],[0,1,0])));
+      if(tige){ const e=Math.max(num('eMur',200),20)/1000, zA=Math.min(z0,P[2]-czp/2)-0.15, zB=Math.max(z1,P[2]+czp/2)+0.1;
         murs.push({rect:[[0,-ep-e,zA],[0,-ep,zA],[0,-ep,zB],[0,-ep-e,zB]],vues:['face']},{rect:[[-0.3,-ep-e,0],[0.3,-ep-e,0],[0.3,-ep,0],[-0.3,-ep,0]],vues:['dessus']});
-        S.push(boiteAA(-cx/2,cx/2,-2*ep-e,-ep-e,P[2]-cz/2,P[2]+cz/2));
+        S.push(boiteAA(-cxp/2,cxp/2,-2*ep-e,-ep-e,P[2]-czp/2,P[2]+czp/2));
         [-1,1].forEach(i=>[-1,1].forEach(j=>S.push(DESSIN.cylindre([i*a1/2,0.03,P[2]+j*a2/2],[i*a1/2,-2*ep-e-0.03,P[2]+j*a2/2],dF/2000,0)))); }
-      else if(!exK('mur')){ sols.push({a:[0,-ep,Math.min(z0,P[2]-cz/2)-0.15],b:[0,-ep,Math.max(z1,P[2]+cz/2)+0.1],mat:[0,-0.2,P[2]],vues:['face']},{a:[-0.3,-ep,0],b:[0.3,-ep,0],mat:[0,-0.2,0],vues:['dessus']}); } }
-    if(a.k==='murPied'){ const [p1,p2]=entraxesAp('murPied'), c=Math.max(0.14,Math.max(p1,p2)+0.06); S.push(boiteAA(P[0]-c/2,P[0]+c/2,P[1]-0.01,P[1],P[2]-c/2,P[2]+c/2)); pl.push({k:a.k,d:[c,c],e:0.01});
+      else if(!exK('mur')){ sols.push({a:[0,-ep,Math.min(z0,P[2]-czp/2)-0.15],b:[0,-ep,Math.max(z1,P[2]+czp/2)+0.1],mat:[0,-0.2,P[2]],vues:['face']},{a:[-0.3,-ep,0],b:[0.3,-ep,0],mat:[0,-0.2,0],vues:['dessus']}); } }
+    if(a.k==='murPied'){ const [p1,p2]=entraxesAp('murPied'), EP=opt.platEx&&opt.platEx.murPied, c=EP?Math.max(EP.lx,EP.ly)/1000:Math.max(0.14,Math.max(p1,p2)+0.06); S.push(boiteAA(P[0]-c/2,P[0]+c/2,P[1]-0.01,P[1],P[2]-c/2,P[2]+c/2)); pl.push({k:a.k,d:[c,c],e:0.01});
       [-1,1].forEach(i=>[-1,1].forEach(j=>trou([P[0]+i*p1/2,P[1],P[2]+j*p2/2],[0,1,0])));
       if(tige){ const e=Math.max(num('eMur',200),20)/1000; S.push(boiteAA(P[0]-c/2,P[0]+c/2,-0.01-ep-e,-ep-e,P[2]-c/2,P[2]+c/2));
         [-1,1].forEach(i=>[-1,1].forEach(j=>S.push(DESSIN.cylindre([P[0]+i*p1/2,0.02,P[2]+j*p2/2],[P[0]+i*p1/2,-0.01-ep-e-0.03,P[2]+j*p2/2],dF/2000,0)))); } }
     if(a.k==='murArt'){ const c=0.16; S.push(boiteAA(P[0]-c/2,P[0]+c/2,P[1],P[1]+0.01,P[2]-c/2,P[2]+c/2)); pl.push({k:a.k,d:[c,c],e:0.01});
       sols.push({a:[0,P[1]+0.01,z0-0.05],b:[0,P[1]+0.01,z1+0.15],mat:[0,P[1]+0.3,z1],vues:['face']},{a:[-0.3,P[1]+0.01,z1],b:[0.3,P[1]+0.01,z1],mat:[0,P[1]+0.3,z1],vues:['dessus']}); } });
+  // --- cahier d'exécution : trous des platines (cercles à axes), entraxes et dimensions de la platine, repère des trous
+  if(opt.platEx){ const fait={};
+    Gm.appuis.forEach(a=>{ const E=opt.platEx[a.k]; if(!E||!E.trous||!E.trous.length) return; const P=a.pt, haut=a.k==='sol'||a.k==='plafond', e0=a.k==='murPied'?0.01:ep;
+      const M=(x,y)=>a.k==='sol'?[P[0]+x,P[1]+y,P[2]]:a.k==='plafond'?[P[0]+x,P[1]-y,P[2]+e0]:[P[0]-x,P[1]-e0/2,P[2]+y], n=haut?[0,0,1]:[0,1,0], vue=haut?'dessus':'droite';
+      E.trous.forEach(t=>cercles.push({c:M(t.x/1000,t.y/1000),r:t.d/2000,n,style:'fort',croix:true}));
+      if(fait[a.k]) return; fait[a.k]=1;
+      const xs=E.trous.map(t=>t.x/1000), ys=E.trous.map(t=>t.y/1000), x0=Math.min(...xs), x1=Math.max(...xs), y0=Math.min(...ys), y1=Math.max(...ys), lx=E.lx/1000, ly=E.ly/1000, mm=v=>f(v*1000,0);
+      const hy=haut?'bas':'bas', vx='droite';                   // entraxes puis dimensions hors tout : le long de y (horizontal sur 'dessus') et de x
+      const cH=(y,z,niv,txt)=>cotes.push({vue,a:M(haut?x0:x0,y[0]),b:M(haut?x0:x0,y[1]),cote:'bas',niv,txt});
+      if(haut){ if(y1>y0) cotes.push({vue,a:M(x1,y0),b:M(x1,y1),cote:'bas',niv:2,txt:`${mm(y1-y0)}`}); cotes.push({vue,a:M(lx/2,-ly/2),b:M(lx/2,ly/2),cote:'bas',niv:3,txt:`${mm(ly)}`});
+        if(x1>x0) cotes.push({vue,a:M(x0,y1),b:M(x1,y1),cote:'droite',niv:2,txt:`${mm(x1-x0)}`}); cotes.push({vue,a:M(-lx/2,ly/2),b:M(lx/2,ly/2),cote:'droite',niv:3,txt:`${mm(lx)}`}); }
+      else { if(x1>x0) cotes.push({vue,a:M(x0,y0),b:M(x1,y0),cote:'bas',niv:2,txt:`${mm(x1-x0)}`}); cotes.push({vue,a:M(-lx/2,-ly/2),b:M(lx/2,-ly/2),cote:'bas',niv:3,txt:`${mm(lx)}`});
+        if(y1>y0) cotes.push({vue,a:M(x1,y0),b:M(x1,y1),cote:'droite',niv:2,txt:`${mm(y1-y0)}`}); cotes.push({vue,a:M(lx/2,-ly/2),b:M(lx/2,ly/2),cote:'droite',niv:3,txt:`${mm(ly)}`}); }
+      etiq.push({vue,p:M(xs[0],ys[0]),txt:`${E.trous.length} TROUS Ø${E.trous[0].d} – ${E.id}`,dx:16,dy:-14}); }); }
   if(crap){ const {g,crap:cp}=crapPoints(), h=g.p.h/1000, s=secPts(g.p), mm3=(o,ex,ey,ez,L,sec)=>DESSIN.prisme(o,ex,ey,ez,L,sec,null);
     S.push(mm3(g.up.map((u,i)=>u*(g.tp+h/2)-g.ex[i]*0.5),g.ex,g.ey,g.up,1.0,s));
     S.push(DESSIN.prisme(g.ex.map(v=>-v*cx/2),g.ex,g.ey,g.up,cx,[[-cz/2,0],[cz/2,0],[cz/2,g.tp],[-cz/2,g.tp]],null)); pl.push({k:'plafond',d:[cx,cz]});
@@ -1255,23 +1343,12 @@ function specDessin(D,V,opt={}){
       [-1,1].forEach(sg=>{ aides.push({type:'tirets',pts:[[c[0]-Lp,c[1],c[2]+sg*rc],[c[0]+Lp,c[1],c[2]+sg*rc]],vues:['gauche','droite']},{type:'tirets',pts:[[c[0]-Lp,c[1]+sg*rc,c[2]],[c[0]+Lp,c[1]+sg*rc,c[2]]],vues:['dessus']}); }); }
     // étrier (U-bolt) : demi-cercle côté opposé à la barre + branches jusqu'à la sous-face de la barre
     const side=b.vert?[0,0,1]:[0,1,0], hi0=(b.vert?b.bord([0,1,0]):b.bord([0,0,1])).hi, hl=hLiaison(t,D)/1000, lia=liaisonT(t);
+    if(lia==='etrier'&&caleT(t)) elementsLiaison(S,{lia:'cale0',De:t.P.De,r,hl,guide:'non',c,pt:t.pt,up,side,hi0,cale:true,wCale:Math.ceil((t.P.De+2*diamEtrier(t)+50)/10)*10/1000});
     if(lia==='etrier'){ const de=diamEtrier(t)/1000, re=r+de/2, side=b.vert?[0,0,1]:[0,1,0], base=add3(t.pt,mul3(up,(b.vert?b.bord([0,1,0]):b.bord([0,0,1])).lo-0.02)), arc=[];
       for(let k=0;k<=18;k++){ const a=Math.PI*k/18, p=add3(c,add3(mul3(side,re*Math.cos(a)),mul3(up,re*Math.sin(a)))); arc.push([c[0]+Lp,p[1],p[2]]); }
       const pied=s=>{const q=add3(base,mul3(side,s*re));return [c[0]+Lp,q[1],q[2]];};
       aides.push({type:'fort',pts:[pied(1),...arc,pied(-1)],vues:['face']}); }
-    else {          // patin (types 1, 2, 2a, 3, 5, ST Rubis) : élément soudé sous le tuyau, posé sur le profilé ; guide latéral éventuel
-      const X0=c[0], cb=(sg,hh)=>add3(c,mul3(up,sg*hh)), rect=(ctr,L,w,hh)=>DESSIN.prisme([ctr[0]-L/2,ctr[1],ctr[2]],[1,0,0],side,up,L,[[-w/2,-hh/2],[w/2,-hh/2],[w/2,hh/2],[-w/2,hh/2]],null);
-      const ctrAt=(dz,ds=0)=>add3(add3(t.pt,mul3(up,hi0+dz)),mul3(side,ds)), Lp2=0.15, tole=0.005;
-      if(lia==='t1'){ S.push(DESSIN.cylindre([X0-0.02,c[1],c[2]],[X0+0.02,c[1],c[2]],r+tole,r)); S.push(rect(ctrAt(0.005),0.10,0.10,0.01)); S.push(rect(ctrAt(0.01+(hl-tole-0.01)/2),0.10,0.01,hl-tole-0.01)); }
-      if(lia==='t2'||lia==='t2a'||lia==='t3'){ S.push(rect(ctrAt(hl-tole/2),Lp2,Math.min(0.6*t.P.De/1,0.3),tole)); }
-      if(lia==='t2'){ S.push(rect(ctrAt(0.005),0.10,0.10,0.01)); S.push(rect(ctrAt(0.01+(hl-tole-0.01)/2),0.10,0.01,hl-tole-0.01)); }
-      if(lia==='t2a'){ S.push(rect(ctrAt(0.005),Lp2,0.14,0.01)); [-1,1].forEach(sg=>S.push(rect(ctrAt(0.01+(hl-tole-0.01)/2,sg*0.05),Lp2,0.008,hl-tole-0.01))); }
-      if(lia==='t3') S.push(rect(ctrAt(tole/2),Lp2,Math.min(0.6*t.P.De,0.3),tole));
-      if(lia==='t5') S.push(rect(ctrAt(hl/2),Lp2,0.10,hl));
-      if(t.guide&&t.guide!=='non'){ const hg=Math.max(hl,0.06)+0.03; [-1,1].forEach(sg=>{ const ds=sg*(r+0.01+0.004);
-        if(t.guide==='rond') S.push(DESSIN.cylindre(add3(add3(t.pt,mul3(up,hi0)),mul3(side,ds)).map((v,k)=>k===0?X0-0.03:v),add3(add3(add3(t.pt,mul3(up,hi0)),mul3(side,ds)),mul3(up,hg)).map((v,k)=>k===0?X0-0.03:v),0.006,0));
-        else S.push(rect(ctrAt(hg/2,ds),0.10,0.008,hg)); }); }
-    }
+    else elementsLiaison(S,{lia,De:t.P.De,r,hl,guide:t.guide,c,pt:t.pt,up,side,hi0,cale:caleT(t)});          // patin (types 1, 2, 2a, 3, 5, ST Rubis) : élément soudé sous le tuyau, posé sur le profilé ; guide latéral éventuel
     etiq.push({vue:'face',p:[c[0]+Lp,c[1]+r*0.7,c[2]+r*0.7],txt:`${t.nom||'L'+(i+1)} – ${t.mode==='base'?'DN'+t.dn+' ':''}Ø${f(t.P.De,1)}${t.P.ecal?' + calo. '+t.P.ecal:''}${liaisonT(t)!=='etrier'?' – patin '+LIAIS_NOM[liaisonT(t)].split(' – ')[0]:''}${t.guide&&t.guide!=='non'?' + guide':''}`,dx:10,dy:-8-6*i}); });
   // --- cotes (vue de face)
   const v=Gm.B.find(b=>b.vert), hz=Gm.B.find(b=>!b.vert);
@@ -1294,22 +1371,24 @@ function specDessin(D,V,opt={}){
     const vert=b.vert, incl=!vert&&Math.abs(b.dir[2])>0.05, m=add3(b.A,mul3(b.dir,b.L*(vert?0.4:incl?0.5:0.78)));
     reperes.push(vert?{vue:'face',p:m,n:String(rep),dx:-1,dy:0.35}:incl?{vue:'face',p:m,n:String(rep),dx:Math.abs(b.dir[2]),dy:Math.abs(b.dir[1])}:{vue:'face',p:m,n:String(rep),dx:0.35,dy:1}); });
   const LIBPL={sol:'Platine de pied',plafond:'Platine de tête',mur:'Platine murale',murPied:'Platine de pied de jambe',murArt:'Platine d\'appui mural'};
-  const gp=new Map(); pl.forEach(p=>{ const k=LIBPL[p.k]||'Platine'; p.key=k; gp.set(k,{k,n:(gp.get(k)?.n||0)+1}); });
-  [...gp.values()].forEach(p=>{ rep++; p.rep=rep; nom.push([rep,p.n,`${p.k} – dimensions selon note de chevillage`,$('nuance').value,'—','—']); });
+  const gp=new Map(); pl.forEach(p=>{ const k=LIBPL[p.k]||'Platine'; p.key=k; gp.set(k,{k,kind:p.k,n:(gp.get(k)?.n||0)+1}); });
+  [...gp.values()].forEach(p=>{ rep++; p.rep=rep; const E=opt.platEx&&opt.platEx[p.kind]; nom.push([rep,p.n,E?`${p.k} ${E.id} – ${E.lx} × ${E.ly} × ${E.tp} mm`:`${p.k} – dimensions selon note de chevillage`,$('nuance').value,'—','—']); });
   if(D.typ==='TS'){ rep++; nom.push([rep,2,'Butée d\'extrémité (plat ép. 8) + goussets du sabot – selon plan du sabot',$('nuance').value,'—','—']); }
   const repPl=k=>String((gp.get((pl.find(p=>p.k===k)||{}).key)||{}).rep||'');
   if(pm&&!crap){ const P=pm.pt; reperes.push({vue:'face',p:pm.k==='mur'?[0,-ep/2,P[2]-cz/2]:[0,P[1]-cz/2,P[2]+(pm.k==='sol'?-ep/2:ep/2)],n:repPl(pm.k),dx:pm.k==='mur'?1:-1,dy:pm.k==='plafond'?-1:1}); }
   Gm.appuis.filter(a=>a.k==='murPied'||a.k==='murArt').forEach(a=>reperes.push({vue:'face',p:[0,a.pt[1]+(a.k==='murArt'?0.005:-0.005),a.pt[2]-0.07],n:repPl(a.k),dx:a.k==='murArt'?1:-1,dy:1}));
   const nP=pl.filter(p=>!p.e).length;
   if(nP){ rep++; const L=sandE?`Tiges filetées M${$('tD').value} cl. ${$('tCl').value} + écrous, rondelles (sandwich du profilé existant ${$('crProf').value})`:crapN?`Crapauds sur profilé existant ${$('crProf').value} (${$('crType').value==='maison'?'maison, boulon précontraint':'catalogue'})`:fixM==='tige'?'Tiges filetées traversantes + écrous, rondelles':crap?`Crapauds (${$('crType').value==='maison'?'maison, boulon précontraint':'catalogue'})`:'Chevilles d\'ancrage';
-    nom.push([rep,'—',L+' – selon note de chevillage','—','—','—']);
+    nom.push([rep,'—',L+' – '+(opt.chevEx&&!sandE&&!crapN&&fixM!=='tige'?opt.chevEx:'selon note de chevillage'),'—','—','—']);
     if(pm&&!crap){ const P=pm.pt; reperes.push(pm.k==='mur'?{vue:vCote,p:[cx*0.3,0,P[2]+cz*0.3],n:String(rep),dx:-1,dy:-1}:{vue:'dessus',p:[cx*0.3,P[1]-cz*0.3,P[2]],n:String(rep),dx:-1,dy:1}); }
-    if(tige){ rep++; nom.push([rep,nP+pl.filter(p=>p.k==='murPied').length,'Contre-plaque – dimensions selon note de chevillage',$('nuance').value,'—','—']); }
-    if(sandE){ rep++; nom.push([rep,pl.filter(p=>['sol','mur','plafond','murPied'].includes(p.k)).length,'Contre-plaque (face opposée du profilé existant)',$('nuance').value,'—','—']); } }
+    if(tige){ rep++; nom.push([rep,nP+pl.filter(p=>p.k==='murPied').length,(opt.platEx&&opt.platEx.mur?'Contre-plaque '+opt.platEx.mur.id+' – '+opt.platEx.mur.lx+' × '+opt.platEx.mur.ly+' × '+opt.platEx.mur.tp+' mm':'Contre-plaque – dimensions selon note de chevillage'),$('nuance').value,'—','—']); }
+    if(sandE){ rep++; nom.push([rep,pl.filter(p=>['sol','mur','plafond','murPied'].includes(p.k)).length,(opt.platEx&&Object.values(opt.platEx)[0]?'Contre-plaque '+Object.values(opt.platEx)[0].id+' – '+Object.values(opt.platEx)[0].lx+' × '+Object.values(opt.platEx)[0].ly+' × '+Object.values(opt.platEx)[0].tp+' mm (face opposée du profilé existant)':'Contre-plaque (face opposée du profilé existant)'),$('nuance').value,'—','—']); } }
   const ge=new Map(); Gm.T.forEach(t=>{ if(!avecEtrier(t)) return; const d=diamEtrier(t), k=`Étrier (U-bolt) M${d} pour Ø${f(t.P.De,1)}`; ge.set(k,(ge.get(k)||0)+1); });
-  const gl=new Map(); Gm.T.forEach(t=>{ const l=liaisonT(t); if(l==='etrier') return; const k=`Patin ${LIAIS_NOM[l]} pour Ø${f(t.P.De,1)} (h = ${f(hLiaison(t,D),0)} mm)`; gl.set(k,(gl.get(k)||0)+1);
+  const gl=new Map(), glM={}; Gm.T.forEach(t=>{ const l=liaisonT(t);
+    if(caleT(t)){ const w=l==='etrier'?Math.ceil((t.P.De+2*diamEtrier(t)+50)/10)*10:Math.ceil(Math.min(Math.max(0.6*t.P.De,100),300)/10)*10, kc=l==='etrier'?`Cale PTFE 120 × ${w} × ${EP_CALE} percée 2 × Ø${diamEtrier(t)+2} (tenue par l'étrier) pour Ø${f(t.P.De,1)}`:`Cale PTFE 120 × ${w} × ${EP_CALE} sous patin pour Ø${f(t.P.De,1)}`; gl.set(kc,(gl.get(kc)||0)+1); glM[kc]='PTFE'; }
+    if(l==='etrier') return; const k=`Patin ${LIAIS_NOM[l]} pour Ø${f(t.P.De,1)} (h = ${f(hLiaison(t,D),0)} mm)`; gl.set(k,(gl.get(k)||0)+1);
     if(t.guide&&t.guide!=='non'){ const kg=`Guide latéral (${GUIDES[t.guide].toLowerCase()}) pour Ø${f(t.P.De,1)}, jeu 10 mm, chanfrein`; gl.set(kg,(gl.get(kg)||0)+2); } });
-  [...gl.entries()].forEach(([k,n])=>{ rep++; nom.push([rep,n,k,$('nuance').value,'—','—']); });
+  [...gl.entries()].forEach(([k,n])=>{ rep++; nom.push([rep,n,k,glM[k]||$('nuance').value,'—','—']); });
   [...ge.entries()].forEach(([k,n])=>{ rep++; nom.push([rep,n,k+' + écrous','acier galva.','—','—']); });
   if(Gm.T[0]) reperes.push({vue:'face',p:[0,Gm.T[0].c[1]-Gm.T[0].P.De/2000*0.7-(avecEtrier(Gm.T[0])?diamEtrier(Gm.T[0]):0)/2000,Gm.T[0].c[2]+Gm.T[0].P.De/2000*0.7],n:String(rep),dx:-1,dy:-0.6});
   const masse=Gm.B.reduce((s,b)=>s+b.p.m*b.L,0);
@@ -1333,8 +1412,8 @@ function specDessin(D,V,opt={}){
   if(opt.tableau) tableaux.push(opt.tableau);
   const phase=opt.phase||(CAHIER.existe()?(CAHIER.lire().affaire.phase||'APS'):'APS/APD');
   const TRN={galva:'Traitement de surface : galvanisation à chaud après fabrication (NF EN ISO 1461).',peinture:'Traitement de surface : peinture (système à préciser selon NF EN ISO 12944, catégorie de corrosivité du site).'};
-  return {repSupport:opt.repSupport||'',format:opt.format||formatIndus,statut:{phase},vues,solides:S,tableaux,scu:!!opt.ddc||!!opt.scu,appuis:appuisL||[],interruptions:opt.interrompre===false?[]:interruptions,iso:opt.perspective===false?null:iso,aides,cercles,sols,murs,cotes,reperes,etiquettes:etiq,nomenclature:nom,cartouche:K,
-    notes:[`Cotes en mm${lettres?' (valeurs : tableau des configurations)':''} : a = positionnement des tuyauteries (axe), autres cotes = géométrie du support. Platines et fixations représentées à titre indicatif : dimensions, épaisseurs, entraxes et chevilles selon la note de chevillage.`,`Longueurs entre axes du modèle de calcul : longueurs de débit à confirmer en fabrication.`,`Acier ${$('nuance').value} — masse acier ≈ ${f(masse,1)} kg${varie?' (configuration '+opt.tableau.rows[0][0]+')':''} (profilés seuls, hors platines et visserie). Tuyauteries représentées sur ±${Lp*1000} mm.`,...(opt.traitement&&TRN[opt.traitement]?[TRN[opt.traitement]]:[]),...(Gm.T.some(t=>['t1','t2','t2a','t3'].includes(liaisonT(t)))?['Tôles intermédiaires de même nature que la tuyauterie, soudées en continu, avec un perçage Ø8 sur la génératrice inférieure (ST Rubis Terminal §11.4).']:[])]};
+  return {repSupport:opt.repSupport||'',format:opt.format||formatIndus,statut:opt.exec?null:{phase},vues,solides:S,tableaux,scu:!!opt.ddc||!!opt.scu,appuis:appuisL||[],interruptions:opt.interrompre===false?[]:interruptions,iso:opt.perspective===false?null:iso,aides,cercles,sols,murs,cotes,reperes,etiquettes:etiq,nomenclature:nom,cartouche:K,
+    notes:[`Cotes en mm${lettres?' (valeurs : tableau des configurations)':''} : a = positionnement des tuyauteries (axe), autres cotes = géométrie du support. ${opt.exec?'Platines, trous et chevilles : dimensions de la nomenclature (platines vérifiées dans AN1 – NF EN 1992-4) ; fichiers de découpe laser fournis par ailleurs.':'Platines et fixations représentées à titre indicatif : dimensions, épaisseurs, entraxes et chevilles selon la note de chevillage.'}`,`Longueurs entre axes du modèle de calcul : longueurs de débit à confirmer en fabrication.`,`Acier ${$('nuance').value} — masse acier ≈ ${f(masse,1)} kg${varie?' (configuration '+opt.tableau.rows[0][0]+')':''} (profilés seuls, hors platines et visserie). Tuyauteries représentées sur ±${Lp*1000} mm.`,...(opt.traitement&&TRN[opt.traitement]?[TRN[opt.traitement]]:[]),...(Gm.T.some(t=>['t1','t2','t2a','t3'].includes(liaisonT(t)))?['Tôles intermédiaires de même nature que la tuyauterie, soudées en continu, avec un perçage Ø8 sur la génératrice inférieure (ST Rubis Terminal §11.4).']:[])]};
 }
 function planIndus(D,V,opt){ return DESSIN.planche(specDessin(D,V,opt)); }
 function majIndus(){ if(!modeIndus||!dernier) return; try{ const P=planIndus(dernier.D,dernier.V,{format:formatIndus,ddc:$('ddcInd').checked}); $('vInd').innerHTML=P.svg; $('nInd').innerHTML=`Échelle 1:${P.echelle} sur ${P.format} paysage · projection européenne · faces cachées supprimées. ${P.format==='A3'?'Gabarit et cartouche FIP A3 (blocs à attributs dans le DXF).':'Cartouche simplifié en A4 (le gabarit FIP est en A3).'}`+(P.format==='A4'&&P.echelle>20?' <b style="color:#b26a00">⚠ Format A4 trop petit pour ce contenu (échelle réduite) : préférer l\'A3.</b>':''); dernier.planche=P; }
@@ -1550,21 +1629,32 @@ function appliquerParamsAffaire(){                        // paramètres communs
   if(K.climat){ try{localStorage.setItem('fip.climat',JSON.stringify(K.climat));}catch(e){} importerC1(); } else calc();
   return true;
 }
+/* platines du support (dimensions de fabrication) : épaisseur et trous provisoires de S1 tant que AN1 n'a pas vérifié la platine (le cahier d'exécution prend alors les valeurs d'AN1) */
+function platinesS1(D,V){ const mode=$('fix').value||'chev', tD=+$('tD').value, dt=tD+(tD<=8?1:tD<=24?2:3);
+  return V.Gm.appuis.filter(a=>['sol','plafond','mur','murPied','murArt'].includes(a.k)).map(a=>{ const [a1,a2]=entraxesAp(a.k).map(v=>Math.round(v*1000)), pied=a.k==='murPied'||a.k==='murArt', tige=(mode==='tige'&&MURAL(a.k))||mode==='sand', crapaud=mode==='crap'&&a.k!=='murArt', chev=!tige&&!crapaud;
+    const d=tige?dt:crapaud?0:14, ho=d?[[-1,-1],[1,-1],[-1,1],[1,1]].map(([i,j])=>({x:i*a1/2,y:j*a2/2,d})):[];
+    return {lib:a.lib.replace(/<[^>]+>/g,''),k:a.k,lx:Math.round(Math.max(a1+(pied?60:80),pied?120:150)),ly:Math.round(Math.max(a2+(pied?60:80),pied?120:150)),tp:12,trous:ho,mode:tige?'tige':crapaud?'crap':'chev',cp:tige&&a.k!=='murArt',aN1:chev&&chevillable(a.k)}; }); }
+/* pièces fabriquées autres que profilés et platines : L × l × e (mm), quantité par support */
+function piecesS1(D,V){ const L=[], Gm=V.Gm, add=(lib,l1,l2,e,q,mat)=>L.push({lib,L:Math.round(l1),l:Math.round(l2),e,q,nuance:mat||$('nuance').value});
+  Gm.T.forEach(t=>{ piecesLiaison(liaisonT(t),t.P.De,hLiaison(t,D),t.guide,`${t.nom||'L'} Ø${f(t.P.De,1)}`,caleT(t),diamEtrier(t)).forEach(q=>L.push(q)); });
+  if(D.typ==='TS') Gm.appuis.forEach(a=>{ const lx=Math.round(Math.max(entraxesAp('sol')[0]*1000+80,150)); add(`Butée d'extrémité (vérifiée dans AN1) – ${a.lib.replace(/<[^>]+>/g,'')}`,lx-40,(a.h0+0.06)*1000,8,1); add(`Goussets du sabot (vérifiés dans AN1) – ${a.lib.replace(/<[^>]+>/g,'')}`,100,a.h0*1000+60,8,2); });
+  return L; }
 function resumeS1(){                                     // résultats synthétiques pour le cahier
   const {D,V}=dernier, A=alertes(D,V), env=enveloppe(V), nb=A.filter(a=>a.niv==='bloq').length, nw=A.filter(a=>a.niv==='warn').length;
   const statut=(V.gov.r>1||nb)?'ko':(V.gov.r>D.cible||nw)?'jaune':'ok';
   return {type:D.typ,typeNom:TYPES[D.typ].n,nuance:$('nuance').value,profils:[...new Set(V.Gm.B.map(b=>b.p.n))],
     barres:V.Gm.B.map(b=>({lib:b.lib,profil:b.p.n,f:b.p.f,L:b.L,m:b.p.m})),masse:V.Gm.B.reduce((s,b)=>s+b.p.m*b.L,0),
     taux:V.gov.r,critere:V.gov.n.replace(/<[^>]+>/g,''),statut,bloq:nb,warn:nw,alertes:A.filter(a=>a.niv!=='info').map(a=>(a.niv==='bloq'?'⛔ ':'⚠ ')+a.titre.replace(/<[^>]+>/g,'')),
-    tuyaux:V.Gm.T.map(t=>({nom:t.nom,desc:t.P.desc,G:V.CC.detail[V.Gm.T.indexOf(t)].G,barre:V.Gm.B[t.bi].lib,d:avecEtrier(t)?diamEtrier(t):0,liaison:liaisonT(t),guide:t.guide||'non',hl:hLiaison(t,D),dn:t.mode==='base'?+t.dn:null,De:t.P.De})),
+    tuyaux:V.Gm.T.map(t=>({nom:t.nom,desc:t.P.desc,G:V.CC.detail[V.Gm.T.indexOf(t)].G,barre:V.Gm.B[t.bi].lib,d:avecEtrier(t)?diamEtrier(t):0,liaison:liaisonT(t),guide:t.guide||'non',hl:hLiaison(t,D),cale:caleT(t),dn:t.mode==='base'?+t.dn:null,De:t.P.De})),
     fix:{mode:$('fix').value||'chev',d:+$('tD').value,cl:$('tCl').value},appuis:env.map(E=>({lib:E.a.lib,k:E.a.k,profil:(V.Gm.B.find(b=>[b.A,b.B].some(P=>Math.hypot(...P.map((v,i)=>v-E.a.pt[i]))<1e-6))||V.Gm.B[0]).p.n,ELU:E.ELU.map(e=>e.v),SIS:V.res.some(r=>r.c.type==='Sismique')?E.SIS.map(e=>e.v):null,
       cas:Object.fromEntries(['G','FL','T','S','WY','WX','EP','EX','EY'].filter(c=>V.R[c]).map(c=>[c,V.R[c].reactions[E.a.n].map(x=>-x)]))})),
     an1:V.Gm.appuis.map((a,ia)=>({a,ia})).filter(({a})=>chevillable(a.k))
-      .map(({a,ia})=>{ const p=preAN1S1(ia); return p?{ia,lib:a.lib.replace(/<[^>]+>/g,''),k:a.k,C:p.C,A:p.A,plaque:p.plaque,profil:p.profil,info:p.info}:null; }).filter(Boolean),
+      .map(({a,ia})=>{ const p=preAN1S1(ia); return p?{ia,lib:a.lib.replace(/<[^>]+>/g,''),k:a.k,C:p.C,A:p.A,plaque:p.plaque,profil:p.profil,parois:p.parois,info:p.info}:null; }).filter(Boolean),
+    platines:platinesS1(D,V),pieces:piecesS1(D,V),
     lignes:V.lignes.map(l=>({n:l.n.replace(/<[^>]+>/g,''),r:l.r})),date:new Date().toISOString()};
 }
 window.S1API={ndc:async(o={})=>{ const sv={...NDC}; Object.assign(NDC,o); try{ const el=await ndcRendre(true), h=el.outerHTML; $('ndcHors').innerHTML=''; return h; } finally{ Object.keys(NDC).forEach(k=>delete NDC[k]); Object.assign(NDC,sv); } },ndcCSS:()=>NDC_CSS,
-  decalCotes:(RET)=>{ const {D,V}=dernier, ep=epPlatine(RET||retoursAN1S1(V.Gm),V.Gm), typ=D.typ, o={}; if(surSol(typ)||typ==='plafond') o.Lm=ep; tuyaux.forEach((t,i)=>{ const b=V.Gm.B[(V.Gm.T[i]||{}).bi]; if(b&&((b.vert&&(surSol(typ)||typ==='plafond'))||(!b.vert&&surMur(typ)))) o['pos'+i]=ep; }); return o; },plancheVec:(o={})=>DESSIN.planche({...specDessin(dernier.D,dernier.V,{lettres:true,...o}),vecteur:true}).svg,cotes:()=>cotesDef(),cotesValeurs,appliquerCotes:C=>{appliquerCotes(C);cartesTuyaux();calc();},vues:(o={})=>({face:vueFace(dernier.D,dernier.V,{plan:true}),cote:vueCote(dernier.D,dernier.V,{plan:true}),planche:o.indus?planIndus(dernier.D,dernier.V,{lettres:true,format:o.format,cartouche:o.cartouche,tableau:o.tableau,ddc:o.ddc,phase:o.phase,traitement:o.traitement,repSupport:o.repSupport,retourAN:o.retourAN}).svg:null}),etat:etatS1,charger:E=>{chargerEtat(E);appliquerParamsAffaire();calc();return true;},resume:resumeS1,
+  decalCotes:(RET)=>{ const {D,V}=dernier, ep=epPlatine(RET||retoursAN1S1(V.Gm),V.Gm), typ=D.typ, o={}; if(surSol(typ)||typ==='plafond') o.Lm=ep; tuyaux.forEach((t,i)=>{ const b=V.Gm.B[(V.Gm.T[i]||{}).bi]; if(b&&((b.vert&&(surSol(typ)||typ==='plafond'))||(!b.vert&&surMur(typ)))) o['pos'+i]=ep; }); return o; },detailLiaison:(o,vec)=>{ const sp=specDetailLiaison({...o,sabot:+$('sabot').value||0}); return DESSIN.planche(vec?{...sp,vecteur:true}:sp).svg; },plancheVec:(o={})=>DESSIN.planche({...specDessin(dernier.D,dernier.V,{lettres:true,...o}),vecteur:true}).svg,cotes:()=>cotesDef(),cotesValeurs,appliquerCotes:C=>{appliquerCotes(C);cartesTuyaux();calc();},vues:(o={})=>({face:vueFace(dernier.D,dernier.V,{plan:true}),cote:vueCote(dernier.D,dernier.V,{plan:true}),planche:o.indus?planIndus(dernier.D,dernier.V,{lettres:o.lettres!==false,format:o.format,cartouche:o.cartouche,tableau:o.tableau,ddc:o.ddc,phase:o.phase,traitement:o.traitement,repSupport:o.repSupport,retourAN:o.retourAN,exec:o.exec,platEx:o.platEx,chevEx:o.chevEx}).svg:null}),etat:etatS1,charger:E=>{chargerEtat(E);appliquerParamsAffaire();calc();return true;},resume:resumeS1,
   perspective:async()=>{await perspective();return $('persp').hidden?'':$('imgPersp').src;}};
 const QS=new URLSearchParams(location.search), ID_CAHIER=QS.get('cahier'), ID_CONF=QS.get('conf');
 function initCahier(){
@@ -1600,13 +1690,13 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.92"></script>
-<script src="../commun/aide.js?v=2.92"></script>
-<script src="../commun/notes.js?v=2.92"></script>
-<script src="ndc-s1.js?v=2.92"></script>
+<script src="../commun/replier.js?v=2.95"></script>
+<script src="../commun/aide.js?v=2.95"></script>
+<script src="../commun/notes.js?v=2.95"></script>
+<script src="ndc-s1.js?v=2.95"></script>
 <script>document.head.insertAdjacentHTML("beforeend",`<style>${NDC_CSS}</style>`); ndcUI();</script>
-<script src="aide-s1.js?v=2.92"></script>
-<script src="../commun/export.js?v=2.92"></script>
+<script src="aide-s1.js?v=2.95"></script>
+<script src="../commun/export.js?v=2.95"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>

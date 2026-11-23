@@ -4,20 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.92"></script>
+<script src="../commun/auth.js?v=2.95"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — AN1 Ancrages</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.92">
+<link rel="stylesheet" href="../commun/calc.css?v=2.95">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/apps.js?v=2.92"></script>
-<script src="../commun/data/profils.js?v=2.92"></script>
-<script src="../commun/ident.js?v=2.92"></script>
-<script src="../commun/chevilles.js?v=2.92"></script>
-<script src="../commun/cbfem.js?v=2.92"></script>
-<script src="../commun/export.js?v=2.92"></script>
+<script src="../commun/apps.js?v=2.95"></script>
+<script src="../commun/data/profils.js?v=2.95"></script>
+<script src="../commun/ident.js?v=2.95"></script>
+<script src="../commun/chevilles.js?v=2.95"></script>
+<script src="../commun/cbfem.js?v=2.95"></script>
+<script src="../commun/export.js?v=2.95"></script>
 <style>
   /* mise en page type logiciel : panneau de saisie | vues | résultats, combinaisons en bas */
   main.app{display:grid;grid-template-columns:300px minmax(0,1fr) 300px;grid-template-rows:auto auto;gap:12px;max-width:none;padding:12px}
@@ -121,7 +121,7 @@
     <details open><summary>Platine et profilé</summary><div class="in">
       <div class="row3"><div><label>l<sub>x</sub> (mm)</label><input id="lx" type="number" step="10" value="240"></div><div><label>l<sub>y</sub> (mm)</label><input id="ly" type="number" step="10" value="240"></div><div><label>t (mm)</label><input id="tp" type="number" step="1" value="15"></div></div>
       <label>Nuance</label><select id="nuP"><option>S235</option><option>S275</option><option>S355</option></select>
-      <div class="row"><div><label>Famille de profilé</label><select id="pfam"><option>HEA</option><option>HEB</option><option>HEM</option><option>IPE</option><option>IPN</option><option>UPN</option><option>UPE</option><option>L</option><option>SHS</option><option>RHS</option><option>CHS</option><option value="aucun">aucun</option></select></div><div><label>Profilé</label><select id="pnom"></select></div></div>
+      <div class="row"><div><label>Famille de profilé</label><select id="pfam"><option>HEA</option><option>HEB</option><option>HEM</option><option>IPE</option><option>IPN</option><option>UPN</option><option>UPE</option><option>L</option><option>SHS</option><option>RHS</option><option>CHS</option><option value="SABOT">Plats soudés (sabot)</option><option value="aucun">aucun</option></select></div><div><label>Profilé</label><select id="pnom"></select></div></div>
       <div class="row3"><div><label>Excentricité X (mm)</label><input id="prx" type="number" step="5" value="0"></div><div><label>Excentricité Y (mm)</label><input id="pry" type="number" step="5" value="0"></div><div><label>Angle (°)</label><input id="pra" type="number" step="15" value="0"></div></div>
       <div class="presets"><button type="button" id="rotM">↺ 90°</button><button type="button" id="rotP">↻ 90°</button><button type="button" id="prc">Centrer</button></div>
     </div></details>
@@ -456,6 +456,7 @@ function svgPlan(W,H,edit){ const lx=+$('lx').value, ly=+$('ly').value, B=bordsF
   const p=PROFILS.find(q=>q.n===$('pnom').value), selP=sel&&sel.t==='p';
   if(p){ let g=''; const K=k, st=`stroke="${selP?'#e30009':'#171a1e'}" stroke-width="${selP?2:1}"`;
     const Qc=contour(p); if(Qc) g=`<polygon points="${Qc.map(q=>`${q[0]*K},${-q[1]*K}`).join(' ')}" fill="#9aa4b1" ${st}/>`;
+    else if(p.parois) g=p.parois.map(w=>{ const dx=w.b[0]-w.a[0], dy=w.b[1]-w.a[1], L=Math.hypot(dx,dy)||1, nx=-dy/L*w.t/2, ny=dx/L*w.t/2; return `<polygon points="${[[w.a[0]+nx,w.a[1]+ny],[w.b[0]+nx,w.b[1]+ny],[w.b[0]-nx,w.b[1]-ny],[w.a[0]-nx,w.a[1]-ny]].map(q=>`${q[0]*K},${-q[1]*K}`).join(' ')}" fill="#9aa4b1" ${st}/>`; }).join('');
     else if(p.f==='CHS') g=`<circle cx="0" cy="0" r="${p.h/2*K}" fill="rgba(154,164,177,.25)" ${st}/><circle cx="0" cy="0" r="${(p.h/2-p.t)*K}" fill="none" ${st}/>`;
     else g=`<rect x="${-p.b/2*K}" y="${-p.h/2*K}" width="${p.b*K}" height="${p.h*K}" fill="rgba(154,164,177,.25)" ${st}/><rect x="${(-p.b/2+p.t)*K}" y="${(-p.h/2+p.t)*K}" width="${(p.b-2*p.t)*K}" height="${(p.h-2*p.t)*K}" fill="none" ${st}/>`;
     s+=`<g data-prof="1" transform="translate(${X(PR.x)},${Y(PR.y)}) rotate(${-PR.a})" style="cursor:${edit?'move':'default'}">${g}<circle r="3" fill="#e30009"/></g>`; }
@@ -543,7 +544,8 @@ async function vue3D(){ const box=$('v3d'); if(box.hidden) return;
     const inf=F3?(amp>0?`Déformée amplifiée ×${f(amp,0)} (traits tiretés : position initiale)`:'Déformée non représentée')+` – ${h((C[actif]||{}).nom||'')}`:'';
     el.hidden=!L3; if(L3) el.innerHTML=legHTML(L3,inf); V3.leg=L3?{L:L3,inf}:null; }
   const p=PROFILS.find(q=>q.n===$('pnom').value), Hp=Math.max(300,(p?p.h:0)*1.6), mat=new T.MeshLambertMaterial({color:'#8d98a6'});
-  if(p){ let sh=new T.Shape();
+  if(p&&p.parois){ p.parois.forEach(w=>{ const L=Math.hypot(w.b[0]-w.a[0],w.b[1]-w.a[1]), bx=new T.Mesh(new T.BoxGeometry(L,w.t,Hp*0.6),mat); bx.position.set((w.a[0]+w.b[0])/2,(w.a[1]+w.b[1])/2,Hp*0.3); bx.rotation.z=Math.atan2(w.b[1]-w.a[1],w.b[0]-w.a[0]); sc.add(bx); }); }
+  else if(p){ let sh=new T.Shape();
     const Q=contour(p); if(Q){ sh.moveTo(...Q[0]); Q.slice(1).forEach(q=>sh.lineTo(...q)); }
     else if(p.f==='CHS'){ sh.absarc(0,0,p.h/2,0,2*Math.PI); const ho=new T.Path(); ho.absarc(0,0,p.h/2-p.t,0,2*Math.PI,true); sh.holes.push(ho); }
     else { const b=p.b/2,hh=p.h/2,t=p.t; sh.moveTo(-b,-hh); sh.lineTo(b,-hh); sh.lineTo(b,hh); sh.lineTo(-b,hh); const ho=new T.Path(); ho.moveTo(-b+t,-hh+t); ho.lineTo(-b+t,hh-t); ho.lineTo(b-t,hh-t); ho.lineTo(b-t,-hh+t); sh.holes.push(ho); }
@@ -709,7 +711,8 @@ function renvoyer(){ if(!LIEN||!RES.length) return; const P=PROD[$('fam').value]
   let o={}; try{ o=JSON.parse(localStorage.getItem('fip.an1.retour'))||{}; }catch(e){}
   o[LIEN.cle]={t:Date.now(),u,emp:LIEN.emp,cheville:`${A.length} × ${h0txt(P.nom).split(' (')[0]} ${$('diam').value}${$('cl').value!=='acier'?' '+$('cl').value:''}, h_ef ${$('hef').value} mm, platine ${$('lx').value} × ${$('ly').value} × ${$('tp').value}`,
     methode:$('meth').value==='cbfem'?'platine flexible (CBFEM)':'platine rigide',modifie:sigC()!==LIEN.sigC,
-    n:A.length,produit:h0txt(P.nom).split(' (')[0],chimique:!!P.chimique,diam:$('diam').value,cl:$('cl').value==='acier'?'':$('cl').value,hef:+$('hef').value,lx:+$('lx').value,ly:+$('ly').value,tp:+$('tp').value};
+    n:A.length,produit:h0txt(P.nom).split(' (')[0],chimique:!!P.chimique,diam:$('diam').value,cl:$('cl').value==='acier'?'':$('cl').value,hef:+$('hef').value,lx:+$('lx').value,ly:+$('ly').value,tp:+$('tp').value,
+    A:A.map(a=>({x:+a.x,y:+a.y})),df:(()=>{ const d=P.d[P.diam.indexOf($('diam').value)]; return d+(d<=8?1:d<=24?2:3); })(),nuP:$('nuP').value};
   try{ localStorage.setItem('fip.an1.retour',JSON.stringify(o)); }catch(e){}
   $('preInfo').hidden=false; if(!$('preInfo').dataset.import) $('preInfo').innerHTML=`<b>Lié à ${h(LIEN.src)}</b> : le résultat (taux ${isFinite(u)?f(u*100,0)+' %':'—'}) est renvoyé à ${h(LIEN.srcCourt||'la source')} à chaque calcul${o[LIEN.cle].modifie?' ; combinaisons modifiées ici depuis l\'import':''}. ${LIEN.retour?`<a href="${h(LIEN.retour)}">← Retour à ${h(LIEN.srcCourt)}</a> · `:''}<a href="#" id="delier">Délier</a>`;
   const dl=$('delier'); if(dl) dl.onclick=e=>{ e.preventDefault(); LIEN=null; enr(); $('preInfo').hidden=true; }; }
@@ -720,10 +723,12 @@ function lirePre(){ let p=null; try{ p=JSON.parse(localStorage.getItem('fip.an1.
   LIEN=p.cle?{cle:String(p.cle),emp:String(p.emp||''),src:String(p.src||''),srcCourt:String(p.srcCourt||''),retour:String(p.retour||''),sigC:sigC()}:null;
   if(Array.isArray(p.A)&&p.A.length) A=p.A.map(a=>({x:+a.x||0,y:+a.y||0}));
   PR={x:0,y:0,a:+(p.angle||0)}; syncPR();
+  if(Array.isArray(p.parois)&&p.parois.length&&p.profil&&!PROFILS.find(q=>q.n===p.profil)){ const xs=p.parois.flatMap(w=>[w.a[0],w.b[0]]), ys=p.parois.flatMap(w=>[w.a[1],w.b[1]]), tm=Math.max(...p.parois.map(w=>w.t));
+    PROFILS.push({n:p.profil,f:'SABOT',h:Math.max(...ys)-Math.min(...ys)+tm,b:Math.max(...xs)-Math.min(...xs)+tm,t:tm,tw:tm,tf:tm,A:0,m:0,parois:p.parois}); }
   const pr=p.profil&&PROFILS.find(q=>q.n===p.profil), fams=[...$('pfam').options].map(o=>o.value);
   if(p.plaque){ $('lx').value=p.plaque.lx; $('ly').value=p.plaque.ly; }
   if(pr&&fams.includes(pr.f)){ const L=Math.ceil((pr.h+100)/10)*10, B=Math.ceil((pr.b+100)/10)*10, rot=PR.a%180!==0;
-    if(+$('lx').value<(rot?B:L)) $('lx').value=rot?B:L; if(+$('ly').value<(rot?L:B)) $('ly').value=rot?L:B; $('pfam').value=pr.f; }
+    if(pr.f!=='SABOT'){ if(+$('lx').value<(rot?B:L)) $('lx').value=rot?B:L; if(+$('ly').value<(rot?L:B)) $('ly').value=rot?L:B; } $('pfam').value=pr.f; }
   else $('pfam').value='aucun';
   const lien=p.retour?` <a href="${h(p.retour)}">← Retour à ${h(p.srcCourt||p.src||'')}</a>`:'';
   $('preInfo').dataset.import='1'; setTimeout(()=>{ delete $('preInfo').dataset.import; },15000);
@@ -735,7 +740,7 @@ const PRE_PROF=lirePre();
 syncPR(); majSis(); majBeton(); majProfils(); if(PRE_PROF){ $('pnom').value=PRE_PROF; } majProduit();
 </script>
 <script>EXPORT.init({code:'AN1',titre:'Note de calcul – ancrage de platine',excel:false,avant:()=>preparerNote(),zones:()=>[$('note')],affaire:()=>IDENT.lire(),nom:()=>{ const K=IDENT.lire(); return K.doc||K.repere||K.num||'ancrage'; }});</script>
-<script src="../commun/aide.js?v=2.92"></script>
+<script src="../commun/aide.js?v=2.95"></script>
 <script>AIDE.init({titre:"Aide – AN1 Ancrages",manuel:"an1",intro:"AN1 vérifie les ancrages d'une platine sur béton (chevilles mécaniques et chimiques) selon la NF EN 1992-4 et son annexe nationale, avec les données des ETE : répartition des efforts en platine rigide, tous les modes de rupture en traction et en cisaillement, interactions, situation sismique (annexe C) et h_ef optimale. Prédimensionnement APS/APD : la platine rigide est une hypothèse à justifier, ou à contrôler avec la méthode CBFEM (platine flexible en éléments finis)",
   etapes:[{t:"Saisie",html:"Panneau de gauche : identification, béton (NF EN 1992-1-1 Tab. 3.1), bords, cheville (données de l'ETE, schéma de pose coté : tige ou goujon, trou de platine, perçage, résine ou clip d'expansion, h<sub>ef</sub>, t<sub>fix</sub>, h), disposition, platine et profilé, méthode. Les conditions de pose (température, perçage, état du trou, durée d'utilisation, espace annulaire, α<sub>sus</sub>, armatures) sont regroupées dans un bloc replié « Conditions de pose » de la carte Cheville, avec leur résumé ; valeurs par défaut : plage I, perforateur, trou sec, 50 ans, espace annulaire comblé, ψ<sub>re,N</sub> = 1. Elles figurent dans les hypothèses de la cheville des notes.",cible:"#pSaisie"},
     {t:"Vues",html:"Vue 3D cotée (rotation et zoom à la souris ; chaînes de cotes platine / chevilles, l<sub>x</sub>, l<sub>y</sub>, épaisseur h, distances aux bords finis en rouge ; SCU X/Y/Z placé hors de la platine) ou plan 2D coté (mêmes cotes, bords du béton : trait fort si fini, trait mixte si infini ou lointain) . Barre d'outils du plan 2D : « ↖ Sélection » (cliquer une cheville ou le profilé puis glisser, accrochage au quadrillage), « ＋ Chevilles » (clic pour poser), « ✕ Supprimer » ou touche Suppr, « ↺ / ↻ 90° » pour tourner le profilé.",cible:"#v3d"},

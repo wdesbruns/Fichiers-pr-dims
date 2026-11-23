@@ -298,7 +298,7 @@ const DESSIN = (() => {
         const L = r.L || 14, bx = px + dx * L, by = py + dy * L, R = 3.5;
         g += `<g data-c="REPERES"><circle cx="${px}" cy="${py}" r="0.6" fill="#000"/><line x1="${px}" y1="${py}" x2="${bx - dx * R}" y2="${by - dy * R}" ${STY.fin}/><circle cx="${bx}" cy="${by}" r="${R}" fill="#fff" ${STY.fin}/>` + txt(bx, by + 1.25, r.n, { a: "middle" }) + "</g>"; });
       if (spec.scu) { g += `<g data-c="REPERES">` + triedre(V, Math.max(Math.min(x - V.mg.g + 12, x + w / 2 - (V.titre.length + 24) * 1.15 - 16), zx0 + 16), y + h + V.mg.b - 7) + "</g>"; /* à gauche du titre de la vue */ (spec.appuis || []).filter((a) => (a.vues || ["face"]).includes(V.id)).forEach((a) => { const [px, py] = P(a.p); g += etiqAppui(px, py, a.n); }); }
-      { const t1 = V.titre + (spec.repSupport ? " - SUPPORT " + spec.repSupport : ""), t2 = "ECHELLE 1:" + ech, yt = y + h + V.mg.b + 1, ul = (t, yy) => { const L = t.length * 2.55; return `<line x1="${(x + w / 2 - L / 2).toFixed(2)}" y1="${yy + 1}" x2="${(x + w / 2 + L / 2).toFixed(2)}" y2="${yy + 1}" ${STY.fin}/>`; };
+      { const t1 = V.titre + (spec.repLib ? " - " + spec.repLib : spec.repSupport ? " - SUPPORT " + spec.repSupport : ""), t2 = "ECHELLE 1:" + ech, yt = y + h + V.mg.b + 1, ul = (t, yy) => { const L = t.length * 2.55; return `<line x1="${(x + w / 2 - L / 2).toFixed(2)}" y1="${yy + 1}" x2="${(x + w / 2 + L / 2).toFixed(2)}" y2="${yy + 1}" ${STY.fin}/>`; };
         g += `<g data-c="TEXTE">${txt(x + w / 2, yt, t1, { a: "middle", h: 3.5, b: 1 })}${ul(t1, yt)}${txt(x + w / 2, yt + 4.6, t2, { a: "middle", h: 3.5, b: 1 })}${ul(t2, yt + 4.6)}</g>`; }
       s += `<g>${g}</g>`;
     });

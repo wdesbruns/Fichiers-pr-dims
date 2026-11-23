@@ -4,25 +4,27 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.92"></script>
+<script src="../commun/auth.js?v=2.95"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — Manuel technique</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.92">
-<script src="../commun/apps.js?v=2.92"></script>
-<script src="../commun/data/profils.js?v=2.92"></script>
-<script src="../commun/barres3d.js?v=2.92"></script>
-<script src="../commun/acier.js?v=2.92"></script>
-<script src="../commun/data/tuyauterie.js?v=2.92"></script>
-<script src="../commun/charges.js?v=2.92"></script>
-<script src="../commun/coefvent.js?v=2.92"></script>
-<script src="../commun/tendues.js?v=2.92"></script>
-<script src="../commun/portique.js?v=2.92"></script>
-<script src="../commun/chevilles.js?v=2.92"></script>
-<script src="../commun/cbfem.js?v=2.92"></script>
-<script src="../commun/topo.js?v=2.92"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.95">
+<script src="../commun/apps.js?v=2.95"></script>
+<script src="../commun/data/profils.js?v=2.95"></script>
+<script src="../commun/barres3d.js?v=2.95"></script>
+<script src="../commun/acier.js?v=2.95"></script>
+<script src="../commun/data/tuyauterie.js?v=2.95"></script>
+<script src="../commun/charges.js?v=2.95"></script>
+<script src="../commun/coefvent.js?v=2.95"></script>
+<script src="../commun/tendues.js?v=2.95"></script>
+<script src="../commun/portique.js?v=2.95"></script>
+<script src="../commun/chevilles.js?v=2.95"></script>
+<script src="../commun/cbfem.js?v=2.95"></script>
+<script src="../commun/topo.js?v=2.95"></script>
+<script src="../commun/zip.js?v=2.95"></script>
+<script src="../commun/laser.js?v=2.95"></script>
 <style>
   main{grid-template-columns:minmax(230px,290px) 1fr}
   nav.toc{position:sticky;top:10px;align-self:start;max-height:calc(100vh - 20px);overflow:auto}
@@ -208,6 +210,8 @@
 <p><b>Consoles des deux côtés (2.90)</b> : supports en L et en L plafonnier, option « Des deux côtés (symétriques) » : chaque niveau de console est doublé par une console de longueur identique vers −Y (barres numérotées après celles de droite) ; chaque tuyauterie choisit sa console (droite ou gauche). Le montant reprend l'excentrement des deux côtés (charges non symétriques selon les tuyauteries). La note de calcul des supports sur profilé existant (crapautage, sandwich) porte l'hypothèse « structure existante hors périmètre ».</p>
 <p><b>Traverse sur sabots (2.91)</b> : traverse simplement posée sur deux sabots fixés sur béton (supports de tuyauterie de caniveaux). Modèle : une barre horizontale à la hauteur H de son axe au-dessus de l'assise des sabots ; appuis aux deux extrémités avec translations verticale et transversale bloquées, torsion bloquée (butées d'extrémité), rotations de flexion libres (simple appui), translation longitudinale bloquée à gauche et libre à droite (dilatation) ; les efforts du nœud d'appui sont <b>ramenés à la platine du sabot</b> : M' = M + [0 ; 0 ; H] × F, avant la vérification des chevilles (lien AN1, platine « sol ») ; platine et chevilles du sabot vérifiées dans AN1 comme un pied de poteau. Butée d'extrémité (plat ép. 8) et goussets du sabot : dessinés et nomenclaturés, à dimensionner selon le plan du sabot.</p>
 <p><b>Liaisons tuyau / support (2.92)</b> : par tuyauterie, type de liaison de la spécification Rubis Terminal (§11.3 et §11.4) : étrier serré sur cale téflon (4, défaut), patin collier plat ép. 5 + ½ IPE 200 soudé (1), tôle intermédiaire + ½ IPE 200 (2, DN 25 à 200), tôle intermédiaire + support mécano-soudé (2a, DN &gt; 200), tôle intermédiaire posée (3), tuyau posé sur plat (5) ; guide latéral (cornières, plats ou ronds, jeu 10 mm) ; hauteur de l'élément sous le tuyau (étrier : hauteur de sabot ; types 1 et 2 : 105 mm = ½ IPE 200 + 5 mm ; 2a : 150 mm ; 3 : 5 mm ; 5 : 10 mm), modifiable. <b>Effet sur le calcul</b> : la hauteur décale l'axe du tuyau au-dessus du profilé (excentrement vertical des charges) ; la fonction (glissant, guidé, point fixe) et le coefficient de frottement restent saisis. L'étrier, sa pince et ses alertes ne s'appliquent qu'au type 4 ; alertes sur les types 2 / 2a selon le DN, sur les guides non prévus pour le type, et rappel du perçage Ø8 des tôles. Dessin du patin, des tôles et des guides, nomenclature et BOM du cahier. Le patin « Hilti DN » des cahiers TEPSA est une demande particulière du client, non reprise.</p>
+<p><b>Sabot vérifié dans AN1 (2.94)</b> : pour la traverse sur sabots, S1 transmet à AN1 les efforts ramenés à la platine et la géométrie du sabot comme un « profilé » de plats soudés (butée d'extrémité ép. 8 mm à 12 mm du bord, longueur L<sub>x</sub> − 40 mm ; deux goussets ép. 8 mm de part et d'autre de la traverse, 100 mm de long) : le CBFEM d'AN1 calcule les contraintes de la platine, la pression sur le béton et les efforts des chevilles pour le sabot lui-même, sans simulation annexe ; famille « Plats soudés (sabot) » (<code>CBFEM.parois</code> accepte des parois libres dans le repère de la platine). Un sabot gauche et un sabot droit sont vérifiés séparément (butée de part et d'autre) ; le cahier d'exécution exige les deux.</p>
+<p><b>Liaisons, cale téflon, entraxes automatiques et sabot symétrique (2.95)</b> : <b>cale PTFE</b> : présente dès que le frottement retenu est celui du PTFE (μ = 0,1) – lien direct entre le calcul (frottement) et le plan : cale de 10 mm dessinée sous l'étrier ou sous le patin et nomenclaturée (sous l'étrier : 120 × (Ø + 2·d + 50) × 10, percée de deux trous Ø d + 2 au passage de l'étrier qui la maintient) ; choisir le type 4 (étrier) fixe μ = 0,1 ; la « hauteur de sabot / cale » globale est supprimée : la hauteur sous le tuyau = élément de liaison (½ IPE 200 + 5 mm = 105 mm, tôle 5 mm, plat 10 mm…) + cale éventuelle. <b>Types selon le diamètre</b> : la liste ne propose que les types admis (type 2 du DN 25 au DN 200, type 2a au-delà) et bascule automatiquement de l'un à l'autre si le DN change ; alerte bloquante sinon. <b>Crapautage et sandwich</b> : entraxes des fixations calculés automatiquement et arrondis à la dizaine supérieure (cotes de fabrication) : le long du profilé existant, emprise du profilé du support + 3·d<sub>0</sub> (mini 100 mm) ; en travers, sandwich : largeur de semelle + d<sub>0</sub> + 2 × 10 mm, crapauds : largeur de semelle + 2 × 12 mm ; platine = entraxes + 80 mm (multiple de 10). <b>Sabot</b> : le même sabot à gauche et à droite (comme les pieds d'un U) : géométrie du sabot gauche, efforts du sabot droit symétrisés (V<sub>y</sub>, M<sub>x</sub>, M<sub>z</sub> changés de signe) ; une seule vérification AN1 sur l'enveloppe des deux.</p>
 </article>
 
 <article class="card" id="p1"><div class="theme">P1 – Poutre</div><h2>9. P1 – Poutre isostatique</h2>
@@ -312,6 +316,8 @@ Pression diamétrale F<sub>b,Rd</sub> = k<sub>1</sub>·α<sub>b</sub>·f<sub>u</
 <li><b>Nomenclature (BOM)</b> : profilés × longueurs × quantités ; chevilles (forfait par platine) ; majoration accessoires (platines, goussets, soudures) en % de la masse des profilés.</li>
 <li><b>Notes de calcul</b> : configuration la plus sollicitée (taux maxi) de chaque type, ou toutes ; <b>plans</b> : planche dessinée sur la 1<sup>re</sup> configuration, cotes en lettres, valeurs au tableau des configurations.</li></ul>
 <p><b>Chevillage des platines (2.75)</b> : pour chaque type calculé, S1 fournit dans le résumé de chaque configuration (<code>resume.an1</code>) les combinaisons extrêmes de chaque platine chevillée, projetées dans les axes de la platine. Le cahier réunit celles de toutes les configurations du type, retient à nouveau les extrêmes (N, −N, |V|, |M<sub>x</sub>|, |M<sub>y</sub>|, |M<sub>z</sub>|, N/4 + |M<sub>x</sub>|/(2a<sub>2</sub>) + |M<sub>y</sub>|/(2a<sub>1</sub>), séparément ELU et sismique) et les envoie à AN1 (clé affaire | identifiant du type | platine). Retour : taux, produit, diamètre, classe, nombre, h<sub>ef</sub>, platine, méthode ; empreinte des efforts recalculée à chaque affichage (« à relancer » si elle diffère). Platines identiques d'un même type (même nature, profilé, disposition des chevilles et dimensions – ex. pieds d'un portique en U) regroupées en une seule vérification (2.76). Nomenclature : chevilles AN1 (nombre × nombre de platines × quantité) à la place du forfait pour les platines vérifiées.</p>
+<p><b>Cahier d'exécution (2.93)</b> : niveau « Cahier d'EXÉCUTION ». <b>Plans</b> : un plan coté par configuration (cotes en valeurs, pas en lettres), sans mention « non valable pour exécution » (titre 3 du cartouche : « Bon pour exécution »), page de garde listant chaque plan. <b>Platines</b> : dimensions, épaisseur et perçages des platines chevillées repris du résultat d'AN1 (retour : lx, ly, tp, positions des chevilles, Ø du trou de passage d + 1 / 2 / 3 mm selon NF EN 1993-1-8 Tab. 3.3, matière) ; <b>aucune platine chevillée n'est sortie sans vérification AN1 à jour</b> (résultat présent, efforts inchangés, taux ≤ 100 %) : plans d'exécution et exports sont bloqués, la carte « Exécution » liste les platines à vérifier avec un lien vers AN1. Platines non chevillées (crapautage, sandwich, tiges traversantes, pattes) : épaisseur par défaut 12 mm signalée « à justifier ». <b>Découpe laser</b> : un DXF (R12 ASCII, mm, origine au coin inférieur gauche, calque DECOUPE : contour et trous ; calque REPERE : repère, matière, épaisseur) par platine différente (même dimensions, épaisseur, matière et perçages), repère PL-xx ; archive ZIP avec le classeur Excel associé (feuilles « Platines laser » : fichier DXF, matière, épaisseur, L × l, trous, quantité totale, supports concernés ; « Nomenclature fabrication » ; « Supports »). <b>Nomenclature de fabrication</b> : platines PL-xx, tôles / plats / goussets P-xx en L × l × e (collier plat, tôles intermédiaires, ½ IPE 200, guides, butées et goussets de sabot), profilés S-xx en longueurs de débit (longueurs d'axe), boulonnerie (étriers, tiges, crapauds, chevilles d'AN1) ; masses d'acier à 7 850 kg/m³.</p>
+<p><b>Plans d'exécution : trous et cotes (2.94)</b> : en exécution, la platine est dessinée aux dimensions d'AN1 (L × l × e) ; ses trous (cercles à axes, Ø du trou de passage) sont représentés dans la vue de dessus (pieds, suspentes) ou de droite (platines murales), avec les entraxes, les dimensions hors tout et le repère « n TROUS Ø.. – PL-xx ». <b>Plans de détail des liaisons</b> : à la suite des supports, une planche par type de liaison utilisé (étrier sur cale téflon 4, patin collier + ½ IPE 200 1, tôle + ½ IPE 200 2, tôle + support mécano-soudé 2a, tôle 3, plat 5) : vues de face, de côté et de dessus, perspective, cotes, nomenclature en L × l × e pour le plus gros tuyau concerné, tableau des dimensions par diamètre (longueur du collier π(Ø + 10), largeur de tôle min(0,6 Ø ; 300)), notes de la spécification Rubis ; reprises dans le sommaire, l'impression et le DXF.</p>
 </article>
 
 <article class="card" id="dessin"><div class="theme">Plans</div><h2>13. Dessin industriel et export DXF</h2>
@@ -349,6 +355,9 @@ Pression diamétrale F<sub>b,Rd</sub> = k<sub>1</sub>·α<sub>b</sub>·f<sub>u</
 
 <article class="card" id="journal"><div class="theme">Qualification</div><h2>17. Journal des modifications ayant un impact sur les résultats</h2>
 <table><tr><th>Version</th><th>Module</th><th>Modification</th><th>Impact</th></tr>
+<tr><td>2.95</td><td>S1, CS, AN1</td><td>Cale téflon liée à μ = 0,1 (dessin, nomenclature, BOM, cale percée au passage de l'étrier) ; suppression de la hauteur de sabot globale ; types de liaison filtrés selon le DN ; entraxes et platines automatiques arrondis à 10 mm en crapautage et sandwich ; sabot identique à gauche et à droite (une vérification AN1).</td><td>Hauteur des tuyaux sur étrier : 10 mm si cale PTFE (au lieu de la hauteur de sabot saisie) ; entraxes imposés en crapautage / sandwich.</td></tr>
+<tr><td>2.94</td><td>CS, S1, AN1</td><td>Cahier d'exécution : trous, entraxes et dimensions des platines sur les plans ; plans de détail des liaisons (types 1 à 5) en fin de cahier avec nomenclature L × l × e ; sabot de la traverse vérifié par le CBFEM d'AN1 (plats soudés).</td><td>Calculs inchangés ; nouvelle famille de profilé dans AN1.</td></tr>
+<tr><td>2.93</td><td>CS, S1, AN1</td><td>Cahier d'exécution : plans cotés par configuration, platines et chevilles d'AN1 (blocage tant qu'elles ne sont pas vérifiées), DXF de découpe laser par platine différente, classeur Excel (fichier DXF, matière, épaisseur, quantité totale), nomenclature de fabrication avec repères et tôles L × l × e ; AN1 renvoie la disposition des chevilles ; 3 tests.</td><td>Nouvelles sorties ; calculs inchangés.</td></tr>
 <tr><td>2.92</td><td>S1, CS</td><td>Liaisons tuyau / support par tuyauterie (types 1, 2, 2a, 3, 4 et 5 de la spécification Rubis Terminal) et guide latéral ; hauteur de l'élément sous le tuyau ; dessin, nomenclature, BOM, alertes.</td><td>Valeurs par défaut inchangées (étrier) ; les autres liaisons décalent le tuyau de la hauteur de l'élément.</td></tr>
 <tr><td>2.91</td><td>S1, CS, AN1</td><td>Nouveau support « Traverse sur sabots (caniveau) » : traverse posée sur deux sabots fixés sur béton ; appuis simples, torsion bloquée ; efforts ramenés à la platine du sabot et vérifiés dans AN1 ; dessin, nomenclature, cahier, export Robot.</td><td>Nouveau type ; calculs existants inchangés.</td></tr>
 <tr><td>2.90</td><td>S1</td><td>Supports en L et L plafonnier : consoles des deux côtés ; hypothèse « structure existante hors périmètre » ajoutée aux hypothèses de la note de calcul (crapautage et sandwich).</td><td>Aucun calcul modifié.</td></tr>
@@ -558,6 +567,10 @@ function tests(){
         { const g=CBFEM.calculer({plaque:{lx:250,ly:250,t:10,fy:235},A:XY(A4c),ka:CBFEM.raideurCheville(true,20,200,10,false).k,kc:31000/30,dw:36,parois:heaG,comb:{N:40000,Mx:0,My:0}});
           ajout('CBFEM – note K4 (traction centrée, platine 10 mm, HAS 5.8 M20 h<sub>ef</sub> 200 non fissuré) : cheville la plus tendue','PROFIS CBFEM 1 515,2 daN (tolérance 10 %)',Math.max(...g.T)/10,1515.2,'daN',0.10); } } }
       const e=CH.CAT_Q.find(c=>c.c==='ESC-I'); ajout('Q1 – escalier industriel NF E 85-015 : q_k','2 kN/m² (§5.1.2.1)',e.qk,2,'kN/m²'); ajout('Idem : Q_k sur 100 × 100 mm','1 kN (§5.1.2.1)',e.Qk,1,'kN'); } ajout('Q1 – α_A catégorie C1 (sans objet)','1',CH.alphaA('C1',20),1,'');
+    { const dx=LASER.dxf({lx:250,ly:200,trous:[{x:-75,y:-50,d:14},{x:75,y:-50,d:14},{x:-75,y:50,d:14},{x:75,y:50,d:14}],repere:'PL-01',matiere:'S235',ep:20});
+      ajout('Cahier d\'exécution – DXF laser : nombre de perçages','4 cercles (calque DECOUPE)',(dx.match(/\nCIRCLE\n/g)||[]).length,4,'');
+      ajout('Cahier d\'exécution – DXF laser : contour','4 lignes (rectangle L × l)',(dx.match(/\nLINE\n/g)||[]).length,4,'');
+      ajout('Archive ZIP – CRC-32 de « 123456789 »','valeur de contrôle normalisée 0xCBF43926 (ISO 3309)',ZIP.crc32(new TextEncoder().encode('123456789')),0xCBF43926,'',0); }
     ajout('Idem : calorifuge compris dans q vide','q_vide(tube) + π/4((D+100)²−D²)·100·g',r3.qVide,qv+(a(D+100)-a(D))*100*9.81/1000,'kN/m'); }
   const nok=T.filter(t=>!t.ok).length, ver=typeof CALC_VERSION!=='undefined'?CALC_VERSION:'';
   $('tests').innerHTML=`<div class="msg ${nok?'bad':'ok'}">${nok?`✘ ${nok} test(s) en écart`:`✔ ${T.length} tests conformes`} – moteur ${ver} – ${new Date().toLocaleString('fr-FR')}</div><table><tr><th>Cas</th><th>Référence</th><th class="n">Outil</th><th class="n">Référence</th><th class="n">Écart</th><th></th></tr>`+
@@ -565,6 +578,6 @@ function tests(){
 }
 try{ tests(); }catch(e){ $('tests').innerHTML=`<div class="msg bad">Erreur d'exécution des tests : ${e.message}</div>`; }
 </script>
-<script src="../commun/replier.js?v=2.92"></script>
+<script src="../commun/replier.js?v=2.95"></script>
 </body>
 </html>
