@@ -164,9 +164,9 @@ const DESSIN = (() => {
     return V;
   }
   /* hauteur de texte réduite pour tenir dans la case (largeur limite en mm, ≈ 0,6 h par caractère) */
-  const LIM = { PROJECT_TITLE: 76, DOC_TITLE_1: 160, DOC_TITLE_2: 160, DOC_TITLE_3: 160, REV_MEMO: 76, CTR_DOC_REF: 56, DISC: 24, SHEET: 20 };
-  const hAj = (tag, h, t) => { const L = LIM[tag.replace(/_\d$/, "")], n = String(t ?? "").length; return L && n ? Math.min(h, +(L / (n * 0.6)).toFixed(2)) : h; };
-  function gabaritSVG(V, PH, fmt) {
+  const LIM = { PROJECT_TITLE: 70, DOC_TITLE_1: 160, DOC_TITLE_2: 160, DOC_TITLE_3: 160, REV_MEMO: 76, CTR_DOC_REF: 56, DISC: 24, SHEET: 20 };
+  const hAj = (tag, h, t) => { const L = LIM[tag.replace(/_\d$/, "")], n = String(t ?? "").length; return L && n ? Math.min(h, +(L / (n * 0.8)).toFixed(2)) : h; };
+  function gabaritSVG(V, PH, fmt, logo) {
     const G = gabFor(fmt), anc = ["start", "middle", "end"], fs = (h) => +(h / 0.72).toFixed(2);
     let s = `<g data-gabarit="${fmt}">`;
     for (const k of ["F", "C", "R"]) {
@@ -181,6 +181,8 @@ const DESSIN = (() => {
       B.a.forEach((a) => { const v = V[a[0]] ?? ""; s += T(a[2], a[3], hAj(a[0], a[4], v), a[5], a[6], v, a[0]); });
       if (B.logo) B.logo.forEach((g) => { s += `<path d="${g.loops.map((L) => "M" + L.map((p) => X(p[0]) + "," + Y(p[1])).join("L") + "Z").join("")}" fill="#${g.rgb}" fill-rule="evenodd"/>`; });
     }
+    // logo du client dans la case « LOGO CLIENT » du cartouche (bloc C : x −180…−135, y 74…98 mm)
+    if (logo && G.C) { const [ox, oy] = G.C.o; s += `<image data-logo="1" href="${esc(logo)}" x="${(ox - 178).toFixed(2)}" y="${(PH - oy - 96).toFixed(2)}" width="41" height="20" preserveAspectRatio="xMidYMid meet"/>`; }
     return s + "</g>";
   }
 
@@ -345,7 +347,7 @@ const DESSIN = (() => {
     }
     const K = spec.cartouche || {}, yc = bloc.y1 - hCart, xc = bloc.x0;
     if (GAB) {   // gabarit FIP A3 : cadre, cartouche et révisions (blocs à attributs dans le DXF)
-      s += `</g>` + gabaritSVG(valeursGabarit(K, ech, spec.format || "A3"), PH, spec.format || "A3") + `<g data-c="TEXTE" data-ep="1">` + lignesNotes.map((l, i) => txt(zx0 + 3, zy1 - 3 - (lignesNotes.length - 1 - i) * 3.4, l, { h: 2.5 })).join("") + "</g>";
+      s += `</g>` + gabaritSVG(valeursGabarit(K, ech, spec.format || "A3"), PH, spec.format || "A3", K.logo) + `<g data-c="TEXTE" data-ep="1">` + lignesNotes.map((l, i) => txt(zx0 + 3, zy1 - 3 - (lignesNotes.length - 1 - i) * 3.4, l, { h: 2.5 })).join("") + "</g>";
       return { svg: s + "</svg>", echelle: ech, format: spec.format || "A3" };
     }
     // cartouche provisoire (A4)
@@ -372,17 +374,17 @@ const DESSIN = (() => {
      spec : { format, cartouche:K, cols:[…], lignes:[[…]…], largeurs:[…], docsRef:[…], notes:[…] } — tableau à gauche (colonnes de lignes de hauteur constante), documents de référence et notes générales à droite */
   function sommaire(spec) {
     const [PW, PH] = FORMATS[spec.format] || FORMATS.A3, G = gabFor(spec.format || "A3"), zx0 = 10, zy0 = 10, zy1 = PH - 10, K = spec.cartouche || {};
-    const cols = spec.cols, lw = spec.largeurs || cols.map(() => 1), sw = lw.reduce((a, b) => a + b, 0), wT = Math.min(150, PW * 0.36), xs = [];
+    const cols = spec.cols, lw = spec.largeurs || cols.map(() => 1), sw = lw.reduce((a, b) => a + b, 0), kA = PW > 500 ? 1.4 : 1, wT = Math.min(150 * kA, PW * 0.36), xs = [];
     let xx = 0; lw.forEach((p) => { xs.push(xx); xx += p / sw * wT; });
-    const hl = 6.2, nMax = Math.max(4, Math.floor((zy1 - zy0 - 8) / hl) - 1), L = spec.lignes, blocs = [];
+    const hl = 6.2 * kA, nMax = Math.max(4, Math.floor((zy1 - zy0 - 8) / hl) - 1), L = spec.lignes, blocs = [];
     for (let i = 0; i < L.length; i += nMax) blocs.push(L.slice(i, i + nMax)); if (!blocs.length) blocs.push([]);
     let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${PW} ${PH}" class="planche" style="width:100%;background:#fff" font-family="${F}" data-echelle="1" data-zone="${zx0} ${zy0} ${PW - 10} ${zy1}"><rect x="0" y="0" width="${PW}" height="${PH}" fill="#fff"/>`;
     const ligne = (x1, y1, x2, y2, l = TFin) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#000" stroke-width="${l}"/>`;
     s += `<g data-c="CARTOUCHE">`;
     blocs.forEach((B, bi) => { const x0 = zx0 + 4 + bi * (wT + 4), y0 = zy0 + 4, H = hl * (B.length + 1);
       s += ligne(x0, y0, x0 + wT, y0, TF) + ligne(x0, y0 + H, x0 + wT, y0 + H, TF) + ligne(x0, y0, x0, y0 + H, TF) + ligne(x0 + wT, y0, x0 + wT, y0 + H, TF);
-      cols.forEach((c, i) => { s += txt(x0 + xs[i] + lw[i] / sw * wT / 2, y0 + hl * 0.68, c, { a: "middle", h: 2.8, b: 1 }); if (i) s += ligne(x0 + xs[i], y0, x0 + xs[i], y0 + H); });
-      B.forEach((r, j) => { const yy = y0 + hl * (j + 1); s += ligne(x0, yy, x0 + wT, yy); r.forEach((c, i) => { s += txt(x0 + xs[i] + lw[i] / sw * wT / 2, yy + hl * 0.68, c, { a: "middle", h: 2.8 }); }); }); });
+      cols.forEach((c, i) => { s += txt(x0 + xs[i] + lw[i] / sw * wT / 2, y0 + hl * 0.68, c, { a: "middle", h: 2.8 * kA, b: 1 }); if (i) s += ligne(x0 + xs[i], y0, x0 + xs[i], y0 + H); });
+      B.forEach((r, j) => { const yy = y0 + hl * (j + 1); s += ligne(x0, yy, x0 + wT, yy); r.forEach((c, i) => { s += txt(x0 + xs[i] + lw[i] / sw * wT / 2, yy + hl * 0.68, c, { a: "middle", h: 2.8 * kA }); }); }); });
     s += "</g>";
     // documents de référence et notes générales (au-dessus du cartouche, partie droite)
     const T = [], tit = (t) => T.push({ t, b: 1 }), puce = (t) => T.push({ t: "•  " + t });
@@ -391,7 +393,7 @@ const DESSIN = (() => {
     const x1 = Math.max(zx0 + 8 + blocs.length * (wT + 4), PW * 0.55), y1 = zy1 - 144 - 14 - T.length * 5.2;
     s += `<g data-c="TEXTE">` + T.map((l, i) => txt(x1, y1 + i * 5.2, l.t, { h: 3.5, b: l.b }) + (l.b ? ligne(x1, y1 + i * 5.2 + 1, x1 + l.t.length * 2.6, y1 + i * 5.2 + 1) : "")).join("") + "</g>";
     const V = valeursGabarit(K, null, spec.format || "A3");
-    s += gabaritSVG(V, PH, spec.format || "A3");
+    s += gabaritSVG(V, PH, spec.format || "A3", K.logo);
     return { svg: s + "</svg>", echelle: 1, format: spec.format || "A3" };
   }
   /* =====================================================================

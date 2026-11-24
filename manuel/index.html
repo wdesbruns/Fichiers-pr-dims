@@ -4,27 +4,27 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.97"></script>
+<script src="../commun/auth.js?v=2.98"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — Manuel technique</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.97">
-<script src="../commun/apps.js?v=2.97"></script>
-<script src="../commun/data/profils.js?v=2.97"></script>
-<script src="../commun/barres3d.js?v=2.97"></script>
-<script src="../commun/acier.js?v=2.97"></script>
-<script src="../commun/data/tuyauterie.js?v=2.97"></script>
-<script src="../commun/charges.js?v=2.97"></script>
-<script src="../commun/coefvent.js?v=2.97"></script>
-<script src="../commun/tendues.js?v=2.97"></script>
-<script src="../commun/portique.js?v=2.97"></script>
-<script src="../commun/chevilles.js?v=2.97"></script>
-<script src="../commun/cbfem.js?v=2.97"></script>
-<script src="../commun/topo.js?v=2.97"></script>
-<script src="../commun/zip.js?v=2.97"></script>
-<script src="../commun/laser.js?v=2.97"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.98">
+<script src="../commun/apps.js?v=2.98"></script>
+<script src="../commun/data/profils.js?v=2.98"></script>
+<script src="../commun/barres3d.js?v=2.98"></script>
+<script src="../commun/acier.js?v=2.98"></script>
+<script src="../commun/data/tuyauterie.js?v=2.98"></script>
+<script src="../commun/charges.js?v=2.98"></script>
+<script src="../commun/coefvent.js?v=2.98"></script>
+<script src="../commun/tendues.js?v=2.98"></script>
+<script src="../commun/portique.js?v=2.98"></script>
+<script src="../commun/chevilles.js?v=2.98"></script>
+<script src="../commun/cbfem.js?v=2.98"></script>
+<script src="../commun/topo.js?v=2.98"></script>
+<script src="../commun/zip.js?v=2.98"></script>
+<script src="../commun/laser.js?v=2.98"></script>
 <style>
   main{grid-template-columns:minmax(230px,290px) 1fr}
   nav.toc{position:sticky;top:10px;align-self:start;max-height:calc(100vh - 20px);overflow:auto}
@@ -356,6 +356,7 @@ Pression diamétrale F<sub>b,Rd</sub> = k<sub>1</sub>·α<sub>b</sub>·f<sub>u</
 
 <article class="card" id="journal"><div class="theme">Qualification</div><h2>17. Journal des modifications ayant un impact sur les résultats</h2>
 <table><tr><th>Version</th><th>Module</th><th>Modification</th><th>Impact</th></tr>
+<tr><td>2.98</td><td>CS, S1 (plans)</td><td>Logo du client (fiche affaire du cahier) dans la case « LOGO CLIENT » du cartouche, à l'écran, à l'impression et en PDF (non repris dans le DXF : image à insérer sous AutoCAD) ; nom du projet réduit pour tenir dans sa case ; tableau de la page de garde agrandi en A2.</td><td>Aucun calcul modifié.</td></tr>
 <tr><td>2.97</td><td>S1, CS</td><td>Liaisons : patin boulonné (½ IPE 200 L 200, deux colliers en demi-colliers boulonnés), coquilles cintrées (types 2, 2a, 3), étrier guidé ou serré selon la fonction, pas de guide si glissant ; plans, 3D, nomenclature et plans de détail.</td><td>Aucun calcul modifié (hauteurs inchangées).</td></tr>
 <tr><td>2.96</td><td>S1</td><td>Vue 3D : liaison tuyau / support représentée (patin, tôle, plat, cale PTFE, guides latéraux ; étrier seulement pour le type 4), avec les mêmes solides que le plan.</td><td>Aucun calcul modifié.</td></tr>
 <tr><td>2.95</td><td>S1, CS, AN1</td><td>Cale téflon liée à μ = 0,1 (dessin, nomenclature, BOM, cale percée au passage de l'étrier) ; suppression de la hauteur de sabot globale ; types de liaison filtrés selon le DN ; entraxes et platines automatiques arrondis à 10 mm en crapautage et sandwich ; sabot identique à gauche et à droite (une vérification AN1).</td><td>Hauteur des tuyaux sur étrier : 10 mm si cale PTFE (au lieu de la hauteur de sabot saisie) ; entraxes imposés en crapautage / sandwich.</td></tr>
@@ -581,6 +582,6 @@ function tests(){
 }
 try{ tests(); }catch(e){ $('tests').innerHTML=`<div class="msg bad">Erreur d'exécution des tests : ${e.message}</div>`; }
 </script>
-<script src="../commun/replier.js?v=2.97"></script>
+<script src="../commun/replier.js?v=2.98"></script>
 </body>
 </html>

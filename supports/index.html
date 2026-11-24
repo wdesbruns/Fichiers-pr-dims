@@ -4,25 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.97"></script>
+<script src="../commun/auth.js?v=2.98"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.97">
+<link rel="stylesheet" href="../commun/calc.css?v=2.98">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.97"></script>
-<script src="../commun/data/tuyauterie.js?v=2.97"></script>
-<script src="../commun/acier.js?v=2.97"></script>
-<script src="../commun/barres3d.js?v=2.97"></script>
-<script src="../commun/data/gabarit-a3.js?v=2.97"></script>
-<script src="../commun/data/gabarit-a2.js?v=2.97"></script>
-<script src="../commun/dessin.js?v=2.97"></script>
-<script src="../commun/coefvent.js?v=2.97"></script>
-<script src="../commun/cahier.js?v=2.97"></script>
-<script src="../commun/chevilles.js?v=2.97"></script>
-<script src="../commun/topo.js?v=2.97"></script>
+<script src="../commun/data/profils.js?v=2.98"></script>
+<script src="../commun/data/tuyauterie.js?v=2.98"></script>
+<script src="../commun/acier.js?v=2.98"></script>
+<script src="../commun/barres3d.js?v=2.98"></script>
+<script src="../commun/data/gabarit-a3.js?v=2.98"></script>
+<script src="../commun/data/gabarit-a2.js?v=2.98"></script>
+<script src="../commun/dessin.js?v=2.98"></script>
+<script src="../commun/coefvent.js?v=2.98"></script>
+<script src="../commun/cahier.js?v=2.98"></script>
+<script src="../commun/chevilles.js?v=2.98"></script>
+<script src="../commun/topo.js?v=2.98"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -1405,7 +1405,7 @@ function specDessin(D,V,opt={}){
   if(Gm.T[0]) reperes.push({vue:'face',p:[0,Gm.T[0].c[1]-Gm.T[0].P.De/2000*0.7-(avecEtrier(Gm.T[0])?diamEtrier(Gm.T[0]):0)/2000,Gm.T[0].c[2]+Gm.T[0].P.De/2000*0.7],n:String(rep),dx:-1,dy:-0.6});
   const masse=Gm.B.reduce((s,b)=>s+b.p.m*b.L,0);
   const A=(typeof CAHIER!=='undefined'&&CAHIER.existe()&&CAHIER.lire().affaire)||{}, K=opt.cartouche||{affaire:$('affaire').value,client:'',titre:`Support ${$('repere').value||''} – ${TYPES[D.typ].n}`,dessine:$('auteur').value,plan:$('repere').value,
-    client1:A.client||'',client2:A.site||'',projet:A.num||'00-000',doc:'PLA',lot:'PIP',chrono:A.chronoPlan||'01',rev:A.indice||'0',bonPour:A.bonPour||'CONSULTATION',revisions:(A.revs||[]).concat([{rev:A.indice||'0',desc:A.motif||'Création du document',par:A.realise||'',verif:A.controle||'',appr:A.approuve||'',date:A.date?new Date(A.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit'}):''}])};
+    logo:A.logo||'',client1:A.client||'',client2:A.site||'',projet:A.num||'00-000',doc:'PLA',lot:'PIP',chrono:A.chronoPlan||'01',rev:A.indice||'0',bonPour:A.bonPour||'CONSULTATION',revisions:(A.revs||[]).concat([{rev:A.indice||'0',desc:A.motif||'Création du document',par:A.realise||'',verif:A.controle||'',appr:A.approuve||'',date:A.date?new Date(A.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit'}):''}])};
   // --- vues interrompues : plus grande plage sans détail le long d'une barre droite (pas de barre inclinée qui la traverse)
   const interruptions=[]; [[2,[0,0,1]],[1,[0,1,0]]].forEach(([i,ax])=>{
     const F=[...Gm.B.flatMap(b=>[b.A[i],b.B[i]]),...Gm.T.flatMap(t=>{ const r=t.P.Dc/2000+(avecEtrier(t)?diamEtrier(t):10)/1000+0.03; return [t.c[i]-r,t.c[i]+r]; }),...Gm.appuis.flatMap(a=>{ const e=['sol','plafond'].includes(a.k)?(i===2?0.03:cz/2+0.02):a.k==='mur'?(i===2?cz/2+0.02:0.03):0.1; return [a.pt[i]-e,a.pt[i]+e]; })].sort((a,b)=>a-b);
@@ -1711,13 +1711,13 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.97"></script>
-<script src="../commun/aide.js?v=2.97"></script>
-<script src="../commun/notes.js?v=2.97"></script>
-<script src="ndc-s1.js?v=2.97"></script>
+<script src="../commun/replier.js?v=2.98"></script>
+<script src="../commun/aide.js?v=2.98"></script>
+<script src="../commun/notes.js?v=2.98"></script>
+<script src="ndc-s1.js?v=2.98"></script>
 <script>document.head.insertAdjacentHTML("beforeend",`<style>${NDC_CSS}</style>`); ndcUI();</script>
-<script src="aide-s1.js?v=2.97"></script>
-<script src="../commun/export.js?v=2.97"></script>
+<script src="aide-s1.js?v=2.98"></script>
+<script src="../commun/export.js?v=2.98"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>
