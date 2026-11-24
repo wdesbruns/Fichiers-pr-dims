@@ -207,7 +207,7 @@ const CHEV = (() => {
         const cOf = (a) => (k === "xp" ? E.xp - a.x : k === "xm" ? a.x + E.xm : k === "yp" ? E.yp - a.y : a.y + E.ym), c1 = Math.min(...A.map(cOf));
         if (c1 >= lim) return;
         const front = po.annul ? A : A.filter((a) => cOf(a) <= c1 + 1);   // espace annulaire non comblé : rangée la plus proche du bord
-        // composantes vers le bord (somme algébrique) et parallèles au bord (somme des valeurs absolues, prudent – Fig. 7.12, pratique PROFIS)
+        // composantes vers le bord (somme algébrique) et parallèles au bord (somme des valeurs absolues, prudent – Fig. 7.12)
         const Vperp = A.reduce((s2, _, k) => s2 + V[k].x * ux + V[k].y * uy, 0), Vpar = A.reduce((s2, _, k) => s2 + Math.abs(V[k].x * uy - V[k].y * ux), 0);
         if (Vperp <= 1e-6 && Vpar <= 1e-6) return;
         const alphaV = Vperp > 1e-6 ? Math.atan2(Vpar, Vperp) : Math.PI / 2, VEd = Vperp > 1e-6 ? Math.hypot(Vperp, Vpar) : Vpar;

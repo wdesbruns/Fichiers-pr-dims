@@ -4,25 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.95"></script>
+<script src="../commun/auth.js?v=2.96"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — S1 Supports de tuyauterie</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.95">
+<link rel="stylesheet" href="../commun/calc.css?v=2.96">
 <script type="importmap">{"imports":{"three":"../commun/lib/three/three.module.min.js"}}</script>
-<script src="../commun/data/profils.js?v=2.95"></script>
-<script src="../commun/data/tuyauterie.js?v=2.95"></script>
-<script src="../commun/acier.js?v=2.95"></script>
-<script src="../commun/barres3d.js?v=2.95"></script>
-<script src="../commun/data/gabarit-a3.js?v=2.95"></script>
-<script src="../commun/data/gabarit-a2.js?v=2.95"></script>
-<script src="../commun/dessin.js?v=2.95"></script>
-<script src="../commun/coefvent.js?v=2.95"></script>
-<script src="../commun/cahier.js?v=2.95"></script>
-<script src="../commun/chevilles.js?v=2.95"></script>
-<script src="../commun/topo.js?v=2.95"></script>
+<script src="../commun/data/profils.js?v=2.96"></script>
+<script src="../commun/data/tuyauterie.js?v=2.96"></script>
+<script src="../commun/acier.js?v=2.96"></script>
+<script src="../commun/barres3d.js?v=2.96"></script>
+<script src="../commun/data/gabarit-a3.js?v=2.96"></script>
+<script src="../commun/data/gabarit-a2.js?v=2.96"></script>
+<script src="../commun/dessin.js?v=2.96"></script>
+<script src="../commun/coefvent.js?v=2.96"></script>
+<script src="../commun/cahier.js?v=2.96"></script>
+<script src="../commun/chevilles.js?v=2.96"></script>
+<script src="../commun/topo.js?v=2.96"></script>
 <style>
   .types{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
   .types label{margin:0;border:1px solid #cfd4db;border-radius:8px;padding:8px;text-align:center;cursor:pointer;color:var(--ink);font-size:12px;font-weight:600;background:#fff}
@@ -1456,6 +1456,10 @@ async function perspective(){
 }
 let tPersp=null; const planifierPerspective=()=>{clearTimeout(tPersp);tPersp=setTimeout(perspective,700);};
 async function imprimerS1(){ calc(); await perspective(); setTimeout(()=>window.print(),80); }
+/* solides du moteur de dessin (faces planes) → maillage three.js (triangulation en éventail ; faces annulaires ignorées) */
+function meshSolides(T,solides,couleur){ const P=[]; solides.forEach(So=>So.faces.forEach(f=>{ if(f.rings.length!==1) return; const R=f.rings[0]; for(let i=1;i<R.length-1;i++) P.push(...R[0],...R[i],...R[i+1]); }));
+  const g=new T.BufferGeometry(); g.setAttribute('position',new T.Float32BufferAttribute(P,3)); g.computeVertexNormals();
+  return new T.Mesh(g,new T.MeshStandardMaterial({color:couleur,metalness:.3,roughness:.6,side:T.DoubleSide})); }
 function formeProfil(T,p,mir){                              // section dans le plan local y–z (m) ; mir : U retourné (âme en +y)
   const sh=new T.Shape(), h=(p.h||100)/1000, b=(p.b||p.h||100)/1000, tw=(p.tw||p.t||5)/1000, tf=(p.tf||p.t||8)/1000;
   if(/^LI?$/.test(p.f)){ const g=geoCorniere(p), P=[[0,0],[g.Lf,0],[g.Lf,-g.t],[g.t,-g.t],[g.t,-g.Lb],[0,-g.Lb]].map(([a,q])=>[a-g.sc,q-g.qc]);
@@ -1514,7 +1518,12 @@ function construireScene(T){
     const r=t.P.De/2000, cyl=new T.Mesh(new T.CylinderGeometry(r,r,1.6,32),new T.MeshStandardMaterial({color:0x0b5d73,metalness:.3,roughness:.5}));
     cyl.rotation.z=Math.PI/2; cyl.position.set(...t.c); sc.add(cyl);
     if(t.P.ecal){const rc=t.P.Dc/2000,iso=new T.Mesh(new T.CylinderGeometry(rc,rc,1.5,32),new T.MeshStandardMaterial({color:0xf5c46b,transparent:true,opacity:.35}));iso.rotation.z=Math.PI/2;iso.position.set(...t.c);sc.add(iso);}
-    const et=new T.Mesh(new T.TorusGeometry(r+0.004,0.004,8,32),new T.MeshStandardMaterial({color:0xe05a1a})); et.rotation.y=Math.PI/2; et.position.set(...t.c); sc.add(et);
+    // liaison tuyau / support (étrier, patin, tôle, plat, cale PTFE, guides) : mêmes solides que le plan
+    { const b=Gm.B[t.bi], up=b.vert?[0,1,0]:[0,0,1], side=b.vert?[0,0,1]:[0,1,0], hi0=(b.vert?b.bord([0,1,0]):b.bord([0,0,1])).hi, hl=hLiaison(t,D)/1000, lia=liaisonT(t), S2=[], S3=[];
+      if(lia==='etrier'){ const et=new T.Mesh(new T.TorusGeometry(r+0.004,0.004,8,32),new T.MeshStandardMaterial({color:0xe05a1a})); et.rotation.y=Math.PI/2; et.position.set(...t.c); sc.add(et);
+        if(caleT(t)) elementsLiaison(S3,{lia:'cale0',De:t.P.De,r,hl,guide:'non',c:t.c,pt:t.pt,up,side,hi0,cale:true,wCale:Math.ceil((t.P.De+2*diamEtrier(t)+50)/10)*10/1000}); }
+      else { elementsLiaison(S2,{lia,De:t.P.De,r,hl,guide:t.guide,c:t.c,pt:t.pt,up,side,hi0,cale:false}); if(caleT(t)) elementsLiaison(S3,{lia:'cale0',De:t.P.De,r,hl,guide:'non',c:t.c,pt:t.pt,up,side,hi0,cale:true}); }
+      if(S2.length) sc.add(meshSolides(T,S2,0x7d8794)); if(S3.length) sc.add(meshSolides(T,S3,0xf2f2ee)); }
     const d=V.CC.detail[k], o=v3(...t.c), Lg=0.6*d.G*echF+0.02;
     sc.add(new T.ArrowHelper(v3(0,0,-1),o.clone().add(v3(0,0,r+Lg)),Lg,0xe30009,0.06,0.04));
     if(D.cW&&d.W) sc.add(new T.ArrowHelper(v3(0,1,0),o.clone().add(v3(0,-r-0.3,0)),0.25,0x0098db,0.06,0.04));
@@ -1690,13 +1699,13 @@ function initCahier(){
 
 init();
 </script>
-<script src="../commun/replier.js?v=2.95"></script>
-<script src="../commun/aide.js?v=2.95"></script>
-<script src="../commun/notes.js?v=2.95"></script>
-<script src="ndc-s1.js?v=2.95"></script>
+<script src="../commun/replier.js?v=2.96"></script>
+<script src="../commun/aide.js?v=2.96"></script>
+<script src="../commun/notes.js?v=2.96"></script>
+<script src="ndc-s1.js?v=2.96"></script>
 <script>document.head.insertAdjacentHTML("beforeend",`<style>${NDC_CSS}</style>`); ndcUI();</script>
-<script src="aide-s1.js?v=2.95"></script>
-<script src="../commun/export.js?v=2.95"></script>
+<script src="aide-s1.js?v=2.96"></script>
+<script src="../commun/export.js?v=2.96"></script>
 <script>EXPORT.init({code:'S1',titre:'Support de tuyauterie',
   zones:()=>[...document.querySelectorAll('#res > .card')], donnees:()=>[document.getElementById('form')],
   avant:async()=>{calc();await perspective();}, nom:()=>document.getElementById('repere').value||document.getElementById('affaire').value});</script>

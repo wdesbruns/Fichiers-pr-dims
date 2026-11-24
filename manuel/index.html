@@ -4,27 +4,27 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.95"></script>
+<script src="../commun/auth.js?v=2.96"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — Manuel technique</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.95">
-<script src="../commun/apps.js?v=2.95"></script>
-<script src="../commun/data/profils.js?v=2.95"></script>
-<script src="../commun/barres3d.js?v=2.95"></script>
-<script src="../commun/acier.js?v=2.95"></script>
-<script src="../commun/data/tuyauterie.js?v=2.95"></script>
-<script src="../commun/charges.js?v=2.95"></script>
-<script src="../commun/coefvent.js?v=2.95"></script>
-<script src="../commun/tendues.js?v=2.95"></script>
-<script src="../commun/portique.js?v=2.95"></script>
-<script src="../commun/chevilles.js?v=2.95"></script>
-<script src="../commun/cbfem.js?v=2.95"></script>
-<script src="../commun/topo.js?v=2.95"></script>
-<script src="../commun/zip.js?v=2.95"></script>
-<script src="../commun/laser.js?v=2.95"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.96">
+<script src="../commun/apps.js?v=2.96"></script>
+<script src="../commun/data/profils.js?v=2.96"></script>
+<script src="../commun/barres3d.js?v=2.96"></script>
+<script src="../commun/acier.js?v=2.96"></script>
+<script src="../commun/data/tuyauterie.js?v=2.96"></script>
+<script src="../commun/charges.js?v=2.96"></script>
+<script src="../commun/coefvent.js?v=2.96"></script>
+<script src="../commun/tendues.js?v=2.96"></script>
+<script src="../commun/portique.js?v=2.96"></script>
+<script src="../commun/chevilles.js?v=2.96"></script>
+<script src="../commun/cbfem.js?v=2.96"></script>
+<script src="../commun/topo.js?v=2.96"></script>
+<script src="../commun/zip.js?v=2.96"></script>
+<script src="../commun/laser.js?v=2.96"></script>
 <style>
   main{grid-template-columns:minmax(230px,290px) 1fr}
   nav.toc{position:sticky;top:10px;align-self:start;max-height:calc(100vh - 20px);overflow:auto}
@@ -245,8 +245,8 @@ Pannes laminées : poutre continue (≥ 4 portiques) ou isostatique, (M<sub>y</s
 <p><b>État (2.63)</b> : calcul NF EN 1992-4 + AN (moteur <code>commun/chevilles.js</code>) en platine rigide ou en platine flexible (CBFEM, moteur <code>commun/cbfem.js</code>) ; note de calcul Word sur la trame FIP ; import des efforts depuis S1 et A1.</p>
 <p><b>Répartition (platine rigide, §6.2.1)</b> : déformation plane ε(x, y) = ε₀ + κ<sub>x</sub>·x + κ<sub>y</sub>·y ; cheville tendue T<sub>i</sub> = E<sub>s</sub>·A<sub>s</sub>·ε<sub>i</sub> (A<sub>s</sub> ≈ 0,78·πd²/4), cheville comprimée inactive ; béton comprimé sous toute la platine σ = E<sub>cm</sub>·ε (30 × 30 cellules) ; équilibre N, M<sub>x</sub>, M<sub>y</sub> résolu par Newton. Cisaillement : V/n par cheville + torsion M<sub>z</sub>·r/Σr² autour du centre du groupe. Efforts saisis au centre du profilé : M<sub>x</sub>' = M<sub>x</sub> + N·e<sub>y</sub>, M<sub>y</sub>' = M<sub>y</sub> − N·e<sub>x</sub>, M<sub>z</sub>' = M<sub>z</sub> + e<sub>x</sub>·V<sub>y</sub> − e<sub>y</sub>·V<sub>x</sub>. Contrôle : 4 chevilles toutes tendues → valeurs de la « platine rigide équivalente » de PROFIS (tests).</p>
 <p><b>Traction</b> : acier N<sub>Rk,s</sub>/γ<sub>Ms</sub> (cheville la plus chargée) ; cône (7.1)–(7.7) avec A<sub>c,N</sub> = aire de l'union des carrés s<sub>cr,N</sub> × s<sub>cr,N</sub> centrés sur les chevilles tendues, découpée par les bords (égale à la Fig. 7.4 pour les groupes rectangulaires, généralisée aux dispositions quelconques), ψ<sub>s,N</sub> (plus petite distance au bord), ψ<sub>re,N</sub>, ψ<sub>ec,N</sub> (excentricité de la résultante des tractions par rapport au centre des chevilles tendues, deux directions), ψ<sub>M,N</sub> = 2 − z/(1,5 h<sub>ef</sub>) si c ≥ 1,5 h<sub>ef</sub>, C<sub>Ed</sub>/N<sub>Ed</sub> &gt; 0,8 et z/h<sub>ef</sub> &lt; 1,5 ; chimique (7.13)–(7.21) : N⁰<sub>Rk,p</sub> = ψ<sub>sus</sub>·τ<sub>Rk</sub>·π·d·h<sub>ef</sub>, τ<sub>Rk</sub> = τ<sub>Rk,(C20/25)</sub>·(f<sub>ck</sub>/20)<sup>0,1</sup>, s<sub>cr,Np</sub> = 7,3·d·(ψ<sub>sus</sub>·τ<sub>Rk,ucr</sub>)<sup>0,5</sup> ≤ 3 h<sub>ef</sub>, ψ<sub>g,Np</sub> avec l'entraxe moyen pris comme moyenne des distances au plus proche voisin ; mécanique : N<sub>Rk,p</sub>·ψ<sub>c</sub> de l'ETE (cheville la plus chargée) ; fendage (7.23)–(7.24) sauf conditions §7.2.1.7 (2) b) (c ≥ 1,2 c<sub>cr,sp</sub> et h ≥ h<sub>min</sub>, ou armature w<sub>k</sub> ≤ 0,3 mm).</p>
-<p><b>Cisaillement</b> : acier k<sub>7</sub>·V⁰<sub>Rk,s</sub>/γ<sub>Ms</sub> (HAS : k<sub>6</sub>·N<sub>Rk,s</sub>, k<sub>6</sub> = 0,6 / 0,5 ; HST4 : V⁰<sub>Rk,s</sub> de l'ETE) ; effet de levier (7.39) k<sub>8</sub>·min(N<sub>Rk,c</sub> ; N<sub>Rk,p</sub>) sur toutes les chevilles, ψ<sub>ec</sub> avec l'excentricité e<sub>V</sub> = |M<sub>z,groupe</sub>|/V (simplification) ; bord (7.40)–(7.48) pour chaque bord fini à moins de max(10 h<sub>ef</sub> ; 60 d) : rangée la plus proche si l'espace annulaire n'est pas comblé, toutes les chevilles sinon ; composante vers le bord = somme algébrique, composante parallèle = somme des valeurs absolues (prudent, Fig. 7.12, pratique PROFIS), α<sub>V</sub> = atan(V<sub>∥</sub>/V<sub>⊥</sub>), A<sub>c,V</sub> = union des bandes ±1,5 c₁ de hauteur min(h ; 1,5 c₁) bornée par les bords latéraux. γ<sub>inst</sub> = 1,0 en cisaillement.</p>
-<p><b>Interaction</b> : acier (7.54) par cheville ; béton : β = plus grands rapports hors acier, (7.55) ou (7.56), la plus favorable (PROFIS fait de même). <b>Séisme (annexe C)</b> : R<sub>d,eq</sub> = α<sub>gap</sub>·α<sub>eq</sub>·R⁰<sub>k,eq</sub>/γ<sub>M,eq</sub> ; τ<sub>Rk,eq</sub> C1 / C2 de l'ETE (ψ<sub>c</sub> = 1) ; V<sub>Rk,s,eq</sub> de l'ETE (C2 : avec ou sans kit de remplissage) ; α<sub>eq</sub> Tab. C.3 (cône de groupe 0,75 ; adhérence 0,85 ; acier en cisaillement 0,85 ; levier 0,75 ; bord 0,85) ; α<sub>gap</sub> = 0,5 sans remplissage ; γ<sub>c</sub> = 1,3 (AN) ; γ<sub>Ms</sub> durables (comme PROFIS) ou accidentels (AN) au choix ; réduction (C.11) δ<sub>req</sub>/δ<sub>eq,DLS</sub> (C2) ; interaction (C.9) k<sub>15</sub> = 1. Le coefficient de la Fig. NA.1 (1,2·q<sub>a</sub> ou 1,5·q<sub>a</sub>) est appliqué aux efforts sismiques saisis s'il est renseigné (PROFIS ne l'applique pas).</p>
+<p><b>Cisaillement</b> : acier k<sub>7</sub>·V⁰<sub>Rk,s</sub>/γ<sub>Ms</sub> (HAS : k<sub>6</sub>·N<sub>Rk,s</sub>, k<sub>6</sub> = 0,6 / 0,5 ; HST4 : V⁰<sub>Rk,s</sub> de l'ETE) ; effet de levier (7.39) k<sub>8</sub>·min(N<sub>Rk,c</sub> ; N<sub>Rk,p</sub>) sur toutes les chevilles, ψ<sub>ec</sub> avec l'excentricité e<sub>V</sub> = |M<sub>z,groupe</sub>|/V (simplification) ; bord (7.40)–(7.48) pour chaque bord fini à moins de max(10 h<sub>ef</sub> ; 60 d) : rangée la plus proche si l'espace annulaire n'est pas comblé, toutes les chevilles sinon ; composante vers le bord = somme algébrique, composante parallèle = somme des valeurs absolues (prudent, Fig. 7.12), α<sub>V</sub> = atan(V<sub>∥</sub>/V<sub>⊥</sub>), A<sub>c,V</sub> = union des bandes ±1,5 c₁ de hauteur min(h ; 1,5 c₁) bornée par les bords latéraux. γ<sub>inst</sub> = 1,0 en cisaillement.</p>
+<p><b>Interaction</b> : acier (7.54) par cheville ; béton : β = plus grands rapports hors acier, (7.55) ou (7.56), la plus favorable. <b>Séisme (annexe C)</b> : R<sub>d,eq</sub> = α<sub>gap</sub>·α<sub>eq</sub>·R⁰<sub>k,eq</sub>/γ<sub>M,eq</sub> ; τ<sub>Rk,eq</sub> C1 / C2 de l'ETE (ψ<sub>c</sub> = 1) ; V<sub>Rk,s,eq</sub> de l'ETE (C2 : avec ou sans kit de remplissage) ; α<sub>eq</sub> Tab. C.3 (cône de groupe 0,75 ; adhérence 0,85 ; acier en cisaillement 0,85 ; levier 0,75 ; bord 0,85) ; α<sub>gap</sub> = 0,5 sans remplissage ; γ<sub>c</sub> = 1,3 (AN) ; γ<sub>Ms</sub> durables (prudent) ou accidentels (AN) au choix ; réduction (C.11) δ<sub>req</sub>/δ<sub>eq,DLS</sub> (C2) ; interaction (C.9) k<sub>15</sub> = 1. Le coefficient de la Fig. NA.1 (1,2·q<sub>a</sub> ou 1,5·q<sub>a</sub>) est appliqué aux efforts sismiques saisis s'il est renseigné (PROFIS ne l'applique pas).</p>
 <p><b>h<sub>ef</sub> optimale</b> : plus petite profondeur de la plage de l'ETE, par pas de 5 mm, vérifiant toutes les combinaisons.</p>
 <p><b>Qualification (tests en direct)</b> : 19 valeurs de résistance de 4 notes PROFIS anonymisées (V1 chimique M16 8.8 séisme C2 ; V2 chimique M16 5.8, 8 chevilles près d'un bord ; V3 HST4 M16 non fissuré ; V4 chimique M27 8.8 en cercle), efforts par cheville imposés (ceux du CBFEM des notes) : écarts ≤ 0,02 % ; répartition rigide : identique à la « platine rigide équivalente » de PROFIS.</p>
 <div class="lim">Simplifications et limites : HST4 c<sub>cr,sp</sub> = 1,9 h<sub>ef</sub> (borne haute de l'ETE, prudent ; formule A<sub>rqd</sub> non intégrée) ; performances sismiques du HST4 non intégrées ; C1 HAS : M10 à M30 ; C2 HAS : 8.8, M12 à M24 ; pas de platine décollée (bras de levier), de rails, de renforcement supplémentaire, de fatigue ni de feu ; h′<sub>ef</sub> (§7.2.1.4 (8), trois bords proches) non appliqué (prudent).</div>
@@ -355,6 +355,7 @@ Pression diamétrale F<sub>b,Rd</sub> = k<sub>1</sub>·α<sub>b</sub>·f<sub>u</
 
 <article class="card" id="journal"><div class="theme">Qualification</div><h2>17. Journal des modifications ayant un impact sur les résultats</h2>
 <table><tr><th>Version</th><th>Module</th><th>Modification</th><th>Impact</th></tr>
+<tr><td>2.96</td><td>S1</td><td>Vue 3D : liaison tuyau / support représentée (patin, tôle, plat, cale PTFE, guides latéraux ; étrier seulement pour le type 4), avec les mêmes solides que le plan.</td><td>Aucun calcul modifié.</td></tr>
 <tr><td>2.95</td><td>S1, CS, AN1</td><td>Cale téflon liée à μ = 0,1 (dessin, nomenclature, BOM, cale percée au passage de l'étrier) ; suppression de la hauteur de sabot globale ; types de liaison filtrés selon le DN ; entraxes et platines automatiques arrondis à 10 mm en crapautage et sandwich ; sabot identique à gauche et à droite (une vérification AN1).</td><td>Hauteur des tuyaux sur étrier : 10 mm si cale PTFE (au lieu de la hauteur de sabot saisie) ; entraxes imposés en crapautage / sandwich.</td></tr>
 <tr><td>2.94</td><td>CS, S1, AN1</td><td>Cahier d'exécution : trous, entraxes et dimensions des platines sur les plans ; plans de détail des liaisons (types 1 à 5) en fin de cahier avec nomenclature L × l × e ; sabot de la traverse vérifié par le CBFEM d'AN1 (plats soudés).</td><td>Calculs inchangés ; nouvelle famille de profilé dans AN1.</td></tr>
 <tr><td>2.93</td><td>CS, S1, AN1</td><td>Cahier d'exécution : plans cotés par configuration, platines et chevilles d'AN1 (blocage tant qu'elles ne sont pas vérifiées), DXF de découpe laser par platine différente, classeur Excel (fichier DXF, matière, épaisseur, quantité totale), nomenclature de fabrication avec repères et tôles L × l × e ; AN1 renvoie la disposition des chevilles ; 3 tests.</td><td>Nouvelles sorties ; calculs inchangés.</td></tr>
@@ -376,7 +377,7 @@ Pression diamétrale F<sub>b,Rd</sub> = k<sub>1</sub>·α<sub>b</sub>·f<sub>u</
 <tr><td>2.77</td><td>S1, CS, AN1</td><td>Console murale avec jambe de force : fixation du pied de jambe par chevilles (lien AN1) ou tiges traversantes + contre-plaque, entraxes propres, vérification dans le tableau des fixations, dessins et nomenclatures (S1 et cahier).</td><td>Nouvelle vérification (tiges du pied de jambe) ; nomenclature : tiges et contre-plaque du pied comptées.</td></tr>
 <tr><td>2.76</td><td>CS</td><td>Chevillage : platines identiques d'un même type (ex. pieds d'un portique en U) vérifiées ensemble dans AN1.</td><td>Aucun calcul modifié.</td></tr>
 <tr><td>2.75</td><td>CS, S1, AN1</td><td>Cahier : chevillage des platines par type relié à AN1 (enveloppe des configurations, retour du résultat sur le type, dans la fiche et dans la nomenclature, « à relancer » si les efforts changent) ; S1 : combinaisons de platine dans le résumé ; AN1 : retour structuré (produit, diamètre, nombre, h<sub>ef</sub>, platine).</td><td>Aucun calcul modifié ; nomenclature : chevilles réelles pour les platines vérifiées dans AN1.</td></tr>
-<tr><td>2.74</td><td>AN1</td><td>Note détaillée : figures et tableau de la platine CBFEM pour la combinaison décisive de la platine (σ<sub>Ed</sub> maxi, puis ε<sub>pl</sub>, puis déplacement), distincte du cas dimensionnant des chevilles, comme PROFIS ; les deux combinaisons sont nommées dans la note.</td><td>Aucun calcul modifié.</td></tr>
+<tr><td>2.74</td><td>AN1</td><td>Note détaillée : figures et tableau de la platine CBFEM pour la combinaison décisive de la platine (σ<sub>Ed</sub> maxi, puis ε<sub>pl</sub>, puis déplacement), distincte du cas dimensionnant des chevilles ; les deux combinaisons sont nommées dans la note.</td><td>Aucun calcul modifié.</td></tr>
 <tr><td>2.73</td><td>S1, A1</td><td>Export .str : <b>correction des unités</b> (1 kN = 100 daN ; les charges et moments étaient exportés 10 fois trop faibles en 2.70 – 2.72) ; charges d'un même tronçon sommées avant fusion des tronçons contigus (les composantes verticale et horizontale du vent découpaient la traverse à chaque élément de calcul). Appuis (ddl libres listés) et moments nodaux CX, CY, CZ confirmés à l'ouverture dans Robot v40.</td><td>Fichiers .str produits en 2.70 – 2.72 à régénérer (charges ×10). Aucun calcul FIP modifié.</td></tr>
 <tr><td>2.72</td><td>S1, A1</td><td>Export .str : combinaisons sismiques en nature ELU (libellé « SIS »), d'après un fichier Robot v40 à combinaisons sismiques ; coefficients négatifs confirmés.</td><td>Aucun calcul modifié.</td></tr>
 <tr><td>2.71</td><td>S1, A1</td><td>Export .str : combinaisons manuelles (ELU, ELS, accidentelles ; sismiques en accidentelles, à vérifier) selon la syntaxe d'un fichier Robot v40 ; libellés en ASCII.</td><td>Aucun calcul modifié.</td></tr>
@@ -578,6 +579,6 @@ function tests(){
 }
 try{ tests(); }catch(e){ $('tests').innerHTML=`<div class="msg bad">Erreur d'exécution des tests : ${e.message}</div>`; }
 </script>
-<script src="../commun/replier.js?v=2.95"></script>
+<script src="../commun/replier.js?v=2.96"></script>
 </body>
 </html>
