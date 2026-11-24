@@ -10,7 +10,7 @@
    vignette : petit schéma SVG affiché sur la carte (facultatif)
    marqueur de catégorie : ● ▬ → ■ ◆ … (couleur d'accent FIP)
    ===================================================================== */
-const CALC_VERSION = "v2.96";
+const CALC_VERSION = "v2.97";
 
 const CALC_CATEGORIES = [
   { id: "clim", nom: "Hypothèses de charges", sousTitre: "Charges climatiques et sismiques, permanentes et d'exploitation de l'affaire · NF EN 1990, NF EN 1991-1-1 / 1-3 / 1-4, NF EN 1998-1 + AN, arrêté du 22/10/2010", couleur: "#e30009", marqueur: "▬" },

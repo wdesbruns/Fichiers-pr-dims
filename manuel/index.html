@@ -4,27 +4,27 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.96"></script>
+<script src="../commun/auth.js?v=2.97"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — Manuel technique</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.96">
-<script src="../commun/apps.js?v=2.96"></script>
-<script src="../commun/data/profils.js?v=2.96"></script>
-<script src="../commun/barres3d.js?v=2.96"></script>
-<script src="../commun/acier.js?v=2.96"></script>
-<script src="../commun/data/tuyauterie.js?v=2.96"></script>
-<script src="../commun/charges.js?v=2.96"></script>
-<script src="../commun/coefvent.js?v=2.96"></script>
-<script src="../commun/tendues.js?v=2.96"></script>
-<script src="../commun/portique.js?v=2.96"></script>
-<script src="../commun/chevilles.js?v=2.96"></script>
-<script src="../commun/cbfem.js?v=2.96"></script>
-<script src="../commun/topo.js?v=2.96"></script>
-<script src="../commun/zip.js?v=2.96"></script>
-<script src="../commun/laser.js?v=2.96"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.97">
+<script src="../commun/apps.js?v=2.97"></script>
+<script src="../commun/data/profils.js?v=2.97"></script>
+<script src="../commun/barres3d.js?v=2.97"></script>
+<script src="../commun/acier.js?v=2.97"></script>
+<script src="../commun/data/tuyauterie.js?v=2.97"></script>
+<script src="../commun/charges.js?v=2.97"></script>
+<script src="../commun/coefvent.js?v=2.97"></script>
+<script src="../commun/tendues.js?v=2.97"></script>
+<script src="../commun/portique.js?v=2.97"></script>
+<script src="../commun/chevilles.js?v=2.97"></script>
+<script src="../commun/cbfem.js?v=2.97"></script>
+<script src="../commun/topo.js?v=2.97"></script>
+<script src="../commun/zip.js?v=2.97"></script>
+<script src="../commun/laser.js?v=2.97"></script>
 <style>
   main{grid-template-columns:minmax(230px,290px) 1fr}
   nav.toc{position:sticky;top:10px;align-self:start;max-height:calc(100vh - 20px);overflow:auto}
@@ -212,6 +212,7 @@
 <p><b>Liaisons tuyau / support (2.92)</b> : par tuyauterie, type de liaison de la spécification Rubis Terminal (§11.3 et §11.4) : étrier serré sur cale téflon (4, défaut), patin collier plat ép. 5 + ½ IPE 200 soudé (1), tôle intermédiaire + ½ IPE 200 (2, DN 25 à 200), tôle intermédiaire + support mécano-soudé (2a, DN &gt; 200), tôle intermédiaire posée (3), tuyau posé sur plat (5) ; guide latéral (cornières, plats ou ronds, jeu 10 mm) ; hauteur de l'élément sous le tuyau (étrier : hauteur de sabot ; types 1 et 2 : 105 mm = ½ IPE 200 + 5 mm ; 2a : 150 mm ; 3 : 5 mm ; 5 : 10 mm), modifiable. <b>Effet sur le calcul</b> : la hauteur décale l'axe du tuyau au-dessus du profilé (excentrement vertical des charges) ; la fonction (glissant, guidé, point fixe) et le coefficient de frottement restent saisis. L'étrier, sa pince et ses alertes ne s'appliquent qu'au type 4 ; alertes sur les types 2 / 2a selon le DN, sur les guides non prévus pour le type, et rappel du perçage Ø8 des tôles. Dessin du patin, des tôles et des guides, nomenclature et BOM du cahier. Le patin « Hilti DN » des cahiers TEPSA est une demande particulière du client, non reprise.</p>
 <p><b>Sabot vérifié dans AN1 (2.94)</b> : pour la traverse sur sabots, S1 transmet à AN1 les efforts ramenés à la platine et la géométrie du sabot comme un « profilé » de plats soudés (butée d'extrémité ép. 8 mm à 12 mm du bord, longueur L<sub>x</sub> − 40 mm ; deux goussets ép. 8 mm de part et d'autre de la traverse, 100 mm de long) : le CBFEM d'AN1 calcule les contraintes de la platine, la pression sur le béton et les efforts des chevilles pour le sabot lui-même, sans simulation annexe ; famille « Plats soudés (sabot) » (<code>CBFEM.parois</code> accepte des parois libres dans le repère de la platine). Un sabot gauche et un sabot droit sont vérifiés séparément (butée de part et d'autre) ; le cahier d'exécution exige les deux.</p>
 <p><b>Liaisons, cale téflon, entraxes automatiques et sabot symétrique (2.95)</b> : <b>cale PTFE</b> : présente dès que le frottement retenu est celui du PTFE (μ = 0,1) – lien direct entre le calcul (frottement) et le plan : cale de 10 mm dessinée sous l'étrier ou sous le patin et nomenclaturée (sous l'étrier : 120 × (Ø + 2·d + 50) × 10, percée de deux trous Ø d + 2 au passage de l'étrier qui la maintient) ; choisir le type 4 (étrier) fixe μ = 0,1 ; la « hauteur de sabot / cale » globale est supprimée : la hauteur sous le tuyau = élément de liaison (½ IPE 200 + 5 mm = 105 mm, tôle 5 mm, plat 10 mm…) + cale éventuelle. <b>Types selon le diamètre</b> : la liste ne propose que les types admis (type 2 du DN 25 au DN 200, type 2a au-delà) et bascule automatiquement de l'un à l'autre si le DN change ; alerte bloquante sinon. <b>Crapautage et sandwich</b> : entraxes des fixations calculés automatiquement et arrondis à la dizaine supérieure (cotes de fabrication) : le long du profilé existant, emprise du profilé du support + 3·d<sub>0</sub> (mini 100 mm) ; en travers, sandwich : largeur de semelle + d<sub>0</sub> + 2 × 10 mm, crapauds : largeur de semelle + 2 × 12 mm ; platine = entraxes + 80 mm (multiple de 10). <b>Sabot</b> : le même sabot à gauche et à droite (comme les pieds d'un U) : géométrie du sabot gauche, efforts du sabot droit symétrisés (V<sub>y</sub>, M<sub>x</sub>, M<sub>z</sub> changés de signe) ; une seule vérification AN1 sur l'enveloppe des deux.</p>
+<p><b>Géométrie des liaisons (2.97)</b> : type 1 = <b>patin boulonné</b> : ½ IPE 200 de 200 mm (semelle 100 × 8,5, âme 5,6) et deux colliers plats 40 × 5, un à chaque extrémité, chacun en deux demi-colliers (bas soudé sur le Té, haut boulonné par deux pattes et deux boulons M12) ; types 2, 2a et 3 : <b>coquille</b> (tôle intermédiaire cintrée sur 120° sous le tuyau, 250 mm, ép. 5, développé π(Ø + 5)/3) ; type 4 : étrier avec jeu (guidé ou glissant) ou serré (point fixe), selon la fonction de la tuyauterie ; une tuyauterie <b>glissante</b> n'a pas de guide latéral (choix bloqué sur « Sans »).</p>
 </article>
 
 <article class="card" id="p1"><div class="theme">P1 – Poutre</div><h2>9. P1 – Poutre isostatique</h2>
@@ -355,6 +356,7 @@ Pression diamétrale F<sub>b,Rd</sub> = k<sub>1</sub>·α<sub>b</sub>·f<sub>u</
 
 <article class="card" id="journal"><div class="theme">Qualification</div><h2>17. Journal des modifications ayant un impact sur les résultats</h2>
 <table><tr><th>Version</th><th>Module</th><th>Modification</th><th>Impact</th></tr>
+<tr><td>2.97</td><td>S1, CS</td><td>Liaisons : patin boulonné (½ IPE 200 L 200, deux colliers en demi-colliers boulonnés), coquilles cintrées (types 2, 2a, 3), étrier guidé ou serré selon la fonction, pas de guide si glissant ; plans, 3D, nomenclature et plans de détail.</td><td>Aucun calcul modifié (hauteurs inchangées).</td></tr>
 <tr><td>2.96</td><td>S1</td><td>Vue 3D : liaison tuyau / support représentée (patin, tôle, plat, cale PTFE, guides latéraux ; étrier seulement pour le type 4), avec les mêmes solides que le plan.</td><td>Aucun calcul modifié.</td></tr>
 <tr><td>2.95</td><td>S1, CS, AN1</td><td>Cale téflon liée à μ = 0,1 (dessin, nomenclature, BOM, cale percée au passage de l'étrier) ; suppression de la hauteur de sabot globale ; types de liaison filtrés selon le DN ; entraxes et platines automatiques arrondis à 10 mm en crapautage et sandwich ; sabot identique à gauche et à droite (une vérification AN1).</td><td>Hauteur des tuyaux sur étrier : 10 mm si cale PTFE (au lieu de la hauteur de sabot saisie) ; entraxes imposés en crapautage / sandwich.</td></tr>
 <tr><td>2.94</td><td>CS, S1, AN1</td><td>Cahier d'exécution : trous, entraxes et dimensions des platines sur les plans ; plans de détail des liaisons (types 1 à 5) en fin de cahier avec nomenclature L × l × e ; sabot de la traverse vérifié par le CBFEM d'AN1 (plats soudés).</td><td>Calculs inchangés ; nouvelle famille de profilé dans AN1.</td></tr>
@@ -579,6 +581,6 @@ function tests(){
 }
 try{ tests(); }catch(e){ $('tests').innerHTML=`<div class="msg bad">Erreur d'exécution des tests : ${e.message}</div>`; }
 </script>
-<script src="../commun/replier.js?v=2.96"></script>
+<script src="../commun/replier.js?v=2.97"></script>
 </body>
 </html>

@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<script src="../commun/auth.js?v=2.96"></script>
+<script src="../commun/auth.js?v=2.97"></script>
 <script>calcProteger("../");</script>
 <title>FIP Études — AS1 Barres tendues boulonnées</title>
 <link rel="icon" href="../commun/img/picto-fip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../commun/calc.css?v=2.96">
-<script src="../commun/apps.js?v=2.96"></script>
-<script src="../commun/cahier.js?v=2.96"></script>
-<script src="../commun/data/profils.js?v=2.96"></script>
-<script src="../commun/acier.js?v=2.96"></script>
-<script src="../commun/tendues.js?v=2.96"></script>
-<script src="../commun/ident.js?v=2.96"></script>
+<link rel="stylesheet" href="../commun/calc.css?v=2.97">
+<script src="../commun/apps.js?v=2.97"></script>
+<script src="../commun/cahier.js?v=2.97"></script>
+<script src="../commun/data/profils.js?v=2.97"></script>
+<script src="../commun/acier.js?v=2.97"></script>
+<script src="../commun/tendues.js?v=2.97"></script>
+<script src="../commun/ident.js?v=2.97"></script>
 <style>.fig svg{width:100%;max-width:560px;height:auto;background:#fff;border:1px solid var(--line);border-radius:6px}</style>
 </head>
 <body>
@@ -100,10 +100,10 @@ document.querySelectorAll('#form input, #form select').forEach(el=>el.addEventLi
 calc();
 $('versRC').onclick=versRC;
 </script>
-<script src="../commun/replier.js?v=2.96"></script>
-<script src="../commun/export.js?v=2.96"></script>
+<script src="../commun/replier.js?v=2.97"></script>
+<script src="../commun/export.js?v=2.97"></script>
 <script>EXPORT.init({code:'AS1',titre:'Barre tendue boulonnée',zones:()=>[...document.querySelectorAll('#res > .card')],donnees:()=>[document.getElementById('form')],affaire:()=>IDENT.lire(),nom:()=>document.getElementById('prof').value});</script>
-<script src="../commun/aide.js?v=2.96"></script>
+<script src="../commun/aide.js?v=2.97"></script>
 <script>AIDE.init({titre:"Aide – AS1 Barres tendues boulonnées",manuel:"as1",intro:"AS1 vérifie l'attache boulonnée d'une barre tendue (cornière simple ou jumelée attachée par une aile, UPN par l'âme) sur un gousset : boulons, section brute et nette, pression diamétrale, cisaillement de bloc, gousset. Méthode du classeur BE CM, conforme à la NF EN 1993-1-8.",
   etapes:[{t:"Identification",html:"Champs de la trame repris dans le cartouche de la note.",cible:"#cIdent"},
     {t:"Barre",html:"Type, section, nombre (2 = cornières ou UPN jumelés de part et d'autre du gousset, boulons en double cisaillement), nuance et effort de traction.",cible:"#cBarre"},
